@@ -1,0 +1,479 @@
+/* =============================================================================
+   RTL companion stylesheet
+   Base layout uses logical properties (margin/padding/border inline-*, inset-*) in
+   admin.css and main.css so the UI mirrors when <html dir="rtl">.
+   This file only adds: drawer motion, Bootstrap/plugin gaps, bidi for numerics,
+   directional icons, and legacy float swaps where still needed.
+   ============================================================================= */
+
+/* Arabic: Tajawal is loaded in rtl-assets.blade.php; map template font variables. */
+html[dir="rtl"] {
+  --body-font: "Tajawal", sans-serif;
+  --heading-font: "Tajawal", sans-serif;
+  --third--heading: "Tajawal", sans-serif;
+}
+
+/* User/agent dashboard: slide drawer off-canvas on the correct physical side */
+@media screen and (max-width: 1199px) {
+  [dir="rtl"] .sidebar-menu:not(.show-sidebar) {
+    transform: translateX(100%);
+  }
+}
+
+/* Optional admin theme: pill sidebar caps mirror */
+[dir="rtl"] .sidebar.capsule--rounded .sidebar__menu > .sidebar-menu-item > a,
+[dir="rtl"] .sidebar.capsule--rounded .sidebar__menu > .sidebar-menu-item .sidebar-submenu .sidebar-menu-item > a {
+  border-radius: 999px 0 0 999px;
+}
+
+/* Legacy float utilities (non-Bootstrap) */
+[dir="rtl"] .float-start,
+[dir="rtl"] .float-left {
+  float: right !important;
+}
+[dir="rtl"] .float-end,
+[dir="rtl"] .float-right {
+  float: left !important;
+}
+
+/* Tables: follow content direction; avoid forcing physical "right" */
+[dir="rtl"] .table thead th,
+[dir="rtl"] .table tbody td {
+  text-align: start;
+}
+
+[dir="rtl"] .table .user-info .thumb {
+  margin-inline-end: 15px;
+  margin-inline-start: 0;
+}
+
+/* Forms: align to start (right in RTL, left in LTR) */
+[dir="rtl"] .form-label,
+[dir="rtl"] label:not(.form-check-label) {
+  text-align: start;
+}
+
+[dir="rtl"] .form-control:not([type="checkbox"]):not([type="radio"]),
+[dir="rtl"] .form--control:not([type="checkbox"]):not([type="radio"]) {
+  text-align: start;
+}
+
+/* Wizard dashboard cards: LTR numerals/currency inside RTL text column */
+[dir="rtl"] .wizard-card__text .amount {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* Mixed-language & numbers: keep Western digits / codes readable */
+[dir="rtl"] .dashboard-widget__content h5,
+[dir="rtl"] code,
+[dir="rtl"] .ff-mono,
+[dir="rtl"] .table .text-monospace {
+  unicode-bidi: plaintext;
+}
+
+/* Pagination corners mirror */
+[dir="rtl"] .pagination .page-item:first-child .page-link {
+  border-radius: 0 var(--bs-pagination-border-radius, 0.375rem)
+    var(--bs-pagination-border-radius, 0.375rem) 0 !important;
+}
+[dir="rtl"] .pagination .page-item:last-child .page-link {
+  border-radius: var(--bs-pagination-border-radius, 0.375rem) 0 0
+    var(--bs-pagination-border-radius, 0.375rem) !important;
+}
+
+/* Breadcrumbs */
+[dir="rtl"] .breadcrumb-item + .breadcrumb-item::before {
+  float: right;
+  padding-inline-start: 0.5rem;
+  padding-inline-end: 0;
+}
+
+/* User/agent sidebar: FA angle in ::after — mirror in RTL */
+[dir="rtl"] .sidebar-menu-list__item.has-dropdown > a::after {
+  transform: scaleX(-1);
+}
+[dir="rtl"] .sidebar-menu-list__item.has-dropdown.active > a::after {
+  transform: scaleX(-1) rotate(90deg);
+}
+
+/* Directional icons (horizontal only; do not flip vertical chevrons) */
+[dir="rtl"] .las.la-angle-right,
+[dir="rtl"] .las.la-chevron-right,
+[dir="rtl"] .las.la-arrow-right,
+[dir="rtl"] .las.la-caret-right,
+[dir="rtl"] .fa-angle-right,
+[dir="rtl"] .fa-chevron-right,
+[dir="rtl"] .fa-arrow-right,
+[dir="rtl"] .fa-solid.fa-arrow-right,
+[dir="rtl"] .fa-solid.fa-chevron-right,
+[dir="rtl"] .fa-solid.fa-arrow-right-from-bracket,
+[dir="rtl"] .fa-arrow-right-from-bracket,
+[dir="rtl"] .las.la-chevron-circle-right {
+  transform: scaleX(-1);
+}
+
+/* Mirror directional/decorative artwork in RTL, while leaving logos and content photos intact. */
+[dir="rtl"] .rtl-mirror,
+[dir="rtl"] body:not(:has(.dashboard-section)) .bg--element img[src*="/shape/"],
+[dir="rtl"] body:not(:has(.dashboard-section)) .bg--element-two img[src*="/shape/"],
+[dir="rtl"] body:not(:has(.dashboard-section)) .bg--element-three img[src*="/shape/"],
+[dir="rtl"] body:not(:has(.dashboard-section)) .element img[src*="/shape/"],
+[dir="rtl"] body:not(:has(.dashboard-section)) .element--two img[src*="/shape/"],
+[dir="rtl"] body:not(:has(.dashboard-section)) .element--three img[src*="/shape/"],
+[dir="rtl"] body:not(:has(.dashboard-section)) .shape-bg1 img,
+[dir="rtl"] body:not(:has(.dashboard-section)) .shape-bg2 img {
+  transform: scaleX(-1);
+}
+
+/* Structured Latin-only fields stay legible inside RTL chrome */
+[dir="rtl"] input[type="email"],
+[dir="rtl"] input[type="url"],
+[dir="rtl"] input[type="tel"] {
+  direction: ltr;
+}
+
+/* Keep scroll-to-top away from the chat widget on the left side */
+[dir="rtl"] .scroll-top {
+  right: auto !important;
+  left: 30px !important;
+}
+
+/* Dashboard search: icon follows input start edge in RTL */
+[dir="rtl"] .dashboard-filter-search .input-group {
+  flex-direction: row-reverse;
+}
+
+/* Deposit detail modal rows */
+[dir="rtl"] .deposit-detail-modal .deposit-detail-row {
+  flex-direction: row-reverse;
+}
+[dir="rtl"] .deposit-detail-modal .deposit-detail-key,
+[dir="rtl"] .deposit-detail-modal .deposit-detail-val {
+  text-align: start;
+}
+
+/* User tables: centered columns align to inline start in RTL */
+[dir="rtl"] .table.table--responsive--lg th.text-center,
+[dir="rtl"] .table.table--responsive--lg td.text-center {
+  text-align: start !important;
+}
+
+/* Membership stat cards: keep numeric lines legible */
+[dir="rtl"] .membership-stat-card {
+  text-align: start;
+}
+[dir="rtl"] .membership-stat-card .membership-stat-card__metric {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+[dir="rtl"] .splitting .word,
+[dir="rtl"] .splitting .char {
+  display: inline-block;
+  unicode-bidi: isolate;
+  text-align: right;
+}
+
+/* [dir="rtl"] .section-content .title,
+[dir="rtl"] .section-content .heading,
+[dir="rtl"] .section-content .subtitle {
+  text-align: right !important;
+} */
+
+/* Optional CMS/manual wrap for embedded Latin inside Arabic blocks */
+[dir="rtl"] body:not(:has(.dashboard-section)) .bidi-ltr,
+[dir="rtl"] body:not(:has(.dashboard-section)) .latin-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
+/* Section copy follows logical start (right in RTL) */
+[dir="rtl"] body:not(:has(.dashboard-section)) .section-content .subtitle,
+[dir="rtl"] body:not(:has(.dashboard-section)) .section-content .description,
+[dir="rtl"] body:not(:has(.dashboard-section)) .blog-content .title,
+[dir="rtl"] body:not(:has(.dashboard-section)) .blog-content p {
+  text-align: start;
+}
+
+/* Hero search: mirror icon + input padding (main.css uses physical left) */
+[dir="rtl"] body:not(:has(.dashboard-section)) .hero .banner--filter__wrap .banner--filter__inputs .icon--wrap {
+  left: auto;
+  right: 25px;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .hero .banner--filter__wrap .banner--filter__inputs .form--control {
+  padding-left: 18px !important;
+  padding-right: 50px !important;
+  text-align: start;
+}
+
+/* Hero category select (Select2): mirror icon/arrow padding so text does not overlap the compass icon */
+[dir="rtl"] body:not(:has(.dashboard-section)) .hero .banner--filter__wrap .banner--filter__inputs .select2-container .select2-selection--single .select2-selection__rendered {
+  padding-left: 40px !important;
+  padding-right: 50px !important;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .hero .banner--filter__wrap .banner--filter__inputs .select2-container--default .select2-selection--single .select2-selection__arrow {
+  right: auto;
+  left: 8px;
+}
+
+/* Stroked decorative heading: mirror horizontal offset */
+[dir="rtl"] body:not(:has(.dashboard-section)) .section-content-4 .strok--heading {
+  left: auto;
+  right: -30px;
+}
+
+/* Offer cards: swap absolute horizontal anchors so overlays mirror */
+[dir="rtl"] .offer-card__content {
+  left: auto !important;
+  right: 0 !important;
+  text-align: right !important;
+}
+
+[dir="rtl"] .offer-card.card--two .offer-card__content {
+  left: 0 !important;
+  right: auto !important;
+  text-align: left !important;
+}
+
+/* Ensure buttons inside cards mirror their float/alignment */
+[dir="rtl"] .offer-card__content .btn--wrap {
+  float: left !important;
+}
+
+[dir="rtl"] .offer-card__content .title,
+[dir="rtl"] .offer-card__content .sub--title {
+  text-align: inherit !important;
+}
+
+/* Blog “Read more” and similar long arrows */
+[dir="rtl"] .fa-arrow-right-long,
+[dir="rtl"] .fa-solid.fa-arrow-right-long {
+  transform: scaleX(-1);
+}
+
+/* Currency + Western numerals in cards (offers, listings) */
+[dir="rtl"] body:not(:has(.dashboard-section)) strong.fs--22 {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+/* Why Choose Us: one column, one alignment for RTL (dir=auto on English makes "start" = left — force end edge) */
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose__text .section-content .heading,
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose__text .section-content .title,
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose__text .section-content .subtitle,
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose__text .service-key--box .title,
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose__text .service-key--box .description {
+  text-align: right !important;
+  unicode-bidi: plaintext;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose__feature-head .title--wrap {
+  flex: 1;
+  min-width: 0;
+  text-align: right !important;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose__text .title-wrap .row.justify-content-between {
+  justify-content: flex-start;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose__text .service-key--box .description {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Offer section row mirror on desktop */
+@media (min-width: 992px) {
+  [dir="rtl"] .offer--section .row.gy-4 {
+    flex-direction: row-reverse;
+  }
+}
+
+/* Travel cards: keep the card fully clickable and mirror the content layout in RTL */
+[dir="rtl"] .travel-offer-card__surface {
+  position: relative;
+  z-index: 1;
+}
+
+[dir="rtl"] .travel-offer-card__body {
+  text-align: right;
+}
+
+[dir="rtl"] .travel-offer-card__meta {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .travel-offer-card__loc {
+  justify-content: flex-end;
+}
+
+[dir="rtl"] .travel-offer-card__price-row {
+  text-align: right;
+}
+
+[dir="rtl"] .travel-offer-card__actions {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .travel-offer-card__btn {
+  direction: rtl;
+}
+
+[dir="rtl"] .offers-hub__hero-spotlight--on-card,
+[dir="rtl"] .offers-hub__hero-spotlight--only {
+  direction: rtl;
+}
+
+[dir="rtl"] .travel-card-mini--spotlight {
+  text-align: right;
+}
+
+[dir="rtl"] .travel-card-mini__content--spotlight {
+  padding-inline: 1rem 0.35rem !important;
+}
+
+[dir="rtl"] .travel-card-mini--spotlight .travel-card-mini__meta {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .travel-card-mini--spotlight .travel-card-mini__loc {
+  flex-direction: row-reverse;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose .bg--element {
+  left: auto;
+  right: -300px;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose .element {
+  right: auto;
+  left: 0;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose .element--two {
+  right: auto;
+  left: 0;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose .element--three {
+  left: auto;
+  right: 48%;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose .right--thumb__wrap {
+  justify-content: flex-start;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose .right--thumb__wrap .thumb-2 {
+  left: auto !important;
+  right: 0 !important;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .why-choose .right--thumb__wrap .thumb-3 {
+  left: auto !important;
+  right: 50px !important;
+}
+
+/* CMS sections: EN copy + RTL page — fix punctuation / bidi in centered intros */
+[dir="rtl"] body:not(:has(.dashboard-section)) .location--section .section-content .subtitle,
+[dir="rtl"] body:not(:has(.dashboard-section)) .how-it--work .section-content .subtitle,
+[dir="rtl"] body:not(:has(.dashboard-section)) .testimonial-section .section-content .subtitle {
+  unicode-bidi: plaintext;
+}
+
+/*
+  Testimonial Slick: main.css sets .slick-track { display:flex; gap:26px } for all sliders.
+  With rtl:true, Slick’s positioning assumes floated slides; flex breaks RTL transforms and
+  slides sit outside .slick-list (overflow:hidden), so cards look “empty” in Arabic.
+*/
+[dir="rtl"] .testimonial-slider.slick-initialized .slick-track {
+  display: block !important;
+  gap: 0;
+}
+[dir="rtl"] .testimonial-slider.slick-initialized .slick-slide {
+  padding: 0 13px;
+  box-sizing: border-box;
+}
+
+/*
+  Slick arrows: .slick-arrow sets right:0; .slick-prev adds left:-70px.
+  In an RTL containing block, CSS ignores `left` when both insets are set, so both
+  buttons stick to the physical right. Force one inset to `auto` like LTR layout.
+*/
+[dir="rtl"] .testimonial-slider .slick-prev {
+  left: -70px !important;
+  right: auto !important;
+}
+[dir="rtl"] .testimonial-slider .slick-next {
+  right: -70px !important;
+  left: auto !important;
+}
+
+/* Slick arrows use chevron-left + chevron-right; RTL "directional icons" flips chevron-right,
+   so both glyphs looked like "<". Keep raw shapes here like the English slider. */
+[dir="rtl"] .testimonial-slider .slick-arrow .fa-chevron-right,
+[dir="rtl"] .testimonial-slider .slick-arrow .fa-solid.fa-chevron-right {
+  transform: none;
+}
+
+@media (max-width: 1299px) {
+  [dir="rtl"] .testimonial-slider .slick-prev {
+    left: -20px !important;
+  }
+  [dir="rtl"] .testimonial-slider .slick-next {
+    right: -20px !important;
+  }
+}
+
+@media (max-width: 575px) {
+  [dir="rtl"] .testimonial-slider .slick-prev {
+    left: -8px !important;
+  }
+  [dir="rtl"] .testimonial-slider .slick-next {
+    right: -8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  [dir="rtl"] .testimonial-slider .slick-prev {
+    left: 0 !important;
+  }
+  [dir="rtl"] .testimonial-slider .slick-next {
+    right: 0 !important;
+  }
+}
+
+/* Home reels strip: same Slick + RTL positioning fixes as testimonials */
+[dir="rtl"] .home-reels-slider.slick-initialized .slick-track {
+  display: block !important;
+  gap: 0;
+}
+[dir="rtl"] .home-reels-slider.slick-initialized .slick-slide {
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+[dir="rtl"] .home-reels-slider .slick-prev {
+  left: -6px !important;
+  right: auto !important;
+}
+[dir="rtl"] .home-reels-slider .slick-next {
+  right: -6px !important;
+  left: auto !important;
+}
+[dir="rtl"] .home-reels-slider .slick-arrow .fa-chevron-right,
+[dir="rtl"] .home-reels-slider .slick-arrow .fa-solid.fa-chevron-right {
+  transform: none;
+}
+
+[dir="rtl"] body:not(:has(.dashboard-section)) .how-it--work .content-wrap p {
+  unicode-bidi: plaintext;
+}
+
+/* How it works: mirror the dotted path so flow matches RTL step order */
+[dir="rtl"] body:not(:has(.dashboard-section)) .how-it--work .air--line {
+  transform: scaleX(-1);
+  transform-origin: center center;
+}
+[dir="rtl"] body:not(:has(.dashboard-section)) .location--section .location__card .location__card-content .btn {
+  right: auto !important;
+  left: 20px !important;
+}
+
+/* Force hero decorative layout to match English visuals (non-mirrored) */
+[dir="rtl"] body:not(:has(.dashboard-section)) .gallery--grid__wrap .row {
+  flex-direction: row !important;
+}
+

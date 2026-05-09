@@ -1,0 +1,147 @@
+
+/* Sidebar Active State Enhancements */
+.sidebar__menu .sidebar-menu-item.active > a,
+.sidebar__menu .sidebar-menu-item > a.side-menu--open {
+    background-color: rgba(57, 191, 249, 0.12) !important;
+    border-inline-start: 4px solid #39bff9 !important;
+    color: #39bff9 !important;
+    font-weight: 600;
+}
+
+.sidebar__menu .sidebar-menu-item.active > a i,
+.sidebar__menu .sidebar-menu-item.active > a span,
+.sidebar__menu .sidebar-menu-item > a.side-menu--open i,
+.sidebar__menu .sidebar-menu-item > a.side-menu--open span {
+    color: #39bff9 !important;
+}
+
+/* Submenu active item */
+.sidebar__menu .sidebar-submenu .sidebar-menu-item.active > a {
+    background-color: rgba(57, 191, 249, 0.08) !important;
+    border-inline-start-width: 0 !important;
+    padding-inline-start: 45px !important;
+}
+
+/* Fix for invalid CSS in base admin.css */
+.sidebar__menu .sidebar-submenu .sidebar-menu-item.active > a {
+    background-color: rgba(57, 191, 249, 0.15) !important;
+}
+
+.sidebar .slimScrollDiv .slimScrollBar {
+    background-color: #39bff9 !important;
+    opacity: 0.6 !important;
+}
+
+/* ========== RTL (admin uses dir="rtl" + Bootstrap RTL) ========== */
+[dir="rtl"] .breadcrumb-wrapper .page-title {
+    text-align: start;
+}
+
+[dir="rtl"] .breadcrumb-plugins .input-group {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .sidebar__menu .sidebar-submenu .menu-icon.las.la-caret-right {
+    transform: scaleX(-1);
+}
+
+[dir="rtl"] .table.table--light.style--two thead th,
+[dir="rtl"] .table.table--light.style--two tbody td {
+    text-align: start;
+}
+
+/* Mobile Responsive Topbar Fixes */
+@media (max-width: 991px) {
+    .navbar-search {
+        display: none !important;
+    }
+    .navbar-user__name {
+        display: none !important;
+    }
+    .navbar__right {
+        flex-grow: 1;
+        justify-content: flex-end;
+    }
+    .navbar__action-list {
+        gap: 8px;
+        justify-content: flex-end;
+        width: 100%;
+    }
+}
+
+@media (max-width: 575px) {
+    .navbar-wrapper {
+        padding: 10px 15px !important;
+    }
+    .navbar__action-list {
+        gap: 5px;
+    }
+    .navbar__action-list .dropdown-toggle {
+        font-size: 12px !important;
+        padding: 4px 8px !important;
+    }
+    .navbar-user__thumb {
+        width: 30px !important;
+        height: 30px !important;
+    }
+    .navbar__action-list > li > a.btn {
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* Global Admin Table Responsive Fixes */
+.admin-table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 0;
+}
+
+@media (max-width: 1199px) {
+    .admin-table-responsive table {
+        min-width: 1000px !important;
+    }
+
+    /* Reset min-width for tables that use the built-in card transformation pattern */
+    .admin-table-responsive[class*="table-responsive--"] table {
+        min-width: unset !important;
+    }
+
+    /* Ensure action buttons are compact */
+    .admin-table-responsive .btn-sm {
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+    }
+
+    .admin-table-responsive .badge {
+        font-size: 11px !important;
+        padding: 4px 8px !important;
+    }
+}
+
+/* Styled horizontal scrollbar for admin tables */
+.admin-table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+.admin-table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.admin-table-responsive::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+.admin-table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #39bff9;
+}
+
+/* Fix for squeezed table cells when card layout is not used */
+.admin-table-responsive table td {
+    white-space: nowrap !important;
+}
+
+/* Allow specific columns like Title or Description to wrap if needed */
+.admin-table-responsive .wrap-column {
+    white-space: normal !important;
+    min-width: 220px !important;
+}

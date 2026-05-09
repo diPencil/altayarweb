@@ -1,0 +1,458 @@
+{
+    "banner": {
+        "builder": true,
+        "category": "Home Page",
+        "no_selection": true,
+        "name": "Banner Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text"
+        },
+        "element": {
+            "images": {
+                "banner_image": {
+                    "size": "1024x685"
+                }
+            },
+            "modal": true
+        }
+    },
+
+    "why_choose_us": {
+        "builder": true,
+        "category": "Home Page",
+        "name": "Why Choose Us Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text",
+            "images": {
+                "image_one": {
+                    "size": "80x111"
+                },
+                "image_two": {
+                    "size": "270x300"
+                },
+                "image_three": {
+                    "size": "450x500"
+                }
+            }
+        },
+        "element": {
+            "title": "text",
+            "title_ar": "text",
+            "description": "textarea",
+            "description_ar": "textarea",
+            "modal": true
+        }
+    },
+    "popular_tour": {
+        "builder": true,
+        "category": "Home Page",
+        "name": "Popular Tours Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text"
+        }
+    },
+    "how_it_work": {
+        "builder": true,
+        "category": "Home Page",
+        "name": "How it Works Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text"
+        },
+
+        "element": {
+            "title": "text",
+            "title_ar": "text",
+            "description": "textarea",
+            "description_ar": "textarea",
+            "icon": "icon",
+            "modal": true
+        }
+    },
+    "top_destination": {
+        "builder": true,
+        "category": "Home Page",
+        "name": "Top Destination Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text"
+        }
+    },
+    "our_best_offer": {
+        "builder": true,
+        "category": "Home Page",
+        "name": "Our Best Offer Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text",
+            "left_discount_title": "text",
+            "left_heading": "text",
+            "left_button_name": "text",
+            "left_button_url": "url",
+            "right_discount_title": "text",
+            "right_heading": "text",
+            "right_button_name": "text",
+            "right_button_url": "url",
+            "images": {
+                "left_image": {
+                    "size": "746x400"
+                },
+                "left_image_ar": {
+                    "size": "746x400"
+                },
+                "right_image": {
+                    "size": "526x400"
+                },
+                "right_image_ar": {
+                    "size": "526x400"
+                }
+
+            }
+        }
+    },
+    "testimonial": {
+        "builder": true,
+        "category": "Home Page",
+        "name": "Testimonial Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text"
+        },
+        "element": {
+            "images": {
+                "client_image": {
+                    "size": "90x90"
+                }
+            },
+            "name": "text",
+            "name_ar": "text",
+            "designation": "text",
+            "designation_ar": "text",
+            "description": "textarea",
+            "description_ar": "textarea",
+            "star_count": "text",
+            "modal": true
+        }
+    },
+
+    "about_me": {
+        "builder": true,
+        "category": "About Page",
+        "name": "01. Hero Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text",
+            "images": {
+                "left_image": {
+                    "size": "190x190"
+                },
+                "middle_image": {
+                    "size": "500x550"
+                },
+                "right_image": {
+                    "size": "170x190"
+                }
+            }
+        },
+        "element": {
+            "title": "text",
+            "title_ar": "text",
+            "description": "textarea",
+            "description_ar": "textarea",
+            "modal": false
+        }
+    },
+    "about_story": {
+        "builder": true,
+        "category": "About Page",
+        "name": "02. Storyline Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "description": "textarea",
+            "button_one_text": "text",
+            "button_one_url": "text",
+            "button_two_text": "text",
+            "button_two_url": "text",
+            "images": {
+                "image_one": {"size": "340x260"},
+                "image_two": {"size": "310x310"},
+                "image_three": {"size": "260x170"}
+            }
+        }
+    },
+    "about_mission": {
+        "builder": true,
+        "category": "About Page",
+        "name": "03. Focus Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "description": "textarea"
+        },
+        "element": {
+            "number": "text",
+            "title": "text",
+            "title_ar": "text",
+            "description": "text",
+            "description_ar": "text",
+            "modal": true
+        }
+    },
+    "about_services": {
+        "builder": true,
+        "category": "About Page",
+        "name": "04. Operation Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "description": "textarea"
+        },
+        "element": {
+            "icon": "icon",
+            "title": "text",
+            "title_ar": "text",
+            "description": "text",
+            "description_ar": "text",
+            "modal": true
+        }
+    },
+    "about_cta": {
+        "builder": true,
+        "category": "About Page",
+        "name": "05. CTA Banner Section",
+        "content": {
+            "heading": "text",
+            "description": "text",
+            "button_text": "text",
+            "button_url": "text"
+        },
+        "element": {
+            "title": "text",
+            "title_ar": "text",
+            "icon": "icon",
+            "modal": true
+        }
+    },
+    "about_offer": {
+        "builder": true,
+        "category": "About Page",
+        "name": "06. Adventure Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "description": "textarea-rich",
+            "button_one_text": "text",
+            "button_one_url": "text",
+            "button_two_text": "text",
+            "button_two_url": "text",
+            "images": {
+                "image": {"size": "580x560"}
+            }
+        }
+    },
+    "about_includes": {
+        "builder": true,
+        "category": "About Page",
+        "name": "07. Includes Section",
+        "content": {
+            "title": "text",
+            "heading": "text"
+        },
+        "element": {
+            "icon": "icon",
+            "title": "text",
+            "title_ar": "text",
+            "description": "text",
+            "description_ar": "text",
+            "modal": true
+        }
+    },
+    "about_employee": {
+        "builder": true,
+        "category": "About Page",
+        "name": "08. Employee System Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "description": "textarea",
+            "images": {
+                "image_one": {"size": "440x350"},
+                "image_two": {"size": "210x210"},
+                "image_three": {"size": "210x210"}
+            }
+        },
+        "element": {
+            "title": "text",
+            "title_ar": "text",
+            "description": "text",
+            "description_ar": "text",
+            "icon": "icon",
+            "modal": true
+        }
+    },
+    "about_us": {
+        "builder": true,
+        "category": "About Page",
+        "name": "09. Simple About Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text",
+            "description": "textarea-rich",
+            "images": {
+                "image": {
+                    "size": "635x610"
+                }
+            }
+        }
+    },
+    "faq": {
+        "builder": true,
+        "category": "Common Sections",
+        "name": "FAQ Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text"
+        },
+        "element": {
+            "question": "text",
+            "question_ar": "text",
+            "answer": "textarea-rich",
+            "answer_ar": "textarea-rich",
+            "modal": false
+        }
+    },
+
+    "policy_pages": {
+        "builder": false,
+        "category": "Common Sections",
+        "no_selection": true,
+        "name": "Policy Pages",
+        "element": {
+            "title": "text",
+            "title_ar": "text",
+            "details": "textarea-rich",
+            "details_ar": "textarea-rich",
+            "modal": false
+        }
+    },
+
+    "blog": {
+        "builder": true,
+        "category": "Common Sections",
+        "name": "Blog Section",
+        "content": {
+            "title": "text",
+            "heading": "text",
+            "sub_heading": "text"
+        },
+        "element": {
+            "images": {
+                "blog_image": {
+                    "size": "1440x960",
+                    "thumb": "376x251"
+                }
+            },
+            "title": "text",
+            "title_ar": "text",
+            "quote": "textarea",
+            "quote_ar": "textarea",
+            "description": "textarea-rich",
+            "description_ar": "textarea-rich",
+            "modal": false
+        }
+    },
+    "social_icon": {
+        "builder": true,
+        "category": "Common Sections",
+        "no_selection": true,
+        "name": "Social Icons",
+        "element": {
+            "title": "text",
+            "social_icon": "icon",
+            "url": "text",
+            "modal": false
+        }
+    },
+    "contact_us": {
+        "builder": true,
+        "category": "Common Sections",
+        "no_selection": true,
+        "name": "Contact Us",
+        "content": {
+            "title": "text",
+            "short_details": "text",
+            "email_address": "text",
+            "contact_details": "text",
+            "contact_number": "text",
+            "latitude": "text",
+            "longitude": "text",
+            "website_footer": "textarea-rich"
+        }
+    },
+    "footer_important_links": {
+        "builder": true,
+        "category": "Footer Sections",
+        "no_selection": true,
+        "name": "Footer - Important Links",
+        "element": {
+            "title": "text",
+            "url": "text",
+            "modal": true
+        }
+    },
+    "footer_company_links": {
+        "builder": true,
+        "category": "Footer Sections",
+        "no_selection": true,
+        "name": "Footer - Company Links",
+        "element": {
+            "title": "text",
+            "url": "text",
+            "modal": true
+        }
+    },
+    "mobile_app": {
+        "builder": true,
+        "category": "Home Page",
+        "name": "Mobile App Section",
+        "content": {
+            "badge_text": "text",
+            "title": "text",
+            "description": "textarea",
+            "app_store_url": "url",
+            "google_play_url": "url",
+            "select": {
+                "name": "section_status",
+                "options": {
+                    "active": "Active",
+                    "inactive": "Inactive"
+                }
+            },
+            "images": {
+                "mobile_image": {
+                    "size": "600x800"
+                },
+                "app_store_badge": {
+                    "size": "180x60"
+                },
+                "google_play_badge": {
+                    "size": "180x60"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,553 @@
+/* Sidebar footer card layout */
+.sidebar-menu {
+	display: flex;
+	flex-direction: column;
+	height: calc(100vh - 44px);
+	overflow: hidden;
+}
+
+.sidebar-menu-list {
+	flex: 1 1 auto;
+	height: auto;
+	min-height: 0;
+	overflow-y: auto;
+	padding-bottom: 20px;
+}
+
+.sidebar-membership-card {
+	margin-top: auto;
+	padding: 0 12px 14px;
+}
+
+.sidebar-membership-card__link {
+	display: block;
+	text-decoration: none;
+	border-radius: 22px;
+	padding: 16px;
+	background: linear-gradient(135deg, rgba(91, 156, 249, 0.16), rgba(91, 156, 249, 0.06));
+	border: 1px solid rgba(91, 156, 249, 0.18);
+	box-shadow: 0 12px 28px rgba(91, 156, 249, 0.08);
+}
+
+.sidebar-membership-card__content {
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 12px;
+}
+
+.sidebar-membership-card__text {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
+.sidebar-membership-card__text .icon {
+	width: 44px;
+	height: 44px;
+	border-radius: 16px;
+	background: rgba(255, 255, 255, 0.92);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--base-color);
+	flex-shrink: 0;
+}
+
+.sidebar-membership-card__titles {
+	min-width: 0;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.sidebar-membership-card__title-row {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.sidebar-membership-card__validity-block {
+	border-top: 1px solid rgba(91, 156, 249, 0.15);
+}
+
+.sidebar-membership-card__validity {
+	font-size: 11px;
+	line-height: 1.35;
+	font-weight: 600;
+	text-align: start;
+}
+
+.sidebar-membership-card__title {
+	display: block;
+	font-size: 13px;
+	line-height: 1.2;
+	font-weight: 600;
+	color: hsl(var(--black));
+}
+
+.sidebar-membership-card__subtitle {
+	display: block;
+	font-size: 12px;
+	line-height: 1.2;
+	color: hsl(var(--black) / 0.65);
+}
+
+.sidebar-membership-card__badge {
+	flex-shrink: 0;
+	border: 1px solid transparent;
+	font-size: 11px;
+	line-height: 1;
+	padding: 0.45rem 0.7rem;
+}
+
+.sidebar-membership-card__badge.is-active {
+	background: #22c55e;
+	color: #fff;
+	border-color: #22c55e;
+}
+
+.sidebar-membership-card__badge.is-inactive {
+	background: #eef2f7;
+	color: hsl(var(--black));
+	border-color: rgba(0, 0, 0, 0.06);
+}
+
+.dashboard-filter-search {
+	width: 100%;
+	max-width: 320px;
+	margin-inline-start: auto;
+}
+
+.dashboard-welcome-card {
+	background: linear-gradient(135deg, rgba(91, 156, 249, 0.16), rgba(91, 156, 249, 0.06), rgba(255, 255, 255, 0.96));
+	border: 1px solid rgba(91, 156, 249, 0.18);
+	box-shadow: 0 14px 32px rgba(91, 156, 249, 0.08);
+	overflow: hidden;
+	position: relative;
+}
+
+.dashboard-welcome-card::after {
+	content: '';
+	position: absolute;
+	right: -40px;
+	top: -40px;
+	width: 140px;
+	height: 140px;
+	border-radius: 50%;
+	background: rgba(91, 156, 249, 0.09);
+	pointer-events: none;
+}
+
+.dashboard-welcome-card .badge {
+	position: relative;
+	z-index: 1;
+}
+
+.dashboard-welcome-card h4,
+.dashboard-welcome-card p,
+.dashboard-welcome-card .text-muted {
+	position: relative;
+	z-index: 1;
+}
+
+@media screen and (max-width: 1199px) {
+	.sidebar-menu {
+		height: 100vh;
+	}
+}
+
+.header-wrapper .main-menu {
+	position: relative;
+	flex-wrap: nowrap;
+	gap: 12px;
+}
+
+.header-wrapper .main-menu__item,
+.header-wrapper .main-menu__subitem {
+	position: relative;
+	list-style: none;
+}
+
+.header-wrapper .main-menu-link,
+.header-wrapper .main-menu-trigger,
+.header-wrapper .main-menu-submenu-trigger {
+	font-size: 16px;
+	color: hsl(var(--black));
+	font-weight: 600;
+	position: relative;
+	text-transform: uppercase;
+	margin-inline-end: 22px;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+	text-decoration: none;
+	cursor: pointer;
+	outline: none;
+}
+
+.header-wrapper .main-menu-link::before,
+.header-wrapper .main-menu-trigger::before,
+.header-wrapper .main-menu-submenu-trigger::before {
+	position: absolute;
+	bottom: -6px;
+	content: "";
+	width: 100%;
+	height: 3px;
+	background: hsl(var(--base));
+	transform: translateX(-100%);
+	opacity: 0;
+}
+
+.header-wrapper .main-menu-link:hover,
+.header-wrapper .main-menu-trigger:hover,
+.header-wrapper .main-menu-submenu-trigger:hover,
+.header-wrapper .main-menu-link.active,
+.header-wrapper .main-menu-trigger.active,
+.header-wrapper .main-menu-submenu-trigger.active,
+.header-wrapper .main-menu__item.is-open > .main-menu-trigger,
+.header-wrapper .main-menu__subitem.is-open > .main-menu-submenu-trigger {
+	color: hsl(var(--base));
+}
+
+.header-wrapper .main-menu-link:hover::before,
+.header-wrapper .main-menu-trigger:hover::before,
+.header-wrapper .main-menu-submenu-trigger:hover::before,
+.header-wrapper .main-menu-link.active::before,
+.header-wrapper .main-menu-trigger.active::before,
+.header-wrapper .main-menu-submenu-trigger.active::before,
+.header-wrapper .main-menu__item.is-open > .main-menu-trigger::before,
+.header-wrapper .main-menu__subitem.is-open > .main-menu-submenu-trigger::before {
+	opacity: 1;
+	transition: 0.5s transform ease, 0.8s opacity ease;
+	transform: translateX(0);
+}
+
+.header-wrapper .main-menu-trigger,
+.header-wrapper .main-menu-submenu-trigger {
+	appearance: none;
+	-webkit-appearance: none;
+	line-height: 1;
+}
+
+.header-wrapper .menu-caret {
+	font-size: 10px;
+	line-height: 1;
+	transition: transform 0.25s ease;
+}
+
+.header-wrapper .main-menu__item:hover > .main-menu-trigger .menu-caret,
+.header-wrapper .main-menu__item.is-open > .main-menu-trigger .menu-caret,
+.header-wrapper .main-menu__subitem:hover > .main-menu-submenu-trigger .menu-caret,
+.header-wrapper .main-menu__subitem.is-open > .main-menu-submenu-trigger .menu-caret {
+	transform: rotate(180deg);
+}
+
+.header-wrapper .main-menu__dropdown {
+	position: absolute;
+	top: 100%;
+	inset-inline-start: 0;
+	min-width: 250px;
+	margin: 0;
+	padding: 12px 0;
+	list-style: none;
+	background: hsl(var(--white));
+	border: 1px solid hsl(var(--black) / 0.08);
+	border-radius: 16px;
+	box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(12px);
+	pointer-events: none;
+	transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+	z-index: 1000;
+	overflow: visible;
+	text-align: start;
+}
+
+.header-wrapper .main-menu__dropdown.is-open,
+.header-wrapper .main-menu__item:hover > .main-menu__dropdown,
+.header-wrapper .main-menu__item:focus-within > .main-menu__dropdown,
+.header-wrapper .main-menu__item.is-open > .main-menu__dropdown,
+.header-wrapper .main-menu__subitem:hover > .main-menu__dropdown,
+.header-wrapper .main-menu__subitem:focus-within > .main-menu__dropdown,
+.header-wrapper .main-menu__subitem.is-open > .main-menu__dropdown {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+	pointer-events: auto;
+}
+
+.header-wrapper .main-menu__dropdown--nested {
+	top: 0;
+	inset-inline-start: calc(100% - 1px);
+	transform: none;
+}
+
+.header-wrapper .main-menu__dropdown--nested.is-flipped {
+	inset-inline-start: auto;
+	inset-inline-end: calc(100% - 1px);
+	transform: none;
+}
+
+.header-wrapper .main-menu__dropdown[data-menu-level="root"].is-flipped {
+	inset-inline-start: auto;
+	inset-inline-end: 0;
+}
+
+.header-wrapper .main-menu__item > .main-menu__dropdown,
+.header-wrapper .main-menu__subitem > .main-menu__dropdown {
+	padding-top: 16px;
+	background-clip: content-box;
+}
+
+.header-wrapper .main-menu__dropdown li {
+	list-style: none;
+}
+
+.header-wrapper .main-menu__dropdown .main-menu-sublink,
+.header-wrapper .main-menu__dropdown .main-menu-submenu-trigger {
+	width: 100%;
+	margin: 0;
+	padding: 10px 22px;
+	font-size: 14px;
+	font-weight: 600;
+	text-transform: none;
+	justify-content: space-between;
+	border-radius: 0;
+	color: hsl(var(--black));
+	line-height: 1.25;
+}
+
+.header-wrapper .main-menu__dropdown .main-menu-sublink::before,
+.header-wrapper .main-menu__dropdown .main-menu-submenu-trigger::before {
+	display: none;
+}
+
+.header-wrapper .main-menu__dropdown .main-menu-sublink:hover,
+.header-wrapper .main-menu__dropdown .main-menu-submenu-trigger:hover,
+.header-wrapper .main-menu__dropdown .main-menu-sublink.active,
+.header-wrapper .main-menu__dropdown .main-menu-submenu-trigger.active {
+	color: hsl(var(--base));
+	background: hsl(var(--base) / 0.04);
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__item {
+	position: relative;
+	border-bottom: 1px solid hsl(var(--base) / 0.2);
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__link,
+.offcanvas .offcanvas-body .side-Nav .side-Nav__trigger {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 16px;
+	gap: 16px;
+	min-height: 50px;
+	width: 100%;
+	color: hsl(var(--black));
+	background: transparent;
+	border: 0;
+	padding: 0;
+	text-align: start;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__link.active,
+.offcanvas .offcanvas-body .side-Nav .side-Nav__trigger.active,
+.offcanvas .offcanvas-body .side-Nav .side-Nav__item.is-open > .side-Nav__trigger {
+	color: hsl(var(--base));
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__trigger {
+	appearance: none;
+	-webkit-appearance: none;
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__caret {
+	font-size: 12px;
+	transition: transform 0.25s ease;
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__trigger[aria-expanded="true"] .side-Nav__caret {
+	transform: rotate(180deg);
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__collapse {
+	padding-bottom: 10px;
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__submenu {
+	padding: 0 0 0 18px;
+	margin: 0;
+}
+
+.offcanvas .offcanvas-body .side-Nav .side-Nav__submenu .side-Nav__link {
+	min-height: 44px;
+	font-size: 15px;
+	font-weight: 500;
+}
+
+@media screen and (max-width: 1199px) {
+	.header-wrapper .main-menu-link,
+	.header-wrapper .main-menu-trigger,
+	.header-wrapper .main-menu-submenu-trigger {
+		margin-inline-end: 18px;
+	}
+
+	.header-wrapper .main-menu__dropdown {
+		min-width: 230px;
+	}
+}
+
+@media screen and (max-width: 991px) {
+	.header-wrapper .main-menu-link,
+	.header-wrapper .main-menu-trigger,
+	.header-wrapper .main-menu-submenu-trigger {
+		font-size: 14px;
+	}
+}
+
+/* RTL: keep Latin transaction codes, amounts, and +/-/# order readable */
+[dir="rtl"] .dashboard-body .table td.td-bidi-ltr {
+	direction: ltr;
+	unicode-bidi: isolate;
+	text-align: left;
+}
+
+[dir="rtl"] .dashboard-body .table td.td-bidi-ltr.text-center {
+	text-align: center;
+}
+
+/* Contact page: phone + email must stay LTR inside RTL layout (bidi + wrap) */
+.contact-ltr-value {
+	direction: ltr;
+	unicode-bidi: isolate;
+}
+
+[dir="rtl"] .contact--box .contact-ltr-value {
+	text-align: start;
+	word-break: normal;
+	overflow-wrap: break-word;
+}
+
+/* RTL fix for buttons with icons (e.g. Dashboard, Bookings) */
+[dir="rtl"] .btn i,
+[dir="rtl"] .btn .icon,
+[dir="rtl"] .login-btn i {
+    margin-right: 8px !important;
+    margin-left: 0 !important;
+}
+
+[dir="rtl"] .btn i:first-child,
+[dir="rtl"] .btn .icon:first-child,
+[dir="rtl"] .login-btn i:first-child {
+    margin-left: 8px !important;
+    margin-right: 0 !important;
+}
+
+/* Specific fix for Side Nav Cart/Booking icon */
+[dir="rtl"] .sidebar-menu-list__link .icon {
+    margin-right: 0 !important;
+    margin-left: 12px !important;
+}
+
+[dir="rtl"] .sidebar-menu-list__link {
+    gap: 0 !important;
+}
+
+[dir="rtl"] .sidebar-menu-list__link .text {
+    margin-right: 12px;
+}
+
+/* Give more space for text in contact boxes to avoid breaking lines */
+[dir="rtl"] .contact--box {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+[dir="rtl"] .contact--box .content-wrap {
+    padding-inline-end: 54px; /* Reduced from 64px to give more space, but still clear of the 52px icon */
+}
+
+/* Fix location card button position in RTL - Move to left to avoid overlapping text */
+[dir="rtl"] .location__card .location__card-content .btn {
+    right: auto !important;
+    left: 20px !important;
+}
+
+/* Global fix for Slick Slider arrows in RTL to prevent overlapping on one side */
+[dir="rtl"] .slick-prev {
+    left: -20px !important;
+    right: auto !important;
+}
+
+[dir="rtl"] .slick-next {
+    right: -20px !important;
+    left: auto !important;
+}
+
+/* Fix Slick arrow icons in RTL - Ensure they point in opposite directions (Prev right, Next left) */
+[dir="rtl"] .slick-arrow i {
+    display: inline-block;
+    transform: rotate(180deg) !important;
+}
+
+/* Keep Scroll-top button on the opposite side from the chat widget */
+[dir="rtl"] .scroll-top {
+	right: auto !important;
+	left: 30px !important;
+}
+
+
+
+
+
+
+/* User Dashboard Mobile Responsive Fixes */
+@media (max-width: 991px) {
+    .dashboard-header {
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 15px 20px !important;
+        height: auto !important;
+        min-height: 60px;
+    }
+    .user-info--wrap {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 10px !important;
+    }
+}
+
+@media (max-width: 575px) {
+    .dashboard-header {
+        padding: 10px 15px !important;
+    }
+    .user-info--wrap {
+        gap: 5px !important;
+    }
+    .navigator-text h6 {
+        font-size: 14px;
+    }
+    .dashboard-body__bar {
+        margin-inline-end: 10px;
+    }
+    .user-info--wrap .btn {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+    }
+    .user-thumb {
+        width: 30px !important;
+        height: 30px !important;
+    }
+}
