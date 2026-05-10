@@ -134,14 +134,40 @@ class ChatAssistantController extends Controller
 
     public function destroy(ChatConversation $conversation)
     {
-        $conversation->messages()->delete();
-        $conversation->delete();
+        \DB::transaction(function () use ($conversation) {
+            $conversation->messages()->delete();
+            $conversation->delete();
+        });
 
         if (request()->expectsJson()) {
             return response()->json(['success' => true]);
         }
 
         return back()->withNotify([['success', __('Conversation deleted successfully')]]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:chat_conversations,id',
+        ]);
+
+        $ids = $request->ids;
+
+        \DB::transaction(function () use ($ids) {
+            ChatMessage::whereIn('chat_conversation_id', $ids)->delete();
+            ChatConversation::whereIn('id', $ids)->delete();
+        });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('Selected chat conversations deleted successfully')
+            ]);
+        }
+
+        return back()->withNotify([['success', __('Selected chat conversations deleted successfully')]]);
     }
 
     protected function conversationSummary(ChatConversation $conversation): array

@@ -487,6 +487,7 @@ Route::middleware('admin')->group(function () {
         Route::post('conversations/{conversation}/reply', 'reply')->name('reply');
         Route::post('conversations/{conversation}/close', 'close')->name('close');
         Route::post('conversations/{conversation}/delete', 'destroy')->name('delete');
+        Route::post('bulk-delete', 'bulkDelete')->name('bulk.delete');
     });
 
     Route::controller('PopupAdController')->prefix('popup-ads')->name('popup-ads.')->group(function () {
