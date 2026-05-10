@@ -127,6 +127,7 @@ Route::controller('SiteController')->group(function () {
     Route::post('service-booking/submit', 'serviceBookingSubmit')->name('service.booking.submit');
     Route::get('sitemap.xml', 'sitemap')->name('sitemap');
     Route::get('robots.txt', 'robots')->name('robots');
+    Route::get('payment/pay/{trx}', 'App\Http\Controllers\PaymentLinkController@pay')->name('payment.pay');
     Route::get('/{slug}', 'pages')->name('pages');
     Route::get('/', 'index')->name('home');
 });

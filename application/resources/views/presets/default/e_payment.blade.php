@@ -285,21 +285,6 @@
         </div>
     </section>
 
-    <div id="epaymentCheckoutModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@lang('Complete Payment')</h5>
-                    <span type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="las la-times"></i>
-                    </span>
-                </div>
-                <div class="modal-body p-0" style="min-height: 80vh;">
-                    <iframe id="epaymentCheckoutFrame" src="about:blank" title="@lang('Payment Checkout')" style="border:0; width:100%; min-height:80vh;"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
 
     @push('script')
         <script>
@@ -328,7 +313,6 @@
 
                     var form = $(this);
                     var button = form.find('.ePaymentSubmitBtn');
-                    var checkoutModal = $('#epaymentCheckoutModal');
 
                     button.prop('disabled', true).text('@lang('Please wait')');
 
@@ -339,8 +323,7 @@
                         dataType: 'json',
                         success: function (response) {
                             if (response && response.redirect_url) {
-                                $('#epaymentCheckoutFrame').attr('src', response.redirect_url);
-                                checkoutModal.modal('show');
+                                window.location.href = response.redirect_url;
                                 return;
                             }
 
@@ -356,9 +339,6 @@
                     });
                 });
 
-                $('#epaymentCheckoutModal').on('hidden.bs.modal', function () {
-                    $(this).find('#epaymentCheckoutFrame').attr('src', 'about:blank');
-                });
 
                 if ($('select[name=gateway]').val()) {
                     syncGatewaySelection();

@@ -181,10 +181,10 @@ class EPaymentController extends Controller
             return ($request->ajax() || $request->expectsJson())
                 ? response()->json([
                     'status' => true,
-                    'redirect_url' => $response->redirect_url,
+                    'redirect_url' => route('payment.pay', $deposit->trx),
                     'trx' => $deposit->trx,
                 ])
-                : redirect($response->redirect_url);
+                : redirect()->route('payment.pay', $deposit->trx);
         }
 
         return ($request->ajax() || $request->expectsJson())

@@ -138,6 +138,18 @@
                                         class="btn btn-sm btn--primary ms-1">
                                         <i class="la la-eye"></i>
                                     </a>
+
+                                    @if($deposit->status == 2 || $deposit->status == 0)
+                                    <button title="@lang('Payment Link')"
+                                        class="btn btn-sm btn--info ms-1 paymentLinkBtn"
+                                        data-id="{{ $deposit->id }}"
+                                        data-trx="{{ $deposit->trx }}"
+                                        data-amount="{{ showAmount($deposit->amount) }} {{ __($general->cur_text) }}"
+                                        data-name="{{ $deposit->user ? $deposit->user->fullname : $deposit->guest_name }}"
+                                        data-link="{{ route('payment.pay', $deposit->trx) }}">
+                                        <i class="la la-link"></i>
+                                    </button>
+                                    @endif
                                 </td>
                             </tr>
                             @empty
@@ -158,8 +170,110 @@
     </div>
 </div>
 
+<div id="paymentLinkModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@lang('Payment Link')</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="las la-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group list-group-flush mb-3">
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        @lang('Customer')
+                        <span class="customer-name fw-bold"></span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        @lang('Amount')
+                        <span class="payment-amount fw-bold"></span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        @lang('Transaction')
+                        <span class="payment-trx fw-bold"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="fw-bold">@lang('Shareable Link')</label>
+                    <div class="input-group">
+                        <input type="text" id="paymentLinkInput" class="form-control" readonly>
+                        <button type="button" class="btn btn--primary copyLinkBtn">@lang('Copy')</button>
+                    </div>
+                    <p class="text--small text-muted mt-2">
+                        <i class="la la-info-circle"></i> @lang('This internal link will automatically refresh the gateway session if it expires.')
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--warning refreshLinkBtn" data-id="">@lang('Refresh Link')</button>
+                <a href="" target="_blank" class="btn btn--info openLinkBtn">@lang('Open Link')</a>
+                <button type="button" class="btn btn--dark" data-bs-dismiss="modal">@lang('Close')</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @endsection
+
+@push('script')
+<script>
+    (function($){
+        "use strict";
+        $('.paymentLinkBtn').on('click', function() {
+            var modal = $('#paymentLinkModal');
+            var data = $(this).data();
+
+            modal.find('.customer-name').text(data.name);
+            modal.find('.payment-amount').text(data.amount);
+            modal.find('.payment-trx').text(data.trx);
+            modal.find('#paymentLinkInput').val(data.link);
+            modal.find('.openLinkBtn').attr('href', data.link);
+            modal.find('.refreshLinkBtn').data('id', data.id);
+            
+            modal.modal('show');
+        });
+
+        $('.refreshLinkBtn').on('click', function() {
+            var btn = $(this);
+            var id = btn.data('id');
+            var url = "{{ route('admin.deposit.refresh.link', ':id') }}".replace(':id', id);
+            
+            btn.prop('disabled', true).html('<i class="la la-spinner la-spin"></i> @lang("Refreshing...")');
+            
+            $.post(url, { _token: "{{ csrf_token() }}" }, function(response) {
+                if(response.success) {
+                    $('#paymentLinkInput').val(response.internal_link);
+                    $('.openLinkBtn').attr('href', response.internal_link);
+                    notify('success', response.message);
+                } else {
+                    notify('error', response.message);
+                }
+            }).fail(function() {
+                notify('error', "@lang('Refresh failed. Please try again.')");
+            }).always(function() {
+                btn.prop('disabled', false).text("@lang('Refresh Link')");
+            });
+        });
+
+        $('.copyLinkBtn').on('click', function() {
+            var copyText = document.getElementById("paymentLinkInput");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            
+            $(this).text("@lang('Copied!')").removeClass('btn--primary').addClass('btn--success');
+            
+            setTimeout(() => {
+                $(this).text("@lang('Copy')").removeClass('btn--success').addClass('btn--primary');
+            }, 2000);
+
+            notify('success', 'Copied to clipboard');
+        });
+    })(jQuery);
+</script>
+@endpush
 
 
 @push('breadcrumb-plugins')

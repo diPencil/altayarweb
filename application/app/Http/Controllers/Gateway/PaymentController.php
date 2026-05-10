@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
 use App\Models\GatewayCurrency;
 use App\Models\AdminNotification;
 use App\Http\Controllers\Controller;
+use App\Models\UserMembership;
+use App\Models\MembershipPlanHistory;
 use Illuminate\Support\Facades\Session;
 
 class PaymentController extends Controller
@@ -121,7 +123,7 @@ class PaymentController extends Controller
         $data->trx = getTrx();
         $data->try = 0;
         $data->status = 0;
-        $data->detail = [
+        $data->detail = (object) [
             'payment_flow' => $hasBookingContext ? 'booking' : ($hasMembershipContext ? 'membership' : 'epayment'),
             'source' => $hasBookingContext ? 'tour_booking' : ($hasMembershipContext ? 'membership_plan' : 'manual_deposit'),
             'note' => $hasMembershipContext ? 'Subscription to plan ID: ' . $membershipSession['membership_plan_id'] : null,
@@ -171,7 +173,7 @@ class PaymentController extends Controller
             return to_route(gatewayRedirectUrl())->withNotify($notify);
         }
         if (isset($data->redirect)) {
-            return redirect($data->redirect_url);
+            return redirect()->route('payment.pay', $deposit->trx);
         }
 
         // for Stripe V3
@@ -258,14 +260,14 @@ class PaymentController extends Controller
                 $previousMembership = $user->currentMembership()->with('plan')->first();
 
                 // Deactivate current active memberships
-                \App\Models\UserMembership::where('user_id', $user->id)
+                UserMembership::where('user_id', $user->id)
                     ->whereIn('status', [0, 1])
                     ->update(['status' => 2]);
 
                 $startDate = now()->startOfDay();
                 $endDate = $plan->duration_days > 0 ? now()->addDays($plan->duration_days)->endOfDay() : null;
 
-                $membership = new \App\Models\UserMembership();
+                $membership = new UserMembership();
                 $membership->user_id = $user->id;
                 $membership->membership_plan_id = $plan->id;
                 $membership->start_date = $startDate;
@@ -273,13 +275,13 @@ class PaymentController extends Controller
                 $membership->status = 1;
                 $membership->save();
 
-                \App\Models\MembershipPlanHistory::recordChange($user, $previousMembership, $membership, $plan, [
+                MembershipPlanHistory::recordChange($user, $previousMembership, $membership, $plan, [
                     'created_by_user_id' => $user->id,
                     'note' => 'payment_success_activation',
                     'deposit_id' => $deposit->id
                 ]);
 
-                \App\Models\MembershipPointTransaction::create([
+                MembershipPointTransaction::create([
                     'user_id' => $user->id,
                     'membership_plan_id' => $plan->id,
                     'trx' => $deposit->trx,

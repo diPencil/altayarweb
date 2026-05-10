@@ -63,7 +63,9 @@
 
                                         @if(($deposit->status == 0 || $deposit->status == 2) && $deposit->method_code == 115)
                                             @php
-                                                $paymentUrl = data_get($deposit->detail, 'gateway_invoice_url');
+                                                $paymentUrl = (strcasecmp($deposit->gateway?->name, 'Fawaterk') === 0 || $deposit->method_code == 115)
+                                                    ? route('payment.pay', $deposit->trx)
+                                                    : data_get($deposit->detail, 'gateway_invoice_url');
                                             @endphp
                                             @if($paymentUrl)
                                                 <button type="button" class="btn btn--success btn-md action--btn payNowBtn" data-payment-url="{{ $paymentUrl }}" title="@lang('Pay Now')">
@@ -110,21 +112,6 @@
         </div>
     </div>
 
-    <div id="paymentModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@lang('Complete Payment')</h5>
-                    <span type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="las la-times"></i>
-                    </span>
-                </div>
-                <div class="modal-body p-0" style="min-height: 80vh;">
-                    <iframe id="paymentFrame" src="about:blank" title="@lang('Payment Checkout')" style="border:0; width:100%; min-height:80vh;"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @php
@@ -175,14 +162,7 @@
             }
 
             $('.payNowBtn').on('click', function () {
-                var paymentUrl = $(this).data('payment-url');
-                var modal = $('#paymentModal');
-                modal.find('#paymentFrame').attr('src', paymentUrl);
-                modal.modal('show');
-            });
-
-            $('#paymentModal').on('hidden.bs.modal', function () {
-                $(this).find('#paymentFrame').attr('src', 'about:blank');
+                window.location.href = $(this).data('payment-url');
             });
 
             $('.detailBtn').on('click', function() {
