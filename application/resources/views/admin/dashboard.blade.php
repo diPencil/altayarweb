@@ -317,9 +317,15 @@
                                         <td>{{ __($payment->gateway?->name ?? __('-')) }}</td>
                                         <td>{{ $payment->trx }}</td>
                                         <td>
-                                            <a class="text-muted" href="{{ route('admin.users.detail', $payment->user_id) }}">
-                                                {{ $payment->user?->fullname ?? __('-') }}
-                                            </a>
+                                            @if($payment->user_id)
+                                                <a class="text-muted" href="{{ route('admin.users.detail', $payment->user_id) }}">
+                                                    {{ $payment->user?->fullname ?? __('-') }}
+                                                </a>
+                                            @else
+                                                <span class="text--small badge badge--info">@lang('Guest')</span>
+                                                <br>
+                                                {{ $payment->guest_name }}
+                                            @endif
                                         </td>
                                         <td>
                                             <strong title="@lang('Amount with charge')">
