@@ -15,28 +15,28 @@ class BookingController extends Controller
         $pageTitle = 'My Package-List';
         $bookingTourPackages = $this->tourPackageData('EmployeeAll');
 
-        return view($this->activeTemplate . 'Employee.tour_booking.my_booked', compact('pageTitle', 'bookingTourPackages'));
+        return view($this->activeTemplate . 'employee.tour_booking.my_booked', compact('pageTitle', 'bookingTourPackages'));
     }
 
     public function pending()
     {
         $pageTitle = 'Employee Pending Package-List';
         $bookingTourPackages = $this->tourPackageData('EmployeePending');
-        return view($this->activeTemplate . 'Employee.tour_booking.my_booked', compact('pageTitle', 'bookingTourPackages'));
+        return view($this->activeTemplate . 'employee.tour_booking.my_booked', compact('pageTitle', 'bookingTourPackages'));
     }
 
     public function approved()
     {
         $pageTitle = 'Employee Approved Package-List';
         $bookingTourPackages = $this->tourPackageData('EmployeeApproved');
-        return view($this->activeTemplate . 'Employee.tour_booking.my_booked', compact('pageTitle', 'bookingTourPackages'));
+        return view($this->activeTemplate . 'employee.tour_booking.my_booked', compact('pageTitle', 'bookingTourPackages'));
     }
 
     public function canceled()
     {
         $pageTitle = 'Employee Canceled Package-List';
         $bookingTourPackages = $this->tourPackageData('EmployeeCanceled');
-        return view($this->activeTemplate . 'Employee.tour_booking.my_booked', compact('pageTitle', 'bookingTourPackages'));
+        return view($this->activeTemplate . 'employee.tour_booking.my_booked', compact('pageTitle', 'bookingTourPackages'));
     }
 
 
@@ -48,7 +48,7 @@ class BookingController extends Controller
             ->where('owner_id', auth('employee')->id())
             ->where('owner_type', 'Employee')
             ->first();
-        return view($this->activeTemplate . 'Employee.tour_booking.details', compact('pageTitle', 'bookingDetails'));
+        return view($this->activeTemplate . 'employee.tour_booking.details', compact('pageTitle', 'bookingDetails'));
     }
 
     protected function tourPackageData($scope = null)
@@ -87,6 +87,6 @@ class BookingController extends Controller
                 ->orderBy('id', 'desc')
                 ->paginate(getPaginate());
         }
-        return view($this->activeTemplate . 'Employee.tour_booking.my_booked_user_list', compact('pageTitle', 'tourBookings'));
+        return view($this->activeTemplate . 'employee.tour_booking.my_booked_user_list', compact('pageTitle', 'tourBookings'));
     }
 }

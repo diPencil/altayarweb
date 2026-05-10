@@ -17,7 +17,7 @@ class WithdrawController extends Controller
     {
         $withdrawMethod = WithdrawMethod::where('status',1)->get();
         $pageTitle = 'Withdraw Money';
-        return view($this->activeTemplate.'Employee.withdraw.methods', compact('pageTitle','withdrawMethod'));
+        return view($this->activeTemplate.'employee.withdraw.methods', compact('pageTitle','withdrawMethod'));
     }
 
     public function withdrawStore(Request $request)
@@ -66,7 +66,7 @@ class WithdrawController extends Controller
     {
         $withdraw = Withdrawal::with('method','user')->where('trx', session()->get('wtrx'))->where('status', 0)->orderBy('id','desc')->firstOrFail();
         $pageTitle = 'Withdraw Preview';
-        return view($this->activeTemplate . 'Employee.withdraw.preview', compact('pageTitle','withdraw'));
+        return view($this->activeTemplate . 'employee.withdraw.preview', compact('pageTitle','withdraw'));
     }
 
     public function withdrawSubmit(Request $request)
