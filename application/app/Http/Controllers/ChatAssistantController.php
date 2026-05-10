@@ -29,13 +29,19 @@ class ChatAssistantController extends Controller
             return response()->json(['enabled' => false]);
         }
 
+        $sessionKey = $request->string('session_key')->toString() ?: session()->get('ai_chat_session_key');
+        if (! $sessionKey || $request->boolean('force_new')) {
+            $sessionKey = (string) Str::uuid();
+            session()->put('ai_chat_session_key', $sessionKey);
+        }
+
         $conversation = $this->assistant->resolveConversation([
-            'session_key' => $request->string('session_key')->toString() ?: null,
+            'session_key' => $sessionKey,
             'name' => $request->string('name')->toString() ?: null,
             'email' => $request->string('email')->toString() ?: null,
             'locale' => $request->string('locale')->toString() ?: app()->getLocale(),
-            'force_new' => $request->boolean('force_new'),
-        ]);
+            'force_new' => false, // We already handled force_new above
+        ], false);
 
         return response()->json([
             'enabled' => true,
@@ -46,7 +52,7 @@ class ChatAssistantController extends Controller
                 'quick_actions' => $this->assistant->quickActions(),
                 'poll_interval' => $this->assistant->pollInterval(),
             ],
-            'conversation' => $this->conversationPayload($conversation),
+            'conversation' => $this->conversationPayload($conversation, $sessionKey),
             'messages' => $this->messagePayload($conversation),
         ]);
     }
@@ -202,7 +208,7 @@ class ChatAssistantController extends Controller
             'name' => $request->string('name')->toString() ?: null,
             'email' => $request->string('email')->toString() ?: null,
             'locale' => $request->string('locale')->toString() ?: app()->getLocale(),
-        ]);
+        ], true);
 
         $conversation->update([
             'status' => 'human_requested',
@@ -242,7 +248,11 @@ class ChatAssistantController extends Controller
     {
         $conversation = $this->assistant->resolveConversation([
             'session_key' => $request->string('session_key')->toString(),
-        ]);
+        ], false);
+
+        if (! $conversation) {
+            return response()->json(['success' => true]);
+        }
 
         if ($conversation->status === 'closed') {
             return response()->json([
@@ -285,8 +295,24 @@ class ChatAssistantController extends Controller
         $notification->save();
     }
 
-    protected function conversationPayload(ChatConversation $conversation): array
+    protected function conversationPayload(?ChatConversation $conversation, ?string $sessionKey = null): ?array
     {
+        if (! $conversation) {
+            return [
+                'id' => null,
+                'session_key' => $sessionKey,
+                'name' => auth()->user()?->fullname ?? 'Guest',
+                'email' => auth()->user()?->email,
+                'locale' => app()->getLocale(),
+                'chat_type' => 'hybrid',
+                'status' => 'open',
+                'human_requested_at' => null,
+                'last_message_at' => null,
+                'unread_admin_count' => 0,
+                'unread_user_count' => 0,
+            ];
+        }
+
         return [
             'id' => $conversation->id,
             'session_key' => $conversation->session_key,
@@ -302,8 +328,11 @@ class ChatAssistantController extends Controller
         ];
     }
 
-    protected function messagePayload(ChatConversation $conversation): array
+    protected function messagePayload(?ChatConversation $conversation): array
     {
+        if (! $conversation) {
+            return [];
+        }
         return $conversation->messages()->get()->map(fn ($message) => $this->messageItem($message))->values()->all();
     }
 

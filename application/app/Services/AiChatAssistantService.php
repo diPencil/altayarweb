@@ -109,7 +109,7 @@ class AiChatAssistantService
         return $this->enabled() && $this->provider() === 'feliz_ai' && $this->apiKey() !== '';
     }
 
-    public function resolveConversation(array $attributes = []): ChatConversation
+    public function resolveConversation(array $attributes = [], bool $create = true): ?ChatConversation
     {
         $user = auth()->user();
         if ($user instanceof \App\Models\Admin) {
@@ -119,33 +119,44 @@ class AiChatAssistantService
         $forceNew = (bool) ($attributes['force_new'] ?? false);
         $sessionKey = $attributes['session_key'] ?? session()->get('ai_chat_session_key');
 
-        if ($forceNew || ! $sessionKey) {
+        if ($forceNew) {
             $sessionKey = (string) Str::uuid();
+            session()->put('ai_chat_session_key', $sessionKey);
         }
 
-        session()->put('ai_chat_session_key', $sessionKey);
+        // 1. Try finding by session_key
+        if ($sessionKey) {
+            $conversation = ChatConversation::where('session_key', $sessionKey)->first();
 
-        // 1. Try finding by session_key (highest priority to avoid duplicate key errors)
-        $conversation = ChatConversation::where('session_key', $sessionKey)->first();
+            if ($conversation) {
+                // If we found it and user just logged in, update the user_id
+                if ($user && ! $conversation->user_id) {
+                    $conversation->update(['user_id' => $user->id]);
+                }
 
-        if ($conversation) {
-            // If we found it and user just logged in, update the user_id
-            if ($user && ! $conversation->user_id) {
-                $conversation->update(['user_id' => $user->id]);
+                return $conversation;
             }
-
-            return $conversation;
         }
 
         // 2. If not found by session key but user is logged in, try finding their latest existing conversation
         if ($user) {
             $conversation = ChatConversation::where('user_id', $user->id)->latest('last_message_at')->first();
             if ($conversation) {
+                session()->put('ai_chat_session_key', $conversation->session_key);
                 return $conversation;
             }
         }
 
+        if (! $create) {
+            return null;
+        }
+
         // 3. Create new if still not found
+        if (! $sessionKey) {
+            $sessionKey = (string) Str::uuid();
+            session()->put('ai_chat_session_key', $sessionKey);
+        }
+
         $conversation = new ChatConversation();
         $conversation->user_id = $user?->id;
         $conversation->session_key = $sessionKey;
