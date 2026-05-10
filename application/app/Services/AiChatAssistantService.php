@@ -176,88 +176,94 @@ class AiChatAssistantService
     public function buildKnowledgeBase(ChatConversation $conversation): array
     {
         $config = $this->config();
-
-        $membershipPlans = MembershipPlan::query()
-            ->where('status', 1)
-            ->latest('id')
-            ->take(8)
-            ->get()
-            ->map(function ($plan) {
-                return [
-                    'name' => $plan->name,
-                    'price' => (float) $plan->price,
-                    'duration_days' => (int) $plan->duration_days,
-                    'bonus_points' => (int) $plan->bonus_points,
-                    'benefits' => array_slice(array_filter((array) ($plan->benefits ?? [])), 0, 5),
-                ];
-            })
-            ->values()
-            ->all();
-
-        $offers = Listing::query()
-            ->active()
-            ->latest('id')
-            ->take(8)
-            ->get()
-            ->map(function ($listing) {
-                return [
-                    'title' => $listing->title,
-                    'city' => $listing->city,
-                    'country' => $listing->country,
-                    'price' => (float) $listing->price,
-                    'offer' => $listing->offerSummary(),
-                    'url' => route('listing.details', [$listing->slug, $listing->id]),
-                ];
-            })
-            ->values()
-            ->all();
-
-        $destinations = TourPackage::query()
-            ->active()
-            ->latest('id')
-            ->take(8)
-            ->get()
-            ->map(function ($tourPackage) {
-                return [
-                    'title' => $tourPackage->title,
-                    'price' => (float) $tourPackage->price,
-                    'category' => $tourPackage->category?->name,
-                    'url' => route('tour.package.details', [slug($tourPackage->title), $tourPackage->id]),
-                ];
-            })
-            ->values()
-            ->all();
-
-        $recentBookings = [];
-        if ($conversation->user_id) {
-            $user = User::find($conversation->user_id);
-            if ($user) {
-                $recentBookings = [
-                    'membership_points' => (int) $user->membership_points_balance,
-                    'cashback_balance' => (float) $user->cashback_balance,
-                    'memberships_count' => $user->memberships()->count(),
-                    'has_active_membership' => (bool) $user->hasActiveMembership(),
-                    'tour_bookings_count' => TourBooking::where('user_id', $user->id)->count(),
-                    'service_bookings_count' => $user->serviceBookings()->count(),
-                ];
-            }
-        }
-
         $locale = $conversation->locale ?? app()->getLocale();
-        $staticKnowledge = trim((string) ($config['static_knowledge'] ?? ''));
-        $businessFacts = $this->getBusinessKnowledge($locale);
 
         return [
-            'static_knowledge' => trim($staticKnowledge . "\n\n" . $businessFacts),
+            'static_knowledge' => trim(($config['static_knowledge'] ?? '') . "\n\n" . $this->getBusinessKnowledge($locale)),
             'knowledge_urls' => array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string) ($config['knowledge_urls'] ?? '')) ?: []))),
-            'membership_plans' => $membershipPlans,
-            'offers' => $offers,
-            'destinations' => $destinations,
-            'user_context' => $recentBookings,
+            'membership_plans' => $this->getMembershipPlansKnowledge(),
+            'offers' => $this->getOffersKnowledge(),
+            'destinations' => $this->getDestinationsKnowledge(),
+            'user_context' => $this->getUserContextKnowledge($conversation),
             'booking_process' => [
                 'Find a trip, review the price and offer, submit booking details, complete payment if needed, and wait for confirmation.',
                 'If the user wants a quicker answer, recommend the best offer or membership plan first.',
             ],
+        ];
+    }
+
+    protected function getMembershipPlansKnowledge(): array
+    {
+        return MembershipPlan::query()
+            ->where('status', 1)
+            ->latest('id')
+            ->take(8)
+            ->get()
+            ->map(fn($plan) => [
+                'name' => $plan->name,
+                'price' => (float) $plan->price,
+                'duration_days' => (int) $plan->duration_days,
+                'bonus_points' => (int) $plan->bonus_points,
+                'benefits' => array_slice(array_filter((array) ($plan->benefits ?? [])), 0, 5),
+            ])
+            ->values()
+            ->all();
+    }
+
+    protected function getOffersKnowledge(): array
+    {
+        return Listing::query()
+            ->active()
+            ->latest('id')
+            ->take(8)
+            ->get()
+            ->map(fn($listing) => [
+                'title' => $listing->title,
+                'city' => $listing->city,
+                'country' => $listing->country,
+                'price' => (float) $listing->price,
+                'offer' => $listing->offerSummary(),
+                'url' => route('listing.details', [$listing->slug, $listing->id]),
+            ])
+            ->values()
+            ->all();
+    }
+
+    protected function getDestinationsKnowledge(): array
+    {
+        return TourPackage::query()
+            ->active()
+            ->latest('id')
+            ->take(8)
+            ->get()
+            ->map(fn($tourPackage) => [
+                'title' => $tourPackage->title,
+                'price' => (float) $tourPackage->price,
+                'category' => $tourPackage->category?->name,
+                'url' => route('tour.package.details', [slug($tourPackage->title), $tourPackage->id]),
+            ])
+            ->values()
+            ->all();
+    }
+
+    protected function getUserContextKnowledge(ChatConversation $conversation): array
+    {
+        if (! $conversation->user_id) {
+            return [];
+        }
+
+        $user = User::find($conversation->user_id);
+        if (! $user) {
+            return [];
+        }
+
+        return [
+            'membership_points' => (int) $user->membership_points_balance,
+            'cashback_balance' => (float) $user->cashback_balance,
+            'memberships_count' => $user->memberships()->count(),
+            'has_active_membership' => (bool) $user->hasActiveMembership(),
+            'tour_bookings_count' => TourBooking::where('user_id', $user->id)->count(),
+            'service_bookings_count' => $user->serviceBookings()->count(),
         ];
     }
 
