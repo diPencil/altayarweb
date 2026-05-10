@@ -3,6 +3,17 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
+Route::permanentRedirect('destinations', '/more-travel/destinations');
+Route::permanentRedirect('coupons', '/offers/coupons');
+Route::permanentRedirect('vouchers', '/offers/vouchers');
+Route::permanentRedirect('weekend', '/offers/weekend');
+Route::permanentRedirect('video-gallery', '/reels');
+Route::permanentRedirect('customer-reviews', '/client-feedback');
+Route::permanentRedirect('arm_member_profile', '/user/login');
+Route::permanentRedirect('membership-register', '/user/register');
+Route::permanentRedirect('register', '/user/register');
+Route::permanentRedirect('signup', '/user/register');
+
 // Travel offers (explicit routes — not inside string-based Route::controller group)
 Route::permanentRedirect('bookings/hotels', '/listings');
 Route::permanentRedirect('bookings/flights', '/browse');
@@ -86,6 +97,9 @@ Route::controller('SiteController')->group(function () {
     Route::post('image-upload', 'imageUplaod')->name('image.upload');
 
     Route::get('more-travel/{section?}', 'moreTravel')->name('public.travel.index');
+    Route::get('membership-login', 'membershipLogin')->name('membership.login');
+    Route::get('membership-register', 'membershipRegister')->name('membership.register');
+    Route::get('packages', 'packagesIntro')->name('packages.intro');
     Route::get('membership-card', 'membershipCard')->name('public.membership.card');
     Route::get('membership-details', 'membershipDetails')->name('public.membership.details');
     Route::get('membership-details/{id}', 'membershipDetailsShow')->name('public.membership.details.show');
@@ -111,6 +125,8 @@ Route::controller('SiteController')->group(function () {
     Route::get('tour-side-filter','tourPackageSideFilter')->name('tour.package.side.filter');
 
     Route::post('service-booking/submit', 'serviceBookingSubmit')->name('service.booking.submit');
+    Route::get('sitemap.xml', 'sitemap')->name('sitemap');
+    Route::get('robots.txt', 'robots')->name('robots');
     Route::get('/{slug}', 'pages')->name('pages');
     Route::get('/', 'index')->name('home');
 });

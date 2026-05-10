@@ -46,11 +46,14 @@ class Email extends NotifyProcess{
 			try{
 				$this->$method();
 				$this->createLog('email');
+                return true;
 			}catch(\Exception $e){
 				$this->createErrorLog($e->getMessage());
 				session()->flash('mail_error',$e->getMessage());
+                return false;
 			}
 		}
+        return false;
 
 	}
 

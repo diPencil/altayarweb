@@ -22,7 +22,9 @@ class SendLegacyPasswordResetLinks extends Command
                             {--user-id= : Send only to a specific user ID for testing}
                             {--email= : Send only to a specific email for testing}
                             {--preview-to= : Send all emails to this specific address for testing}
-                            {--locale= : Set the language locale (e.g., ar)}';
+                            {--locale= : Set the language locale (e.g., ar)}
+                            {--start-id= : Start from a specific user ID}
+                            {--limit= : Limit the number of users to process}';
 
     /**
      * The console command description.
@@ -44,6 +46,8 @@ class SendLegacyPasswordResetLinks extends Command
         $targetEmail = $this->option('email');
         $previewTo = $this->option('preview-to');
         $locale = $this->option('locale') ?: 'en';
+        $startId = $this->option('start-id');
+        $limit = $this->option('limit');
 
         if ($dryRun) {
             $this->info("DRY RUN MODE: No emails will be sent.");
@@ -65,71 +69,58 @@ class SendLegacyPasswordResetLinks extends Command
         if ($targetUserId) {
             $query->where('id', $targetUserId);
             $this->info("Filtering for User ID: $targetUserId");
-        }
-
-        if ($targetEmail) {
+        } elseif ($targetEmail) {
             $query->where('email', $targetEmail);
             $this->info("Filtering for Email: $targetEmail");
+        } elseif ($startId) {
+            $query->where('id', '>=', $startId);
+            $this->info("Starting from User ID: $startId");
         }
 
-        $totalLegacy = $query->count();
+        if ($limit) {
+            $query->limit($limit);
+            $this->info("Limited to $limit users.");
+        }
+
         $users = $query->get();
 
-        $eligibleCount = 0;
-        $skippedMissingEmail = 0;
-        $skippedInvalidEmail = 0;
-        $skippedDuplicateEmail = 0;
-        
-        $emailsSeen = [];
-        $recipients = [];
-
-        foreach ($users as $user) {
-            $email = trim($user->email);
-
-            if (empty($email)) {
-                $skippedMissingEmail++;
-                continue;
-            }
-
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $skippedInvalidEmail++;
-                continue;
-            }
-
-            if (isset($emailsSeen[$email])) {
-                $skippedDuplicateEmail++;
-                continue;
-            }
-
-            $emailsSeen[$email] = true;
-            $eligibleCount++;
-            $recipients[] = $user;
+        if ($users->isEmpty()) {
+            $this->error("No legacy users found matching criteria.");
+            return 0;
         }
 
-        $this->info("Total legacy imported users: $totalLegacy");
-        $this->info("Users with valid emails: $eligibleCount");
-        $this->line("Users skipped (missing email): $skippedMissingEmail", 'comment');
-        $this->line("Users skipped (invalid email): $skippedInvalidEmail", 'comment');
-        $this->line("Users skipped (duplicate email): $skippedDuplicateEmail", 'comment');
+        $totalUsers = $users->count();
+        $this->info("Total legacy imported users found: $totalUsers");
 
-        // Sample recipients
+        // Validate emails
+        $eligibleUsers = $users->filter(function ($user) {
+            return !empty($user->email) && filter_var($user->email, FILTER_VALIDATE_EMAIL);
+        });
+
+        $eligibleCount = $eligibleUsers->count();
+        $this->info("Users with valid emails: $eligibleCount");
+        
+        if ($eligibleCount == 0) {
+            $this->error("No eligible users found.");
+            return 0;
+        }
+
+        $skippedCount = $totalUsers - $eligibleCount;
+        if ($skippedCount > 0) {
+            $this->warn("Users skipped (invalid/missing email): $skippedCount");
+        }
+
+        // Sample for display
         $this->newLine();
         $this->info("Sample recipients (up to 5):");
-        $samples = array_slice($recipients, 0, 5);
-        $sampleData = [];
-        foreach ($samples as $s) {
-            $email = trim($s->email);
+        $tableData = [];
+        foreach ($eligibleUsers->take(5) as $u) {
+            $email = trim($u->email);
             $atIndex = strpos($email, '@');
             $maskedEmail = substr($email, 0, min(3, $atIndex)) . '****' . substr($email, $atIndex);
-
-            $sampleData[] = [
-                'id' => $s->id,
-                'username' => $s->username,
-                'email' => $maskedEmail,
-                'legacy_user_id' => $s->legacy_user_id
-            ];
+            $tableData[] = [$u->id, $u->username, $maskedEmail, $u->legacy_user_id];
         }
-        $this->table(['ID', 'Username', 'Email', 'Legacy ID'], $sampleData);
+        $this->table(['ID', 'Username', 'Email', 'Legacy ID'], $tableData);
 
         // Email details
         $this->newLine();
@@ -138,13 +129,12 @@ class SendLegacyPasswordResetLinks extends Command
         $this->info("Reset Route: user.password.reset");
         
         $baseUrl = "https://altayarvip.com";
-        $dummyToken = "RESET_TOKEN_HIDDEN_FOR_SAFETY";
-        $maskedUrl = "$baseUrl/user/password/reset/$dummyToken?email=test@example.com";
-        $this->info("Masked Reset URL Example: $maskedUrl");
+        $maskedLinkExample = "$baseUrl/user/password/reset/RESET_TOKEN_HIDDEN_FOR_SAFETY?email=test@example.com";
+        $this->info("Masked Reset URL Example: $maskedLinkExample");
 
         if ($dryRun) {
             $this->newLine();
-            $this->warn("Dry run finished. No emails were sent.");
+            $this->info("Dry run finished. No emails were sent.");
             $this->info("To send emails, run: php artisan users:send-legacy-password-reset-links --send");
             return 0;
         }
@@ -156,10 +146,10 @@ class SendLegacyPasswordResetLinks extends Command
         $report = [];
         $report[] = ['user_id', 'username', 'email', 'legacy_user_id', 'status', 'reason', 'sent_at'];
 
-        $bar = $this->output->createProgressBar(count($recipients));
+        $bar = $this->output->createProgressBar($eligibleCount);
         $bar->start();
 
-        foreach ($recipients as $user) {
+        foreach ($eligibleUsers as $user) {
             try {
                 // Generate token
                 $token = Str::random(40);
@@ -177,10 +167,6 @@ class SendLegacyPasswordResetLinks extends Command
 
                 // Prepare Email Content
                 $name = $user->firstname ? $user->firstname . ' ' . $user->lastname : $user->username;
-                
-                // Prepare Email Content
-                $name = $user->firstname ? $user->firstname . ' ' . $user->lastname : $user->username;
-                $subject = ($locale == 'ar') ? "تعيين كلمة المرور لحسابك في AltayarVIP" : "Set Your Password for Your AltayarVIP Account";
                 
                 if ($locale == 'ar') {
                     $body = '<div dir="rtl" style="text-align: right; font-family: sans-serif;">';
@@ -218,9 +204,6 @@ class SendLegacyPasswordResetLinks extends Command
                 $email->message = $body;
 
                 // Explicitly set shortcodes for global template replacement
-                $general = gs();
-                $footer = ($locale == 'ar') ? "جميع الحقوق محفوظة.<br>منصة سفر وحجوزات مميزة<br>فريق AltayarVIP" : "All rights reserved.<br>Premium Travel & Booking Platform<br>AltayarVIP Team";
-                
                 $email->shortCodes = [
                     'site_name' => 'AltayarVIP',
                     'year' => date('Y'),
@@ -230,7 +213,6 @@ class SendLegacyPasswordResetLinks extends Command
                 ];
 
                 if ($previewTo) {
-                    // Clone user to avoid modifying the real user in memory or DB
                     $userForNotify = clone $user;
                     $userForNotify->email = $previewTo;
                     $email->user = $userForNotify;
@@ -239,11 +221,23 @@ class SendLegacyPasswordResetLinks extends Command
                     $email->user = $user;
                 }
 
-                $email->send();
+                $status = $email->send();
 
-                $sentCount++;
-                $status = $previewTo ? "sent (preview to $previewTo)" : "sent";
-                $report[] = [$user->id, $user->username, $user->email, $user->legacy_user_id, $status, '', now()];
+                if ($status) {
+                    $sentCount++;
+                    $reportStatus = $previewTo ? "sent (preview to $previewTo)" : "sent";
+                    $report[] = [$user->id, $user->username, $user->email, $user->legacy_user_id, $reportStatus, '', now()];
+                } else {
+                    $failedCount++;
+                    $report[] = [$user->id, $user->username, $user->email, $user->legacy_user_id, 'failed', 'SMTP Error or Disabled', now()];
+                    
+                    // Stop if we hit too many failures
+                    if ($failedCount >= 5 && $sentCount == 0) {
+                        $this->newLine();
+                        $this->error("Multiple failures detected. Stopping to avoid spam/lockout.");
+                        break;
+                    }
+                }
             } catch (\Exception $e) {
                 $failedCount++;
                 $report[] = [$user->id, $user->username, $user->email, $user->legacy_user_id, 'failed', $e->getMessage(), now()];

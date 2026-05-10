@@ -818,6 +818,24 @@ class SiteController extends Controller
         ));
     }
 
+    public function membershipLogin()
+    {
+        $pageTitle = 'Membership Intro';
+        return view($this->activeTemplate . 'membership_intro', compact('pageTitle'));
+    }
+
+    public function membershipRegister()
+    {
+        $pageTitle = 'Membership Registration Benefits';
+        return view($this->activeTemplate . 'membership_register', compact('pageTitle'));
+    }
+
+    public function packagesIntro()
+    {
+        $pageTitle = 'Permanent Packages & Membership';
+        return view($this->activeTemplate . 'packages_intro', compact('pageTitle'));
+    }
+
     public function privilegeCards(Request $request)
     {
         $pageTitle = 'Privilege Cards';
@@ -1213,5 +1231,100 @@ class SiteController extends Controller
 
         $notify[] = ['success', 'Your ' . $request->type . ' booking request has been submitted successfully!'];
         return back()->withNotify($notify);
+    }
+
+    public function sitemap()
+    {
+        $urls = [];
+
+        // Static Routes
+        $staticRoutes = [
+            'home', 'browse', 'blog', 'contact', 'public.membership.details', 
+            'public.privilege.cards.index', 'membership.login', 'membership.register', 'packages.intro',
+            'listings'
+        ];
+
+        foreach ($staticRoutes as $route) {
+            try {
+                $urls[] = [
+                    'loc' => route($route),
+                    'lastmod' => now()->toAtomString(),
+                    'priority' => ($route == 'home') ? '1.0' : '0.8',
+                    'changefreq' => 'daily'
+                ];
+            } catch (\Exception $e) {
+                // Skip if route not defined
+            }
+        }
+
+        // Tour Packages
+        $packages = TourPackage::whereIn('status', [1, 2, 3])->get();
+        foreach ($packages as $package) {
+            $urls[] = [
+                'loc' => route('tour.package.details', [$package->slug, $package->id]),
+                'lastmod' => $package->updated_at->toAtomString(),
+                'priority' => '0.9',
+                'changefreq' => 'weekly'
+            ];
+        }
+
+        // Listings
+        $listings = Listing::active()->get();
+        foreach ($listings as $listing) {
+            $urls[] = [
+                'loc' => route('listing.details', [$listing->slug, $listing->id]),
+                'lastmod' => $listing->updated_at->toAtomString(),
+                'priority' => '0.9',
+                'changefreq' => 'weekly'
+            ];
+        }
+
+        // Blogs
+        $blogs = Frontend::where('data_keys', 'blog.element')->get();
+        foreach ($blogs as $blog) {
+            $urls[] = [
+                'loc' => route('blog.details', [slug($blog->data_values->title), $blog->id]),
+                'lastmod' => $blog->updated_at->toAtomString(),
+                'priority' => '0.7',
+                'changefreq' => 'monthly'
+            ];
+        }
+
+        // Custom Pages
+        $pages = Page::where('tempname', $this->activeTemplate)->get();
+        foreach ($pages as $page) {
+            if ($page->slug == '/') continue;
+            $urls[] = [
+                'loc' => route('pages', [$page->slug]),
+                'lastmod' => $page->updated_at->toAtomString(),
+                'priority' => '0.6',
+                'changefreq' => 'monthly'
+            ];
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>';
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+        
+        foreach ($urls as $url) {
+            $xml .= '<url>';
+            $xml .= '<loc>' . $url['loc'] . '</loc>';
+            $xml .= '<lastmod>' . $url['lastmod'] . '</lastmod>';
+            $xml .= '<changefreq>' . $url['changefreq'] . '</changefreq>';
+            $xml .= '<priority>' . $url['priority'] . '</priority>';
+            $xml .= '</url>';
+        }
+        
+        $xml .= '</urlset>';
+
+        return response($xml)->header('Content-Type', 'text/xml');
+    }
+
+    public function robots()
+    {
+        $content = "User-agent: *\n";
+        $content .= "Allow: /\n\n";
+        $content .= "Sitemap: " . route('sitemap') . "\n";
+
+        return response($content)->header('Content-Type', 'text/plain');
     }
 }
