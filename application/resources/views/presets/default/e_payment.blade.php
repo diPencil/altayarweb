@@ -141,139 +141,143 @@
                 <div class="{{ $isEmployee ? 'col-lg-12' : 'col-lg-7' }}">
                     <div class="epayment-form base--card h-100">
                         <div class="p-4 p-xl-5">
-                            @guest
-                                <div class="alert alert-info mb-4">
-                                    @lang('Please sign in to continue with a payment.')
+                            @php
+                                $gateway = $gatewayCurrency->first();
+                                $user = auth()->user();
+                            @endphp
+                            @if(!$gateway)
+                                <div class="alert alert-danger mb-4">
+                                    {{ __('The payment gateway is currently unavailable.') }}
                                 </div>
-                                <a href="{{ route(auth('employee')->check() ? 'employee.login' : 'user.login') }}" class="btn btn--base btn--lg w-100 pills">
-                                    @lang('Sign in')
-                                </a>
-                            @endguest
+                            @else
+                                <div class="mb-4 text-start">
+                                    <h3 class="mb-2">@lang('Start a secure payment')</h3>
+                                    <p class="text-muted mb-0">@lang('This is our secure payment gateway. You can complete your payment safely.')</p>
+                                </div>
 
-                            @auth
-                                @php
-                                    $gateway = $gatewayCurrency->first();
-                                @endphp
-                                @if(!$gateway)
-                                    <div class="alert alert-danger mb-4">
-                                        {{ __('The payment gateway is currently unavailable.') }}
-                                    </div>
-                                @else
-                                    <div class="mb-4 text-start">
-                                        <h3 class="mb-2">@lang('Start a secure payment')</h3>
-                                        <p class="text-muted mb-0">@lang('This is our secure payment gateway. You can complete your payment safely.')</p>
-                                    </div>
-
-                                    <div class="epayment-summary p-3 p-lg-4 mb-4">
-                                        <div class="row g-3">
-                                            <div class="col-md-6 text-md-start">
-                                                <div class="text-muted small mb-1">@lang('Payment Method')</div>
-                                                <div class="fw-semibold">
-                                                    @if(strcasecmp($gateway->name, 'Fawaterk') === 0)
-                                                        @lang('Pay Online')
-                                                    @else
-                                                        {{ __($gateway->name) }}
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 text-md-end">
-                                                <div class="text-muted small mb-1">@lang('Payment limits')</div>
-                                                <div class="fw-semibold">{{ showAmount($gateway->min_amount) }} - {{ showAmount($gateway->max_amount) }} {{ $gateway->currency }}</div>
+                                <div class="epayment-summary p-3 p-lg-4 mb-4">
+                                    <div class="row g-3">
+                                        <div class="col-md-6 text-md-start">
+                                            <div class="text-muted small mb-1">@lang('Payment Method')</div>
+                                            <div class="fw-semibold">
+                                                @if(strcasecmp($gateway->name, 'Fawaterk') === 0)
+                                                    @lang('Pay Online')
+                                                @else
+                                                    {{ __($gateway->name) }}
+                                                @endif
                                             </div>
                                         </div>
+                                        <div class="col-md-6 text-md-end">
+                                            <div class="text-muted small mb-1">@lang('Payment limits')</div>
+                                            <div class="fw-semibold">{{ showAmount($gateway->min_amount) }} - {{ showAmount($gateway->max_amount) }} {{ $gateway->currency }}</div>
+                                        </div>
                                     </div>
+                                </div>
 
-                                    <form action="{{ route(auth('employee')->check() ? 'employee.e.payment.store' : 'e.payment.store') }}" method="POST" class="row g-4 e-payment-form">
-                                        @csrf
-                                        <input type="hidden" name="method_code">
-                                        <input type="hidden" name="currency">
+                                <form action="{{ route(auth('employee')->check() ? 'employee.e.payment.store' : 'e.payment.store') }}" method="POST" class="row g-4 e-payment-form">
+                                    @csrf
+                                    <input type="hidden" name="method_code">
+                                    <input type="hidden" name="currency">
 
-                                        @if($isEmployee)
-                                            <div class="col-12">
-                                                <label class="form--label">@lang('Select User')</label>
-                                                <select class="form-control form--control form--select form-select select2-basic" name="user_id" required>
-                                                    <option value="">@lang('Select User')</option>
-                                                    @foreach($users as $user)
-                                                        <option value="{{ $user->id }}" @selected(old('user_id') == $user->id)>
-                                                            {{ $user->username }} ({{ $user->email }})
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                <small class="text-muted">@lang('The payment will be attributed to this user.')</small>
-                                            </div>
-                                        @endif
-
+                                    @if($isEmployee)
                                         <div class="col-12">
-                                            <label class="form--label">@lang('Select Payment Method')</label>
-                                            <select class="form-control form--control form--select form-select" name="gateway" required>
-                                                <option value="">@lang('Select One')</option>
-                                                @foreach($gatewayCurrency as $data)
-                                                    @php
-                                                        $gatewayLabel = strcasecmp($data->name, 'Fawaterk') === 0 ? __('Pay Online') : $data->name;
-                                                        $gatewayLabel = $gatewayLabel . ' - ' . strtoupper($data->currency);
-                                                    @endphp
-                                                    <option value="{{ $data->method_code }}" @selected(old('gateway') == $data->method_code)
-                                                        data-gateway="{{ $data }}">{{ $gatewayLabel }}</option>
+                                            <label class="form--label">@lang('Select User')</label>
+                                            <select class="form-control form--control form--select form-select select2-basic" name="user_id" required>
+                                                <option value="">@lang('Select User')</option>
+                                                @foreach($users as $userItem)
+                                                    <option value="{{ $userItem->id }}" @selected(old('user_id') == $userItem->id)>
+                                                        {{ $userItem->username }} ({{ $userItem->email }})
+                                                    </option>
                                                 @endforeach
                                             </select>
-                                        </div>
-
-                                        <div class="col-12">
-                                            <label class="form--label">@lang('Payment Amount')</label>
-                                            <div class="input-group">
-                                                <input type="number" step="0.01" min="{{ $gateway->min_amount }}" max="{{ $gateway->max_amount }}" name="amount" value="{{ old('amount') }}" class="form-control form--control" placeholder="0.00" required>
-                                                <span class="input-group-text bg--base text-white method_currency">{{ $gateway->currency }}</span>
-                                            </div>
-                                            @error('amount')
-                                                <small class="text-danger">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-
-                                        <div class="col-12">
-                                            <label class="form--label">@lang('Optional Note')</label>
-                                            <textarea name="note" rows="4" class="form-control form--control" placeholder="{{ __('Add a note for your transaction') }}">{{ old('note') }}</textarea>
-                                            @error('note')
-                                                <small class="text-danger">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-
-                                        <div class="col-12">
-                                            <button type="submit" class="btn btn--base btn--lg pills w-100 ePaymentSubmitBtn">
-                                                @lang('Proceed to Payment')
-                                            </button>
-                                        </div>
-                                    </form>
-
-                                    @if($latestPayments->isNotEmpty())
-                                        <div class="mt-5">
-                                            <div class="d-flex align-items-center justify-content-between mb-3">
-                                                <h5 class="mb-0">@lang('Payment history')</h5>
-                                                <a href="{{ route(auth('employee')->check() ? 'employee.deposit.history' : 'user.deposit.history') }}" class="text-decoration-none">@lang('Go to payment history')</a>
-                                            </div>
-                                            <div class="table-responsive">
-                                                <table class="table align-middle mb-0">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>@lang('Payment reference')</th>
-                                                            <th>@lang('Amount')</th>
-                                                            <th>@lang('Status')</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach($latestPayments as $payment)
-                                                            <tr>
-                                                                <td>{{ $payment->trx }}</td>
-                                                                <td>{{ showAmount($payment->amount) }} {{ $general->cur_text }}</td>
-                                                                <td>@php echo $payment->statusBadge @endphp</td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            <small class="text-muted">@lang('The payment will be attributed to this user.')</small>
                                         </div>
                                     @endif
+
+                                    @if(!auth()->check() && !auth('employee')->check())
+                                        <div class="col-md-6">
+                                            <label class="form--label">@lang('Full Name')</label>
+                                            <input type="text" name="name" value="{{ old('name') }}" class="form-control form--control" placeholder="@lang('Enter your full name')" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form--label">@lang('Email Address')</label>
+                                            <input type="email" name="email" value="{{ old('email') }}" class="form-control form--control" placeholder="@lang('Enter your email')" required>
+                                        </div>
+                                    @else
+                                        @if(!auth('employee')->check())
+                                            <div class="col-md-6">
+                                                <label class="form--label">@lang('Full Name')</label>
+                                                <input type="text" value="{{ $user->fullname }}" class="form-control form--control" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form--label">@lang('Email Address')</label>
+                                                <input type="email" value="{{ $user->email }}" class="form-control form--control" readonly>
+                                            </div>
+                                        @endif
+                                    @endif
+
+                                    <div class="col-md-6">
+                                        <label class="form--label">@lang('Select Payment Method')</label>
+                                        <select class="form-control form--control form--select form-select" name="gateway" required>
+                                            <option value="">@lang('Select One')</option>
+                                            @foreach($gatewayCurrency as $data)
+                                                @php
+                                                    $gatewayLabel = strcasecmp($data->name, 'Fawaterk') === 0 ? __('Pay Online') : $data->name;
+                                                    $gatewayLabel = $gatewayLabel . ' - ' . strtoupper($data->currency);
+                                                @endphp
+                                                <option value="{{ $data->method_code }}" @selected(old('gateway') == $data->method_code)
+                                                    data-gateway="{{ $data }}">{{ $gatewayLabel }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form--label">@lang('Payment Amount')</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.01" min="{{ $gateway->min_amount }}" max="{{ $gateway->max_amount }}" name="amount" value="{{ old('amount') }}" class="form-control form--control" placeholder="0.00" required>
+                                            <span class="input-group-text bg--base text-white method_currency">{{ $gateway->currency }}</span>
+                                        </div>
+                                        @error('amount')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn--base btn--lg pills w-100 ePaymentSubmitBtn">
+                                            @lang('Proceed to Payment')
+                                        </button>
+                                    </div>
+                                </form>
+
+                                @if($latestPayments->isNotEmpty())
+                                    <div class="mt-5">
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <h5 class="mb-0">@lang('Payment history')</h5>
+                                            <a href="{{ route(auth('employee')->check() ? 'employee.deposit.history' : 'user.deposit.history') }}" class="text-decoration-none">@lang('Go to payment history')</a>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table align-middle mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>@lang('Payment reference')</th>
+                                                        <th>@lang('Amount')</th>
+                                                        <th>@lang('Status')</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($latestPayments as $payment)
+                                                        <tr>
+                                                            <td>{{ $payment->trx }}</td>
+                                                            <td>{{ showAmount($payment->amount) }} {{ $general->cur_text }}</td>
+                                                            <td>@php echo $payment->statusBadge @endphp</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 @endif
-                            @endauth
+                            @endif
                         </div>
                     </div>
                 </div>

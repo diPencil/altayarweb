@@ -85,25 +85,32 @@
                                         <div class="fw-semibold">@php echo $deposit->statusBadge @endphp</div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="text-muted small mb-1">@lang('Payment note')</div>
-                                        <div class="fw-semibold">{{ $paymentNote ?: __('-') }}</div>
+                                        <div class="text-muted small mb-1">@lang('Payment purpose')</div>
+                                        <div class="fw-semibold">{{ $deposit->payment_purpose ?: __('-') }}</div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="text-muted small mb-1">@lang('Gateway')</div>
-                                        <div class="fw-semibold">{{ $paymentFlow === 'epayment' ? __('E-Payment') : ($deposit->gateway?->name ?? __('Payment')) }}</div>
+                                        <div class="text-muted small mb-1">@lang('Booking reference')</div>
+                                        <div class="fw-semibold">{{ $deposit->booking_reference ?: __('-') }}</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="d-flex flex-wrap gap-3 {{ $isRtl ? 'justify-content-start' : 'justify-content-end' }}">
-                                <a href="{{ route('user.deposit.history') }}" class="btn btn--base btn-lg pills">
-                                    @lang('Go to payment history')
-                                </a>
+                                @auth
+                                    <a href="{{ route(auth('employee')->check() ? 'employee.deposit.history' : 'user.deposit.history') }}" class="btn btn--base btn-lg pills">
+                                        @lang('Go to payment history')
+                                    </a>
+                                @else
+                                    <a href="{{ route('home') }}" class="btn btn--base btn-lg pills">
+                                        @lang('Go to home')
+                                    </a>
+                                @endauth
+                                
                                 @if($status === 3)
                                     <a href="{{ route('e.payment') }}" class="btn btn-outline-secondary btn-lg pills">
                                         @lang('Try again')
                                     </a>
-                                @elseif($status === 2)
+                                @elseif($status === 2 || $status === 0)
                                     <a href="{{ route('e.payment.result', $deposit->trx) }}" class="btn btn-outline-secondary btn-lg pills">
                                         @lang('Refresh status')
                                     </a>

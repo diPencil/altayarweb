@@ -15,12 +15,38 @@
                         <span class="fw-bold">{{ $deposit->trx }}</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        @lang('Username')
-                        <span class="fw-bold">
-                            <a href="{{ route('admin.users.detail', $deposit->user_id) }}">{{ $deposit->user->username
-                                }}</a>
-                        </span>
+                        @if($deposit->user)
+                            @lang('Username')
+                            <span class="fw-bold">
+                                <a href="{{ route('admin.users.detail', $deposit->user_id) }}">{{ $deposit->user->username }}</a>
+                            </span>
+                        @else
+                            @lang('Guest Payer')
+                            <span class="fw-bold">
+                                {{ $deposit->guest_name }}
+                            </span>
+                        @endif
                     </li>
+                    @if(!$deposit->user)
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @lang('Guest Email')
+                        <span class="fw-bold">{{ $deposit->guest_email }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @lang('Guest Phone')
+                        <span class="fw-bold">{{ $deposit->guest_phone }}</span>
+                    </li>
+                    @endif
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @lang('Payment Purpose')
+                        <span class="fw-bold">{{ $deposit->payment_purpose }}</span>
+                    </li>
+                    @if($deposit->booking_reference)
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @lang('Booking Reference')
+                        <span class="fw-bold">{{ $deposit->booking_reference }}</span>
+                    </li>
+                    @endif
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         @lang('Method')
                         <span class="fw-bold">{{ __($deposit->gateway->name) }}</span>
@@ -107,7 +133,7 @@
                             <button class="btn btn--danger ms-1 rejectBtn" data-id="{{ $deposit->id }}"
                                 data-info="{{$details}}"
                                 data-amount="{{ showAmount($deposit->amount)}} {{ __($general->cur_text) }}"
-                                data-username="{{ $deposit->user->username }}"><i class="fas fa-ban"></i>
+                                data-username="{{ $deposit->user ? $deposit->user->username : $deposit->guest_name }}"><i class="fas fa-ban"></i>
                                 @lang('Reject')
                             </button>
                         </div>

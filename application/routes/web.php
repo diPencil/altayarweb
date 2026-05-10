@@ -107,8 +107,8 @@ Route::controller('SiteController')->group(function () {
     Route::get('privilege-cards', 'privilegeCards')->name('public.privilege.cards.index');
     Route::get('engine-screen', 'engineScreen')->name('public.engine.screen');
     Route::get('e-payment', 'EPaymentController@index')->name('e.payment');
-    Route::post('e-payment', 'EPaymentController@store')->middleware('auth')->name('e.payment.store');
-    Route::get('e-payment/result/{trx?}', 'EPaymentController@result')->middleware('auth')->name('e.payment.result');
+    Route::post('e-payment', 'EPaymentController@store')->middleware('throttle:10,1')->name('e.payment.store');
+    Route::get('e-payment/result/{trx?}', 'EPaymentController@result')->name('e.payment.result');
 
     Route::get('tour-package/{slug}/{id}', 'tourPackageDetails')->name('tour.package.details');
     Route::get('client-feedback', 'clientFeedback')->name('public.client.feedback');

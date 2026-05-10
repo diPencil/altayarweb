@@ -105,9 +105,15 @@
                                     {{ $deposit->trx }}
                                 </td>
                                 <td>
-                                    <a class="text-muted"
-                                        href="{{ appendQuery('search',$deposit->user->username) }}">{{
-                                        $deposit->user->fullname }}</a>
+                                    @if($deposit->user)
+                                        <a class="text-muted"
+                                            href="{{ appendQuery('search',$deposit->user->username) }}">{{
+                                            $deposit->user->fullname }}</a>
+                                    @else
+                                        <span class="text--small badge badge--info">@lang('Guest')</span>
+                                        <br>
+                                        {{ $deposit->guest_name }}
+                                    @endif
                                 </td>
                                 <td>
                                     <strong title="@lang('Amount with charge')">

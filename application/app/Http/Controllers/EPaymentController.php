@@ -55,16 +55,20 @@ class EPaymentController extends Controller
 
     public function store(Request $request)
     {
-        if (!auth()->check() && !auth('employee')->check()) {
-            return to_route('user.login');
-        }
-
         $rules = [
             'amount' => ['required', 'numeric', 'gt:0', 'max:999999999'],
             'method_code' => ['required', 'integer'],
             'currency' => ['required', 'string'],
+            'payment_purpose' => ['nullable', 'string', 'max:255'],
+            'booking_reference' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:500'],
         ];
+
+        if (!auth()->check() && !auth('employee')->check()) {
+            $rules['name'] = ['required', 'string', 'max:255'];
+            $rules['email'] = ['required', 'email', 'max:255'];
+            $rules['phone'] = ['nullable', 'string', 'max:40'];
+        }
 
         if (auth('employee')->check()) {
             $rules['user_id'] = ['required', 'exists:users,id'];
@@ -79,6 +83,7 @@ class EPaymentController extends Controller
             ->where('method_code', $request->method_code)
             ->where('currency', $request->currency)
             ->first();
+
         if (!$gatewayCurrency) {
             $notify[] = ['error', 'The payment gateway is currently unavailable.'];
             return back()->withNotify($notify);
@@ -98,9 +103,25 @@ class EPaymentController extends Controller
         if (auth('employee')->check()) {
             $deposit->agent_id = auth('employee')->id();
             $deposit->user_id = $request->user_id;
+            $user = User::find($request->user_id);
+            if ($user) {
+                $deposit->guest_name = $user->fullname;
+                $deposit->guest_email = $user->email;
+                $deposit->guest_phone = $user->mobile;
+            }
+        } elseif (auth()->check()) {
+            $user = auth()->user();
+            $deposit->user_id = $user->id;
+            $deposit->guest_name = $user->fullname;
+            $deposit->guest_email = $user->email;
+            $deposit->guest_phone = $user->mobile;
         } else {
-            $deposit->user_id = auth()->id();
+            $deposit->user_id = null;
+            $deposit->guest_name = $request->name;
+            $deposit->guest_email = $request->email;
+            $deposit->guest_phone = $request->phone ?: 'Not provided';
         }
+
         $deposit->method_code = $gatewayCurrency->method_code;
         $deposit->method_currency = strtoupper($gatewayCurrency->currency);
         $deposit->amount = $amount;
@@ -112,10 +133,35 @@ class EPaymentController extends Controller
         $deposit->trx = getTrx();
         $deposit->try = 0;
         $deposit->status = 0;
+        
+        $currency = strtoupper($gatewayCurrency->currency);
+        $paymentPurpose = $request->payment_purpose ?: "Online E-Payment Request - $amount $currency";
+        
+        $bookingReference = $request->booking_reference;
+        if (empty($bookingReference)) {
+            $datePart = now()->format('Ymd');
+            $randomPart = strtoupper(substr(uniqid(), -4));
+            $bookingReference = "EPAY-$datePart-$randomPart";
+        }
+        
+        $notes = $request->note;
+        if (empty($notes)) {
+            $notes = (auth()->check() || auth('employee')->check()) 
+                ? "User payment submitted from /e-payment page" 
+                : "Guest payment submitted from public /e-payment page";
+        }
+
+        $deposit->payment_purpose = $paymentPurpose;
+        $deposit->booking_reference = $bookingReference;
+        $deposit->notes = $notes;
+
         $deposit->detail = (object) [
             'payment_flow' => 'epayment',
-            'note' => trim((string) $request->note),
+            'note' => $notes,
+            'payment_purpose' => $paymentPurpose,
+            'booking_reference' => $bookingReference,
         ];
+
         $deposit->save();
 
         Session::put('Track', $deposit->trx);
@@ -154,12 +200,14 @@ class EPaymentController extends Controller
         $depositQuery = Deposit::with('gateway');
         if (auth('employee')->check()) {
             $depositQuery->where('agent_id', auth('employee')->id());
-        } else {
+        } elseif (auth()->check()) {
             $depositQuery->where('user_id', auth()->id());
         }
 
         if ($trx) {
             $depositQuery->where('trx', $trx);
+        } else {
+            abort(404);
         }
 
         $deposit = $depositQuery->latest('id')->firstOrFail();

@@ -74,7 +74,10 @@ class DepositController extends Controller
         if ($request->search) {
             $search = request()->search;
             $deposits = $deposits->where(function ($q) use ($search) {
-                $q->where('trx', 'like', "%$search%")->orWhereHas('user', function ($user) use ($search) {
+                $q->where('trx', 'like', "%$search%")
+                  ->orWhere('guest_name', 'like', "%$search%")
+                  ->orWhere('guest_email', 'like', "%$search%")
+                  ->orWhereHas('user', function ($user) use ($search) {
                     $user->where('username', 'like', "%$search%");
                 });
             });

@@ -56,11 +56,11 @@ class ProcessController extends Controller
             "cartTotal" => round($deposit->final_amo, 2),
             "currency" => $deposit->method_currency,
             "customer" => [
-                "first_name" => $user->firstname ?? 'Customer',
-                "last_name" => $user->lastname ?? 'Name',
-                "email" => $user->email,
-                "phone" => $user->phone ?? '01000000000',
-                "address" => "Egypt",
+                "first_name" => $user ? ($user->firstname ?? 'Customer') : ($deposit->guest_name ?? 'Guest'),
+                "last_name" => $user ? ($user->lastname ?? 'Name') : 'Payer',
+                "email" => $user ? $user->email : ($deposit->guest_email ?? 'guest@example.com'),
+                "phone" => $user ? ($user->mobile ?? $user->phone ?? '01000000000') : ($deposit->guest_phone ?? '01000000000'),
+                "address" => "Default",
             ],
             "cartItems" => [
                 [
