@@ -19,20 +19,6 @@
         <div class="row justify-content-center w--100">
             <div class="col-xxl-5 col-xl-7 col-lg-6 col-md-8">
                 <div class="login-box w--100">
-                     <div class="login-user--tab position-absolute d-flex justify-content-start  mb-4 w--100">
-                        <div class="btn--wrap user {{ Route::is('user.register') ? 'active' : '' }} position-relative w-50">
-                            <a href="{{ route('user.register') }}"
-                                class="user btn btn--base btn--lg pills {{ Route::is('user.register') ? 'active' : '' }} w-100"><i class="fas fa-plane"></i> @lang('Traveller')</a>
-                        </div>
-
-                        <div class="btn--wrap {{ Route::is('user.register') ? 'active' : '' }} position-relative w-50">
-                            <a href="{{ route('employee.register') }}"
-                                class="agent btn btn--base btn--lg pills {{ Route::is('employee.register') ? 'active' : '' }} w-100"><i class="fas fa-map"></i> @lang('Employee')</a>
-                        </div>
-                    </div>
-
-
-
                     <div class="logo--wrap d-flex justify-content-center align-items-center">
                         <a href="{{ route('home') }}">
                             <img src="{{ getImage(getFilePath('logoIcon') . '/logo.png', '?' . time()) }}" alt="Logo" style="max-height: 40px;">
@@ -116,7 +102,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-lg-12">
+                                <div class="col-lg-12 d-none">
                                     <div class="mb-4 form-group">
                                         <label class="mb-2 form--label">@lang('Mobile')</label>
                                         <div class="input-group  with--text mb-4">

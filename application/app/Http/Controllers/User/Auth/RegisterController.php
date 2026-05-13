@@ -77,9 +77,9 @@ class RegisterController extends Controller
             'password' => ['required','confirmed',$passwordValidation],
             'username' => 'required|unique:users|min:6',
             'captcha' => 'sometimes|required',
-            'mobile_code' => 'required|in:'.$mobileCodes,
-            'country_code' => 'required|in:'.$countryCodes,
-            'country' => 'required|in:'.$countries,
+            'mobile_code' => 'nullable|in:'.$mobileCodes,
+            'country_code' => 'nullable|in:'.$countryCodes,
+            'country' => 'nullable|in:'.$countries,
             'agree' => $agree
         ]);
         return $validate;
@@ -144,8 +144,8 @@ class RegisterController extends Controller
         $user->password = Hash::make($data['password']);
         $user->username = trim($data['username']);
         $user->ref_by = $referUser ? $referUser->id : 0;
-        $user->country_code = $data['country_code'];
-        $user->mobile = $data['mobile'] ? $data['mobile_code'].$data['mobile'] : null;
+        $user->country_code = isset($data['country_code']) ? $data['country_code'] : null;
+        $user->mobile = ($data['mobile'] && isset($data['mobile_code'])) ? $data['mobile_code'].$data['mobile'] : null;
         $user->address = (object) [
             'address' => '',
             'state' => '',
