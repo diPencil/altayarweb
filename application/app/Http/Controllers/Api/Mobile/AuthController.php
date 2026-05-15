@@ -159,7 +159,7 @@ class AuthController extends Controller
 
     private function formatUser(User $user): array
     {
-        $membership = $user->currentMembership()->with('membershipPlan')->first();
+        $membership = $user->currentMembership()->with('plan')->first();
 
         return [
             'id' => $user->id,
