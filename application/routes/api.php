@@ -16,6 +16,27 @@ use Illuminate\Support\Facades\Route;
 
 Route::namespace('Api')->name('api.')->group(function(){
 
+    Route::prefix('mobile/auth')->group(function () {
+        Route::post('login', [\App\Http\Controllers\Api\Mobile\AuthController::class, 'login']);
+        Route::post('register', [\App\Http\Controllers\Api\Mobile\AuthController::class, 'register']);
+        Route::post('refresh', [\App\Http\Controllers\Api\Mobile\AuthController::class, 'refresh']);
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::get('me', [\App\Http\Controllers\Api\Mobile\AuthController::class, 'me']);
+            Route::post('logout', [\App\Http\Controllers\Api\Mobile\AuthController::class, 'logout']);
+        });
+    });
+
+    Route::prefix('mobile')->group(function () {
+        Route::get('health', function () {
+            return response()->json([
+                'success' => true,
+                'message' => 'Laravel mobile API is working',
+                'source' => 'altayar-website',
+            ]);
+        });
+    });
+
     Route::get('general-setting',function()
     {
         $general = GeneralSetting::select('site_name')->first();
