@@ -35,6 +35,14 @@ Route::namespace('Api')->name('api.')->group(function(){
     });
 
     Route::prefix('mobile')->group(function () {
+        Route::get('offers', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'index']);
+        Route::get('offers/featured', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'featured']);
+        Route::get('offers/categories', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'categories']);
+        Route::get('offers/{id}', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'show'])
+            ->whereNumber('id');
+    });
+
+    Route::prefix('mobile')->group(function () {
         Route::get('health', function () {
             return response()->json([
                 'success' => true,
