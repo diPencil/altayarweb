@@ -166,6 +166,8 @@ class AuthController extends Controller
         $validFrom = optional($membership->start_date)->toDateString();
         $validUntil = optional($membership->end_date)->toDateString();
         $cashbackBalance = isset($user->cashback_balance) ? (float) $user->cashback_balance : 0;
+        $currencyText = strtoupper((string) (gs()->cur_text ?? 'USD')) ?: 'USD';
+        $currencySymbol = (string) (gs()->cur_sym ?? '$');
 
         return [
             'id' => $user->id,
@@ -181,6 +183,8 @@ class AuthController extends Controller
             'phone_verified' => (int) ($user->sv ?? 0) === 1,
             'membership_id_display' => $membershipCode,
             'club_gifts' => $cashbackBalance,
+            'currency' => $currencyText,
+            'currency_symbol' => $currencySymbol,
             'membership' => $membership ? [
                 'membership_number' => $membership->membership_number ?? null,
                 'membership_id_display' => $membershipCode,
@@ -198,6 +202,8 @@ class AuthController extends Controller
                 'points_balance' => $membership->points_balance ?? null,
                 'cashback_balance' => $cashbackBalance,
                 'club_gifts' => $cashbackBalance,
+                'currency' => $currencyText,
+                'currency_symbol' => $currencySymbol,
                 'is_lifetime' => (bool) ($membership->is_lifetime ?? false),
             ] : null,
             'gender' => $user->gender ?? null,

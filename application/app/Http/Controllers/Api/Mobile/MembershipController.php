@@ -48,6 +48,8 @@ class MembershipController extends Controller
         $planNameAr = $membership->plan->name_ar ?? $membership->plan_name_ar ?? null;
         $membershipCode = $membership->member_code ?? $membership->membership_id_display ?? $user->membership_id_display ?? null;
         $cashbackBalance = isset($user->cashback_balance) ? (float) $user->cashback_balance : 0;
+        $currencyText = strtoupper((string) (gs()->cur_text ?? 'USD')) ?: 'USD';
+        $currencySymbol = (string) (gs()->cur_sym ?? '$');
 
         return response()->json([
             'success' => true,
@@ -65,6 +67,8 @@ class MembershipController extends Controller
                     'expiry_date' => optional($membership->end_date)->toDateString(),
                     'cashback_balance' => $cashbackBalance,
                     'club_gifts' => $cashbackBalance,
+                    'currency' => $currencyText,
+                    'currency_symbol' => $currencySymbol,
                 ]) : null,
                 'membership_id_display' => $membershipCode,
                 'plan_name' => $planNameEn,
@@ -73,6 +77,8 @@ class MembershipController extends Controller
                 'wallet_balance' => isset($user->balance) ? (float) $user->balance : 0,
                 'cashback_balance' => $cashbackBalance,
                 'club_gifts' => $cashbackBalance,
+                'currency' => $currencyText,
+                'currency_symbol' => $currencySymbol,
                 'points' => [
                     'current_balance' => (int) ($user->membership_points_balance ?? 0),
                     'total_earned' => (int) $user->membershipPointTransactions()->where('type', 'earned')->sum('points'),

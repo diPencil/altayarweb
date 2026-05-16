@@ -18,7 +18,8 @@ class WalletController extends Controller
             'data' => [
                 'user_id' => $user->id,
                 'balance' => number_format((float) ($user->balance ?? 0), 2, '.', ''),
-                'currency' => $this->currencyFor($user),
+                'currency' => $this->currencyText(),
+                'currency_symbol' => $this->currencySymbol(),
             ],
         ]);
     }
@@ -41,7 +42,8 @@ class WalletController extends Controller
                     'description' => $transaction->details ?: 'Wallet transaction',
                     'description_en' => $transaction->details ?: 'Wallet transaction',
                     'description_ar' => $transaction->details ?: 'معاملة المحفظة',
-                    'currency' => $this->currencyFor($user),
+                    'currency' => $this->currencyText(),
+                    'currency_symbol' => $this->currencySymbol(),
                     'created_at' => optional($transaction->created_at)->toISOString(),
                 ];
             })
@@ -53,8 +55,13 @@ class WalletController extends Controller
         ]);
     }
 
-    private function currencyFor($user): string
+    private function currencyText(): string
     {
-        return strtoupper((string) ($user->currency ?? 'EGP')) ?: 'EGP';
+        return strtoupper((string) (gs()->cur_text ?? 'USD')) ?: 'USD';
+    }
+
+    private function currencySymbol(): string
+    {
+        return (string) (gs()->cur_sym ?? '$');
     }
 }
