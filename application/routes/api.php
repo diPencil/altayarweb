@@ -32,6 +32,11 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::get('wallet/me/transactions', [\App\Http\Controllers\Api\Mobile\WalletController::class, 'transactions']);
         Route::get('points/me', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'me']);
         Route::get('points/me/transactions', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'transactions']);
+        Route::get('notifications', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'index']);
+        Route::get('notifications/unread-count', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'unreadCount']);
+        Route::post('notifications/{id}/read', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'markAsRead'])
+            ->whereNumber('id');
+        Route::post('notifications/read-all', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'markAllAsRead']);
     });
 
     Route::prefix('mobile')->group(function () {
