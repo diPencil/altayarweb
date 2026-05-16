@@ -43,6 +43,20 @@ Route::namespace('Api')->name('api.')->group(function(){
             Route::get('membership/cashback', 'cashbackHistory');
             Route::post('membership/subscribe', 'subscribe');
         });
+
+        Route::controller(\App\Http\Controllers\Api\Mobile\OrdersController::class)->group(function () {
+            Route::get('orders/me', 'me');
+            Route::get('orders/{id}', 'show')->whereNumber('id');
+        });
+
+        Route::controller(\App\Http\Controllers\Api\Mobile\BookingsController::class)->group(function () {
+            Route::get('bookings/me', 'me');
+            Route::get('bookings/{id}', 'show')->whereNumber('id');
+        });
+
+        Route::controller(\App\Http\Controllers\Api\Mobile\PaymentsController::class)->group(function () {
+            Route::get('payments/my-payments', 'myPayments');
+        });
     });
 
     Route::prefix('mobile')->group(function () {
