@@ -37,6 +37,11 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::post('notifications/{id}/read', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'markAsRead'])
             ->whereNumber('id');
         Route::post('notifications/read-all', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'markAllAsRead']);
+        Route::controller(\App\Http\Controllers\Api\Mobile\MembershipController::class)->group(function () {
+            Route::get('membership/plans', 'plans');
+            Route::get('membership/dashboard', 'dashboard');
+            Route::post('membership/subscribe', 'subscribe');
+        });
     });
 
     Route::prefix('mobile')->group(function () {

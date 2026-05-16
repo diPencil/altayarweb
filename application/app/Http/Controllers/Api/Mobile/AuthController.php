@@ -160,6 +160,12 @@ class AuthController extends Controller
     private function formatUser(User $user): array
     {
         $membership = $user->currentMembership()->with('plan')->first();
+        $planNameEn = $membership->plan->name ?? $membership->plan_name_en ?? $membership->display_name ?? null;
+        $planNameAr = $membership->plan->name_ar ?? $membership->plan_name_ar ?? null;
+        $membershipCode = $membership->member_code ?? $membership->membership_id_display ?? $user->membership_id_display ?? null;
+        $validFrom = optional($membership->start_date)->toDateString();
+        $validUntil = optional($membership->end_date)->toDateString();
+        $cashbackBalance = isset($user->cashback_balance) ? (float) $user->cashback_balance : 0;
 
         return [
             'id' => $user->id,
@@ -173,22 +179,31 @@ class AuthController extends Controller
             'avatar' => $user->avatar ?? $user->image ?? null,
             'email_verified' => (int) ($user->ev ?? 0) === 1,
             'phone_verified' => (int) ($user->sv ?? 0) === 1,
-            'membership_id_display' => $user->membership_id_display ?? null,
+            'membership_id_display' => $membershipCode,
+            'club_gifts' => $cashbackBalance,
             'membership' => $membership ? [
                 'membership_number' => $membership->membership_number ?? null,
-                'membership_id_display' => $membership->membership_id_display ?? null,
-                'plan_name_ar' => $membership->plan_name_ar ?? null,
-                'plan_name_en' => $membership->plan_name_en ?? null,
+                'membership_id_display' => $membershipCode,
+                'member_code' => $membershipCode,
+                'plan_name' => $planNameEn,
+                'display_name' => $planNameEn,
+                'plan_name_ar' => $planNameAr,
+                'plan_name_en' => $planNameEn,
                 'tier_code' => $membership->tier_code ?? null,
-                'expiry_date' => $membership->expiry_date ?? null,
+                'valid_from' => $validFrom,
+                'starts_at' => optional($membership->start_date)->toISOString(),
+                'valid_until' => $validUntil,
+                'expiry_date' => $validUntil,
                 'status' => $membership->status ?? null,
                 'points_balance' => $membership->points_balance ?? null,
+                'cashback_balance' => $cashbackBalance,
+                'club_gifts' => $cashbackBalance,
                 'is_lifetime' => (bool) ($membership->is_lifetime ?? false),
             ] : null,
             'gender' => $user->gender ?? null,
             'country' => is_object($user->address ?? null) ? ($user->address->country ?? null) : null,
             'wallet_balance' => isset($user->balance) ? (float) $user->balance : 0,
-            'cashback_balance' => isset($user->cashback_balance) ? (float) $user->cashback_balance : 0,
+            'cashback_balance' => $cashbackBalance,
             'points' => [
                 'current_balance' => (int) ($user->membership_points_balance ?? 0),
                 'total_earned' => (int) $user->membershipPointTransactions()->where('type', 'earned')->sum('points'),
