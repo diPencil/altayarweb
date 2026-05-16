@@ -247,6 +247,6 @@ class OffersController extends Controller
     {
         $perPage = (int) $request->query('per_page', 10);
 
-        return min(max($perPage, 1), 50);
+        return min(max($perPage, 1), 100);
     }
 }

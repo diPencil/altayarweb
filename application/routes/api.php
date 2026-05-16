@@ -60,6 +60,20 @@ Route::namespace('Api')->name('api.')->group(function(){
     });
 
     Route::prefix('mobile')->group(function () {
+        Route::get('club-offers', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'index']);
+        Route::get('club-offers/featured', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'featured']);
+        Route::get('club-offers/categories', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'categories']);
+        Route::get('club-offers/{id}', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'show'])
+            ->whereNumber('id');
+
+        Route::get('special-offers', [\App\Http\Controllers\Api\Mobile\SpecialOffersController::class, 'index']);
+        Route::get('special-offers/featured', [\App\Http\Controllers\Api\Mobile\SpecialOffersController::class, 'featured']);
+        Route::get('special-offers/categories', [\App\Http\Controllers\Api\Mobile\SpecialOffersController::class, 'categories']);
+        Route::get('special-offers/images/{filename}', [\App\Http\Controllers\Api\Mobile\SpecialOffersController::class, 'image'])
+            ->name('mobile.special-offers.image');
+        Route::get('special-offers/{id}', [\App\Http\Controllers\Api\Mobile\SpecialOffersController::class, 'show'])
+            ->whereNumber('id');
+
         Route::get('offers', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'index']);
         Route::get('offers/featured', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'featured']);
         Route::get('offers/categories', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'categories']);
