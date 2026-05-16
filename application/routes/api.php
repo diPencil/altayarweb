@@ -27,6 +27,13 @@ Route::namespace('Api')->name('api.')->group(function(){
         });
     });
 
+    Route::middleware('auth:sanctum')->prefix('mobile')->group(function () {
+        Route::get('wallet/me', [\App\Http\Controllers\Api\Mobile\WalletController::class, 'me']);
+        Route::get('wallet/me/transactions', [\App\Http\Controllers\Api\Mobile\WalletController::class, 'transactions']);
+        Route::get('points/me', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'me']);
+        Route::get('points/me/transactions', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'transactions']);
+    });
+
     Route::prefix('mobile')->group(function () {
         Route::get('health', function () {
             return response()->json([
