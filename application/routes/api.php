@@ -48,6 +48,28 @@ Route::namespace('Api')->name('api.')->group(function(){
     });
 
     Route::prefix('mobile')->group(function () {
+        Route::get('reels', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'index']);
+        Route::get('reels/{id}', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'show'])
+            ->whereNumber('id');
+        Route::get('reels/{id}/comments', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'comments'])
+            ->whereNumber('id');
+    });
+
+    Route::middleware('auth:sanctum')->prefix('mobile')->group(function () {
+        Route::get('reels/favorites', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'favorites']);
+        Route::post('reels/{id}/view', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'view'])
+            ->whereNumber('id');
+        Route::post('reels/{id}/like', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'like'])
+            ->whereNumber('id');
+        Route::post('reels/{id}/save', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'save'])
+            ->whereNumber('id');
+        Route::delete('reels/{id}/save', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'unsave'])
+            ->whereNumber('id');
+        Route::post('reels/{id}/comments', [\App\Http\Controllers\Api\Mobile\ReelsController::class, 'storeComment'])
+            ->whereNumber('id');
+    });
+
+    Route::prefix('mobile')->group(function () {
         Route::get('health', function () {
             return response()->json([
                 'success' => true,
