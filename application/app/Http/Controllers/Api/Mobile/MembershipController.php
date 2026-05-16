@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\MembershipPlan;
 use App\Models\MembershipPlanHistory;
+use App\Models\MembershipCashbackTransaction;
 use App\Models\MembershipPointTransaction;
 use App\Models\UserMembership;
 use Illuminate\Http\JsonResponse;
@@ -76,6 +77,36 @@ class MembershipController extends Controller
                     'current_balance' => (int) ($user->membership_points_balance ?? 0),
                     'total_earned' => (int) $user->membershipPointTransactions()->where('type', 'earned')->sum('points'),
                 ],
+            ],
+        ]);
+    }
+
+    public function cashbackHistory(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $records = $user->membershipCashbackTransactions()
+            ->latest()
+            ->get()
+            ->map(function (MembershipCashbackTransaction $transaction): array {
+                $description = $transaction->remark ?: ($transaction->type === 'earned' ? 'Cashback earned' : 'Cashback used');
+
+                return [
+                    'id' => $transaction->id,
+                    'amount' => (float) $transaction->amount,
+                    'type' => $transaction->type,
+                    'description_en' => $description,
+                    'description_ar' => $description,
+                    'created_at' => optional($transaction->created_at)->toISOString(),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'records' => $records,
+                'total' => $records->count(),
+                'balance' => (float) $user->cashback_balance,
             ],
         ]);
     }

@@ -40,6 +40,7 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::controller(\App\Http\Controllers\Api\Mobile\MembershipController::class)->group(function () {
             Route::get('membership/plans', 'plans');
             Route::get('membership/dashboard', 'dashboard');
+            Route::get('membership/cashback', 'cashbackHistory');
             Route::post('membership/subscribe', 'subscribe');
         });
     });
