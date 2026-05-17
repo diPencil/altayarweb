@@ -9,6 +9,28 @@ use Illuminate\Http\Request;
 
 class NotificationsController extends Controller
 {
+    public function stats(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $query = NotificationLog::where('user_id', $user->id);
+        $total = (clone $query)->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total' => $total,
+                'unread' => 0,
+                'by_type' => [
+                    'system' => $total,
+                ],
+                'by_priority' => [
+                    'normal' => $total,
+                ],
+            ],
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
