@@ -30,6 +30,13 @@ Route::namespace('Api')->name('api.')->group(function(){
     Route::middleware('auth:sanctum')->prefix('mobile')->group(function () {
         Route::get('wallet/me', [\App\Http\Controllers\Api\Mobile\WalletController::class, 'me']);
         Route::get('wallet/me/transactions', [\App\Http\Controllers\Api\Mobile\WalletController::class, 'transactions']);
+        Route::controller(\App\Http\Controllers\Api\Mobile\ChatController::class)->group(function () {
+            Route::get('chat/my', 'my');
+            Route::get('chat/my/active', 'active');
+            Route::post('chat/start', 'start');
+            Route::get('chat/{id}', 'show')->whereNumber('id');
+            Route::post('chat/{id}/message', 'message')->whereNumber('id');
+        });
         Route::get('points/me', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'me']);
         Route::get('points/me/transactions', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'transactions']);
         Route::get('notifications', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'index']);
