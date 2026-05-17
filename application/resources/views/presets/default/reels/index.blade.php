@@ -77,6 +77,25 @@
         }
         .reel-action-btn:hover { transform: translateY(-2px) scale(1.03); }
         .reel-action-btn.is-active { background: #ff4d6d; }
+        .reel-sound-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 4;
+            width: 46px;
+            height: 46px;
+            border: 0;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            transition: transform .2s ease, background .2s ease, opacity .2s ease;
+        }
+        .reel-sound-btn:hover { transform: translateY(-2px) scale(1.03); }
+        .reel-sound-btn.is-active { background: rgba(34,197,94,0.92); }
         .reel-cta {
             display: inline-flex;
             align-items: center;
@@ -226,6 +245,16 @@
                             data-src="{{ $reel->video_url }}"
                         ></video>
 
+                        <button
+                            type="button"
+                            class="reel-sound-btn js-reel-sound-toggle"
+                            aria-label="@lang('Toggle sound')"
+                            aria-pressed="false"
+                            title="@lang('Toggle sound')"
+                        >
+                            <i class="fa-solid fa-volume-xmark"></i>
+                        </button>
+
                         <div class="reel-actions">
                             <button type="button" class="reel-action-btn js-reel-like @if($isLiked) is-active @endif" data-action-url="{{ route('reels.like', $reel->id) }}" aria-label="@lang('Like')">
                                 <i class="fa-solid fa-heart"></i>
@@ -347,6 +376,20 @@
                 }
             }
 
+            function syncSoundButton(item) {
+                const video = item.querySelector('video');
+                const button = item.querySelector('.js-reel-sound-toggle');
+                if (!video || !button) return;
+
+                const icon = button.querySelector('i');
+                const muted = !!video.muted;
+                button.classList.toggle('is-active', !muted);
+                button.setAttribute('aria-pressed', muted ? 'false' : 'true');
+                if (icon) {
+                    icon.className = muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+                }
+            }
+
             function pauseVideo(item) {
                 const video = item.querySelector('video');
                 if (video) {
@@ -366,6 +409,7 @@
                 }, { threshold: 0.72 });
 
                 feed.querySelectorAll('.reel-item').forEach(item => observer.observe(item));
+                feed.querySelectorAll('.reel-item').forEach(syncSoundButton);
 
                 const params = new URLSearchParams(window.location.search);
                 const reelIdParam = params.get('reel');
@@ -380,9 +424,27 @@
             }
 
             document.addEventListener('click', function (event) {
+                const soundButton = event.target.closest('.js-reel-sound-toggle');
                 const likeButton = event.target.closest('.js-reel-like');
                 const saveButton = event.target.closest('.js-reel-save');
                 const shareButton = event.target.closest('.js-reel-share');
+
+                if (soundButton) {
+                    event.preventDefault();
+                    const reelItem = soundButton.closest('.reel-item');
+                    const video = reelItem ? reelItem.querySelector('video') : null;
+                    if (video) {
+                        video.muted = !video.muted;
+                        syncSoundButton(reelItem);
+                        if (!video.muted) {
+                            const playPromise = video.play();
+                            if (playPromise && typeof playPromise.catch === 'function') {
+                                playPromise.catch(() => {});
+                            }
+                        }
+                    }
+                    return;
+                }
 
                 const button = likeButton || saveButton;
                 if (button) {

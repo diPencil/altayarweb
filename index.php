@@ -5,6 +5,15 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+if (PHP_SAPI === 'cli-server') {
+    $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    $staticPath = __DIR__ . $requestPath;
+
+    if ($requestPath !== '/' && is_file($staticPath)) {
+        return false;
+    }
+}
+
 /*
 |--------------------------------------------------------------------------
 | Check If The Application Is Under Maintenance
