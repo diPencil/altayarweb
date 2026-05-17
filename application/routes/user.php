@@ -125,6 +125,7 @@ Route::middleware('auth')->name('user.')->group(function () {
                 Route::get('benefits', 'benefits')->name('benefits');
                 Route::get('plans', 'plans')->name('plans');
                 Route::post('subscribe', 'subscribe')->name('subscribe');
+                Route::get('view/{id}', 'viewPdf')->name('view');
                 Route::get('download/{id}', 'downloadPdf')->name('download');
             });
 
