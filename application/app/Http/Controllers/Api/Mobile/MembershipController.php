@@ -10,6 +10,7 @@ use App\Models\MembershipPointTransaction;
 use App\Models\UserMembership;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 
 class MembershipController extends Controller
 {
@@ -25,11 +26,25 @@ class MembershipController extends Controller
         $plans = $query->get()->map(function (MembershipPlan $plan): array {
             return [
                 'id' => $plan->id,
+                'name' => $plan->name,
                 'name_en' => $plan->name,
                 'name_ar' => $plan->name_ar,
                 'price' => (float) $plan->price,
                 'duration_days' => (int) $plan->duration_days,
+                'bonus_points' => (int) $plan->bonus_points,
+                'required_points' => (int) $plan->bonus_points,
+                'points_threshold' => (int) $plan->bonus_points,
+                'points' => (int) $plan->bonus_points,
+                'required_amount' => (float) $plan->price,
+                'spending_required' => (float) $plan->price,
                 'features' => array_values(array_filter((array) ($plan->benefits ?? []))),
+                'benefits' => array_values(array_filter((array) ($plan->benefits ?? []))),
+                'benefits_ar' => array_values(array_filter((array) ($plan->benefits_ar ?? []))),
+                'image_url' => $plan->image_url,
+                'badge_image' => $plan->image_url,
+                'icon' => null,
+                'cover_image_url' => $plan->coverImageUrl(),
+                'pdf_url' => $plan->pdf_url,
                 'status' => (int) $plan->status === 1 ? 'ACTIVE' : 'INACTIVE',
             ];
         })->values();
@@ -61,6 +76,7 @@ class MembershipController extends Controller
                     'display_name' => $planNameEn,
                     'plan_name_en' => $planNameEn,
                     'plan_name_ar' => $planNameAr,
+                    'pdf_url' => $this->membershipPdfUrl($membership),
                     'valid_from' => optional($membership->start_date)->toDateString(),
                     'starts_at' => optional($membership->start_date)->toISOString(),
                     'valid_until' => optional($membership->end_date)->toDateString(),
@@ -161,5 +177,39 @@ class MembershipController extends Controller
                 'membership' => $membership->load('plan'),
             ],
         ]);
+    }
+
+    public function pdf(Request $request, UserMembership $membership): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        abort_unless($request->hasValidSignature(), 403);
+
+        $membership->loadMissing('plan');
+        $plan = $membership->plan;
+
+        abort_unless($plan && filled($plan->pdf_file), 404);
+
+        $absolutePath = getFilePath('membershipPlanPdf') . '/' . $plan->pdf_file;
+
+        abort_unless(is_file($absolutePath) && is_readable($absolutePath), 404);
+
+        return response()->file($absolutePath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="membership-benefits.pdf"',
+        ]);
+    }
+
+    private function membershipPdfUrl(UserMembership $membership): ?string
+    {
+        $membership->loadMissing('plan');
+
+        if (! $membership->plan || ! filled($membership->plan->pdf_file)) {
+            return null;
+        }
+
+        return URL::temporarySignedRoute(
+            'api.mobile.membership.pdf',
+            now()->addDay(),
+            ['membership' => $membership->id]
+        );
     }
 }

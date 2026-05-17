@@ -40,6 +40,7 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::get('points/me', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'me']);
         Route::get('points/me/transactions', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'transactions']);
         Route::get('notifications', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'index']);
+        Route::get('notifications/stats', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'stats']);
         Route::get('notifications/unread-count', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'unreadCount']);
         Route::post('notifications/{id}/read', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'markAsRead'])
             ->whereNumber('id');
@@ -67,6 +68,10 @@ Route::namespace('Api')->name('api.')->group(function(){
     });
 
     Route::prefix('mobile')->group(function () {
+        Route::get('membership/pdf/{membership}', [	\App\Http\Controllers\Api\Mobile\MembershipController::class, 'pdf'])
+            ->whereNumber('membership')
+            ->name('mobile.membership.pdf');
+
         Route::get('club-offers', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'index']);
         Route::get('club-offers/featured', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'featured']);
         Route::get('club-offers/categories', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'categories']);

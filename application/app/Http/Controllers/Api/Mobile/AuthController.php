@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserMembership;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
@@ -62,7 +64,6 @@ class AuthController extends Controller
         $user->firstname = trim((string) $request->input('first_name'));
         $user->lastname = trim((string) $request->input('last_name'));
         $user->email = strtolower(trim((string) $request->input('email')));
-        $user->password = Hash::make((string) $request->input('password'));
         $user->username = trim((string) $request->input('username'));
         $user->mobile = $request->filled('phone') ? trim((string) $request->input('phone')) : null;
         $user->gender = $request->filled('gender') ? trim((string) $request->input('gender')) : null;
@@ -194,6 +195,7 @@ class AuthController extends Controller
                 'plan_name_ar' => $planNameAr,
                 'plan_name_en' => $planNameEn,
                 'tier_code' => $membership->tier_code ?? null,
+                'pdf_url' => $this->currentMembershipPdfUrl($membership),
                 'valid_from' => $validFrom,
                 'starts_at' => optional($membership->start_date)->toISOString(),
                 'valid_until' => $validUntil,
@@ -216,5 +218,20 @@ class AuthController extends Controller
             ],
             'created_at' => optional($user->created_at)->toISOString(),
         ];
+    }
+
+    private function currentMembershipPdfUrl(UserMembership $membership): ?string
+    {
+        $membership->loadMissing('plan');
+
+        if (! $membership->plan || ! filled($membership->plan->pdf_file)) {
+            return null;
+        }
+
+        return URL::temporarySignedRoute(
+            'api.mobile.membership.pdf',
+            now()->addDay(),
+            ['membership' => $membership->id]
+        );
     }
 }
