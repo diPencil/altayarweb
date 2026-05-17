@@ -13,6 +13,7 @@
             </a>
         </li>
 
+        @if (userMenuCan('payments'))
         <li class="sidebar-menu-list__item has-dropdown {{ isActiveRoute('user.deposit') || isActiveRoute('user.transactions') || isActiveRoute('user.deposit.history') || isActiveRoute('user.invoice.list') ? 'active' : '' }}">
             <a href="javascript:void(0)" class="sidebar-menu-list__link">
                 <span class="icon"><i class="fa-solid fa-credit-card"></i></span>
@@ -35,7 +36,9 @@
                 </ul>
             </div>
         </li>
+        @endif
 
+        @if (userMenuCan('bookings'))
         <li class="sidebar-menu-list__item has-dropdown {{ isActiveRoute('user.tour.package.booking.all.list')||isActiveRoute('user.tour.package.booking.my.list')||isActiveRoute('user.tour.package.booking.pending') ||   isActiveRoute('user.tour.package.booking.approved')|| isActiveRoute('user.tour.package.booking.cancel') || isActiveRoute('user.tour.package.booking.details') || isActiveRoute('user.service.booking.my.list') ? 'active' : '' }}">
             <a href="javascript:void(0)" class="sidebar-menu-list__link">
                 <span class="icon"><i class="fa-solid fa-cart-shopping"></i></span>
@@ -65,7 +68,9 @@
                 </ul>
             </div>
         </li>
+        @endif
 
+        @if (userMenuCan('membership'))
         <li class="sidebar-menu-list__item has-dropdown {{ isActiveRoute('user.membership.*') ? 'active' : '' }}">
             <a href="javascript:void(0)" class="sidebar-menu-list__link">
                 <span class="icon"><i class="fa-solid fa-id-card"></i></span>
@@ -91,26 +96,36 @@
                 </ul>
             </div>
         </li>
+        @endif
 
-        <li class="sidebar-menu-list__item">            <a href="{{ route('user.wallet.index') }}" class="sidebar-menu-list__link {{ Route::is('user.wallet.index') ? 'active' : '' }}">
+        @if (userMenuCan('wallet'))
+        <li class="sidebar-menu-list__item">
+            <a href="{{ route('user.wallet.index') }}" class="sidebar-menu-list__link {{ Route::is('user.wallet.index') ? 'active' : '' }}">
                 <span class="icon"><i class="fa-solid fa-wallet"></i></span>
                 <span class="text">@lang('My Wallet')</span>
             </a>
         </li>
+        @endif
 
-        <li class="sidebar-menu-list__item">            <a href="{{route('user.get.wishlist')}}" class="sidebar-menu-list__link {{ Route::is('user.get.wishlist') ? 'active' : '' }}">
+        @if (userMenuCan('wishlist'))
+        <li class="sidebar-menu-list__item">
+            <a href="{{route('user.get.wishlist')}}" class="sidebar-menu-list__link {{ Route::is('user.get.wishlist') ? 'active' : '' }}">
                 <span class="icon"><i class="fa-solid fa-heart"></i></span>
                 <span class="text">@lang('Wishlists')</span>
             </a>
         </li>
+        @endif
 
+        @if (userMenuCan('reels'))
         <li class="sidebar-menu-list__item">
             <a href="{{ route('user.reels.library') }}" class="sidebar-menu-list__link {{ Route::is('user.reels.library') ? 'active' : '' }}">
                 <span class="icon"><i class="fa-solid fa-clapperboard"></i></span>
                 <span class="text">@lang('Reels Library')</span>
             </a>
         </li>
+        @endif
 
+        @if (userMenuCan('tickets'))
         <li class="sidebar-menu-list__item has-dropdown {{ isActiveRoute('ticket')||isActiveRoute('ticket.open') ? 'active' : '' }}">
             <a href="javascript:void(0)" class="sidebar-menu-list__link">
                 <span class="icon"><i class="fa-solid fa-headset"></i></span>
@@ -127,6 +142,7 @@
                 </ul>
             </div>
         </li>
+        @endif
 
         <li class="sidebar-menu-list__item">
             <a href="{{ route('user.clear.cache') }}" class="sidebar-menu-list__link">
@@ -140,6 +156,7 @@
         $sidebarMembership = auth()->user()?->currentMembership;
     @endphp
 
+    @if (userDashboardCan('sidebar_membership'))
     <div class="sidebar-membership-card">
         <div class="sidebar-membership-card__link">
             <div class="sidebar-membership-card__content align-items-start">
@@ -176,5 +193,6 @@
             </div>
         </div>
     </div>
+    @endif
 
 </div>

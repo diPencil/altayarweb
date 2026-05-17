@@ -1,5 +1,54 @@
 @extends($activeTemplate . 'layouts.user.master')
 @section('content')
+    <style>
+        .membership-plan-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            margin-top: 18px;
+        }
+        .membership-plan-actions .pdf-btn {
+            width: 100%;
+            justify-content: center;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+        }
+        .membership-plan-actions .subscribe-form {
+            grid-column: 1 / -1;
+            width: 100%;
+        }
+        .membership-plan-actions .subscribe-btn {
+            width: 100%;
+            justify-content: center;
+            white-space: nowrap;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .membership-plan-actions .current-plan-badge {
+            grid-column: 1 / -1;
+            width: 100%;
+            text-align: center;
+            background: #eafbf0;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (max-width: 375px) {
+            .membership-plan-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
     <div class="row gy-4 mb-4">
         <div class="col-12">
             <div class="base--card radius--20">
@@ -44,31 +93,34 @@
                                             <li><i class="las la-check text--success me-1"></i>{{ $benefit }}</li>
                                         @endforeach
                                     </ul>
-                                    <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <div class="membership-plan-actions">
                                         @if($plan->pdf_file)
-                                            <div class="d-flex flex-wrap align-items-center gap-2">
-                                                <a class="btn btn-sm btn-outline--base" href="{{ route('user.membership.view', $plan->id) }}" target="_blank" rel="noopener">
+                                            @if($currentMembership && $currentMembership->membership_plan_id == $plan->id)
+                                                <a class="btn btn-sm btn-outline--base pdf-btn" href="{{ route('user.membership.view', $plan->id) }}" target="_blank" rel="noopener">
                                                     <i class="fa-regular fa-eye me-1"></i> @lang('View PDF')
                                                 </a>
-                                                @if($currentMembership && $currentMembership->membership_plan_id == $plan->id)
-                                                    <a class="btn btn-sm btn-outline--base" href="{{ route('user.membership.download', $plan->id) }}">
-                                                        <i class="fa-solid fa-file-pdf me-1"></i> @lang('Download PDF')
-                                                    </a>
-                                                @else
-                                                    <button class="btn btn-sm btn-outline--base restricted-download" type="button">
-                                                        <i class="fa-solid fa-file-pdf me-1"></i> @lang('Download PDF')
-                                                    </button>
-                                                @endif
-                                            </div>
+                                                <a class="btn btn-sm btn-outline--base pdf-btn" href="{{ route('user.membership.download', $plan->id) }}">
+                                                    <i class="fa-solid fa-file-pdf me-1"></i> @lang('Download PDF')
+                                                </a>
+                                            @else
+                                                <button class="btn btn-sm btn-outline--base restricted-view pdf-btn" type="button">
+                                                    <i class="fa-regular fa-eye me-1"></i> @lang('View PDF')
+                                                </button>
+                                                <button class="btn btn-sm btn-outline--base restricted-download pdf-btn" type="button">
+                                                    <i class="fa-solid fa-file-pdf me-1"></i> @lang('Download PDF')
+                                                </button>
+                                            @endif
                                         @endif
                                         @if(! ($currentMembership && $currentMembership->membership_plan_id == $plan->id))
-                                            <form action="{{ route('user.membership.subscribe') }}" method="POST" class="ms-auto">
+                                            <form action="{{ route('user.membership.subscribe') }}" method="POST" class="subscribe-form">
                                                 @csrf
                                                 <input type="hidden" name="membership_plan_id" value="{{ $plan->id }}">
-                                                <button class="btn btn--base" type="submit">@lang('Subscribe')</button>
+                                                <button class="btn btn--base subscribe-btn" type="submit">@lang('Subscribe')</button>
                                             </form>
                                         @else
-                                            <span class="ms-auto text-success fw-semibold">@lang('Current Plan')</span>
+                                            <div class="current-plan-badge">
+                                                <i class="fa-solid fa-circle-check me-1"></i> @lang('Current Plan')
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -87,6 +139,15 @@
 <script>
     (function ($) {
         "use strict";
+        $('.restricted-view').on('click', function () {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("Access Restricted") }}',
+                text: '{{ __("You must be subscribed to this membership plan or upgrade your current plan to view this PDF.") }}',
+                confirmButtonText: '{{ __("OK") }}',
+                confirmButtonColor: '#2257bf'
+            });
+        });
         $('.restricted-download').on('click', function () {
             Swal.fire({
                 icon: 'warning',

@@ -344,7 +344,10 @@ class ManageUsersController extends Controller
         $countryArray   = (array)$countryData;
         $countries      = implode(',', array_keys($countryArray));
 
-        $countryCode    = $request->country;
+        $countryCode    = $request->country ?: $user->country_code;
+        if (!$countryCode || !isset($countryData->$countryCode)) {
+            $countryCode = array_key_first($countryArray);
+        }
         $country        = $countryData->$countryCode->country;
         $dialCode       = $countryData->$countryCode->dial_code;
 
@@ -383,6 +386,10 @@ class ManageUsersController extends Controller
         }else{
             $user->kv = 1;
         }
+
+        $user->dashboard_permissions = $request->dashboard_permissions ? array_values($request->dashboard_permissions) : null;
+        $user->menu_permissions = $request->menu_permissions ? array_values($request->menu_permissions) : null;
+
         $user->save();
 
         $notify[] = ['success', __('User details has been updated successfully')];

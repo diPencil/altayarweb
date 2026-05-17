@@ -120,4 +120,56 @@ class SupportTicketController extends Controller
 
     }
 
+    public function deleteSupportTicket($id)
+    {
+        $ticket = SupportTicket::findOrFail($id);
+        
+        \DB::transaction(function () use ($ticket) {
+            $path = getFilePath('ticket');
+            foreach ($ticket->supportMessage as $message) {
+                if ($message->attachments()->count() > 0) {
+                    foreach ($message->attachments as $attachment) {
+                        fileManager()->removeFile($path.'/'.$attachment->attachment);
+                        $attachment->delete();
+                    }
+                }
+                $message->delete();
+            }
+            $ticket->delete();
+        });
+
+        $notify[] = ['success', __('Support ticket has been deleted successfully')];
+        return back()->withNotify($notify);
+    }
+
+    public function bulkDeleteSupportTickets(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:support_tickets,id',
+        ]);
+
+        $ids = $request->ids;
+
+        \DB::transaction(function () use ($ids) {
+            $path = getFilePath('ticket');
+            $tickets = SupportTicket::whereIn('id', $ids)->get();
+            foreach ($tickets as $ticket) {
+                foreach ($ticket->supportMessage as $message) {
+                    if ($message->attachments()->count() > 0) {
+                        foreach ($message->attachments as $attachment) {
+                            fileManager()->removeFile($path.'/'.$attachment->attachment);
+                            $attachment->delete();
+                        }
+                    }
+                    $message->delete();
+                }
+                $ticket->delete();
+            }
+        });
+
+        $notify[] = ['success', __('Selected support tickets deleted successfully')];
+        return back()->withNotify($notify);
+    }
+
 }

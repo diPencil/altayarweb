@@ -51,9 +51,18 @@
             </a>
 
             <ul class="dropdown-menu dropdown-menu-end">
+                @if (userMenuCan('profile'))
                 <li><a class="dropdown-item" href="{{ route('user.profile.setting') }}"><i class="fa-regular fa-user"></i> @lang('Profile')</a></li>
+                @endif
+
+                @if (userMenuCan('password'))
                 <li><a class="dropdown-item" href="{{ route('user.change.password') }}"><i class="fa-solid fa-key"></i> @lang('Password')</a></li>
+                @endif
+
+                @if (userMenuCan('twofactor'))
                 <li><a class="dropdown-item" href="{{ route('user.twofactor') }}"><i class="fa-solid fa-user-ninja"></i> @lang('2FA Security')</a></li>
+                @endif
+
                 <li><a class="dropdown-item" href="{{route('user.logout')}}"><i class="fa-solid fa-arrow-right-from-bracket"></i> @lang('Logout')</a> </li>
             </ul>
         </div>

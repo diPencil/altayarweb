@@ -399,6 +399,8 @@ Route::middleware('admin')->group(function () {
         Route::post('ticket/close/{id}', 'closeTicket')->name('ticket.close');
         Route::get('ticket/download/{ticket}', 'ticketDownload')->name('ticket.download');
         Route::post('ticket/delete/{id}', 'ticketDelete')->name('ticket.delete');
+        Route::post('ticket/delete-ticket/{id}', 'deleteSupportTicket')->name('ticket.delete_ticket');
+        Route::post('ticket/bulk-delete-tickets', 'bulkDeleteSupportTickets')->name('ticket.bulk_delete_tickets');
 
         //employee
         Route::get('employee/tickets', 'employeeTickets')->name('employee.ticket');

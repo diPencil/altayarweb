@@ -647,6 +647,101 @@ function employeeMenuCan(string $key, $employee = null): bool
     return in_array($key, $permissions, true);
 }
 
+function userDashboardWidgets(): array
+{
+    return [
+        'total_all_bookings' => 'All Bookings',
+        'total_invoices' => 'Invoices',
+        'total_pending_tour' => 'Pending Bookings',
+        'total_approved_tour' => 'Approved Bookings',
+        'saved_reels' => 'Saved Reels',
+        'active_tickets' => 'Active Tickets',
+        'total_tickets' => 'Total Tickets',
+        'open_tickets' => 'Open Tickets',
+        'total_transactions' => 'Total Transactions',
+        'wallet_balance' => 'Wallet Balance',
+        'loyalty_points' => 'Loyalty Points',
+        'cashback' => 'Cashback Balance',
+        'charts' => 'Charts',
+        'recent_bookings' => 'Recent Bookings Table',
+        'sidebar_membership' => 'Sidebar Membership Card',
+    ];
+}
+
+function userDashboardCan(string $key, $user = null): bool
+{
+    $user = $user ?: auth()->user();
+
+    if (!$user) {
+        return false;
+    }
+
+    $permissions = $user->dashboard_permissions ?? null;
+
+    if (empty($permissions)) {
+        return true;
+    }
+
+    if ($permissions instanceof \Illuminate\Support\Collection) {
+        $permissions = $permissions->all();
+    }
+
+    if (is_object($permissions)) {
+        $permissions = (array) $permissions;
+    }
+
+    if (!is_array($permissions)) {
+        return true;
+    }
+
+    return in_array($key, $permissions, true);
+}
+
+function userMenuPermissions(): array
+{
+    return [
+        'profile' => 'Profile (Dropdown Link)',
+        'password' => 'Change Password (Dropdown Link)',
+        'twofactor' => '2FA Security (Dropdown Link)',
+        'payments' => 'Payments (Menu Group)',
+        'bookings' => 'Bookings (Menu Group)',
+        'membership' => 'Membership (Menu Group)',
+        'wallet' => 'My Wallet (Menu Link)',
+        'wishlist' => 'Wishlists (Menu Link)',
+        'reels' => 'Reels Library (Menu Link)',
+        'tickets' => 'Support Tickets (Menu Group)',
+    ];
+}
+
+function userMenuCan(string $key, $user = null): bool
+{
+    $user = $user ?: auth()->user();
+
+    if (!$user) {
+        return false;
+    }
+
+    $permissions = $user->menu_permissions ?? null;
+
+    if (empty($permissions)) {
+        return true;
+    }
+
+    if ($permissions instanceof \Illuminate\Support\Collection) {
+        $permissions = $permissions->all();
+    }
+
+    if (is_object($permissions)) {
+        $permissions = (array) $permissions;
+    }
+
+    if (!is_array($permissions)) {
+        return true;
+    }
+
+    return in_array($key, $permissions, true);
+}
+
 function employeePagePermissions(): array
 {
     return [

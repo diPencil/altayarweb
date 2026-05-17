@@ -31,6 +31,7 @@
         </div>
 
         <div class="row gy-4 pb-4 sortable-container" id="sortable-container">
+            @if (userDashboardCan('total_all_bookings'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard1">
                 <a class="d-block" href="{{ route('user.tour.package.booking.all.list') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -47,7 +48,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('total_invoices'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard2">
                 <a class="d-block" href="{{ route('user.invoice.list') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -64,7 +67,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('total_pending_tour'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard3">
                 <a class="d-block" href="{{ route('user.tour.package.booking.pending') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -81,7 +86,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('total_approved_tour'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard4">
                 <a class="d-block" href="{{ route('user.tour.package.booking.approved') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -98,7 +105,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('saved_reels'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard5">
                 <a class="d-block" href="{{ route('user.reels.library') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -115,7 +124,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('active_tickets'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard6">
                 <a class="d-block" href="{{ route('ticket.open') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -132,7 +143,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('total_tickets'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard7">
                 <a class="d-block" href="{{ route('ticket') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -149,7 +162,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('open_tickets'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard8">
                 <a class="d-block" href="{{ route('ticket.open') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -166,7 +181,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('total_transactions'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard9">
                 <a class="d-block" href="{{ route('user.transactions') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -183,7 +200,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('wallet_balance'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard10">
                 <a class="d-block" href="{{ route('user.transactions') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -200,7 +219,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('loyalty_points'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard11">
                 <a class="d-block" href="{{ route('user.membership.index') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -217,7 +238,9 @@
                     </div>
                 </a>
             </div>
+            @endif
 
+            @if (userDashboardCan('cashback'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard12">
                 <a class="d-block" href="{{ route('user.membership.index') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
@@ -235,8 +258,10 @@
                     </div>
                 </a>
             </div>
+            @endif
         </div>
 
+        @if (userDashboardCan('charts'))
         <div class="row gy-4 pb-4">
             <div class="col-lg-6">
                 <div class="base--card radius--20">
@@ -251,6 +276,9 @@
                 </div>
             </div>
         </div>
+        @endif
+
+        @if (userDashboardCan('recent_bookings'))
         <div class="row gy-4 pb-4">
             <div class="col-lg-12">
                 <div class="base--card radius--20">
@@ -320,6 +348,7 @@
                     {{ $myBookings->links() }}
                 </div>
             </div>
+        @endif
         @endif
     </div>
 @endsection

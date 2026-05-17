@@ -112,6 +112,17 @@ class MembershipController extends Controller
 
     public function viewPdf($id)
     {
+        $user = auth()->user();
+        $currentMembership = UserMembership::where('user_id', $user->id)
+            ->where('status', 1)
+            ->where('membership_plan_id', $id)
+            ->first();
+
+        if (!$currentMembership) {
+            $notify[] = ['error', 'You must be subscribed to this membership plan or upgrade your current plan to view this PDF.'];
+            return back()->withNotify($notify);
+        }
+
         $plan = MembershipPlan::findOrFail($id);
         abort_unless($plan->pdf_file, 404);
 

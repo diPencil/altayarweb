@@ -367,6 +367,59 @@
                                 </div>
                             </div>
 
+                            <div class="card mt-4 border">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="card-title mb-0">@lang('User Dashboard Permissions')</h6>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline--primary btn-sm select-all-dashboard">@lang('Select All')</button>
+                                        <button type="button" class="btn btn-outline--danger btn-sm clear-all-dashboard">@lang('Clear All')</button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        @foreach (userDashboardWidgets() as $key => $label)
+                                            <div class="col-md-6 col-xl-4">
+                                                <label class="form-check d-flex align-items-center gap-2 mb-0">
+                                                    <input class="form-check-input dashboard-checkbox" type="checkbox" name="dashboard_permissions[]" value="{{ $key }}" @checked(!is_array($user->dashboard_permissions) || in_array($key, $user->dashboard_permissions, true))>
+                                                    <span class="form-check-label">{{ __($label) }}</span>
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="text-muted mt-3 small">
+                                        @lang('If you clear all permissions, the dashboard will fall back to the full view.')
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mt-4 border">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="card-title mb-0">@lang('User Menu Permissions')</h6>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline--primary btn-sm select-all-menu">@lang('Select All')</button>
+                                        <button type="button" class="btn btn-outline--danger btn-sm clear-all-menu">@lang('Clear All')</button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-muted mb-3 small">
+                                        @lang('Controls what the user can see in the sidebar and top header.')
+                                    </div>
+                                    <div class="row g-3">
+                                        @foreach (userMenuPermissions() as $key => $label)
+                                            <div class="col-md-6 col-xl-4">
+                                                <label class="form-check d-flex align-items-center gap-2 mb-0">
+                                                    <input class="form-check-input menu-checkbox" type="checkbox" name="menu_permissions[]" value="{{ $key }}" @checked(!is_array($user->menu_permissions) || in_array($key, $user->menu_permissions, true))>
+                                                    <span class="form-check-label">{{ __($label) }}</span>
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="text-muted mt-3 small">
+                                        @lang('This controls what appears in the user sidebar and header dropdown. If empty, the full menu is visible.')
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row mt-4">
                                 <div class="col-md-12">
                                     <div class="form-group  text-end mb-0">
@@ -659,7 +712,21 @@
         let mobileNumber = `{{ $user->mobile }}`;
         mobileNumber = mobileNumber.replace(dialCode, '');
         $('input[name=mobile]').val(mobileNumber);
-        mobileElement.text(`+${dialCode}`);
+        // Select All / Clear All for User Dashboard Permissions
+        $('.select-all-dashboard').on('click', function() {
+            $('.dashboard-checkbox').prop('checked', true);
+        });
+        $('.clear-all-dashboard').on('click', function() {
+            $('.dashboard-checkbox').prop('checked', false);
+        });
+
+        // Select All / Clear All for User Menu Permissions
+        $('.select-all-menu').on('click', function() {
+            $('.menu-checkbox').prop('checked', true);
+        });
+        $('.clear-all-menu').on('click', function() {
+            $('.menu-checkbox').prop('checked', false);
+        });
 
     })(jQuery);
 </script>
