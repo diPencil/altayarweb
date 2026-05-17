@@ -46,15 +46,20 @@
                                     </ul>
                                     <div class="d-flex justify-content-between align-items-center gap-2">
                                         @if($plan->pdf_file)
-                                            @if($currentMembership && $currentMembership->membership_plan_id == $plan->id)
-                                                <a class="btn btn-sm btn-outline--base" href="{{ route('user.membership.download', $plan->id) }}">
-                                                    <i class="fa-solid fa-file-pdf me-1"></i> @lang('Download PDF')
+                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                <a class="btn btn-sm btn-outline--base" href="{{ route('user.membership.view', $plan->id) }}" target="_blank" rel="noopener">
+                                                    <i class="fa-regular fa-eye me-1"></i> @lang('View PDF')
                                                 </a>
-                                            @else
-                                                <button class="btn btn-sm btn-outline--base restricted-download" type="button">
-                                                    <i class="fa-solid fa-file-pdf me-1"></i> @lang('Download PDF')
-                                                </button>
-                                            @endif
+                                                @if($currentMembership && $currentMembership->membership_plan_id == $plan->id)
+                                                    <a class="btn btn-sm btn-outline--base" href="{{ route('user.membership.download', $plan->id) }}">
+                                                        <i class="fa-solid fa-file-pdf me-1"></i> @lang('Download PDF')
+                                                    </a>
+                                                @else
+                                                    <button class="btn btn-sm btn-outline--base restricted-download" type="button">
+                                                        <i class="fa-solid fa-file-pdf me-1"></i> @lang('Download PDF')
+                                                    </button>
+                                                @endif
+                                            </div>
                                         @endif
                                         @if(! ($currentMembership && $currentMembership->membership_plan_id == $plan->id))
                                             <form action="{{ route('user.membership.subscribe') }}" method="POST" class="ms-auto">

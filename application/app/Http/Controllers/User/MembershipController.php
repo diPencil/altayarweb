@@ -9,6 +9,7 @@ use App\Models\MembershipPlan;
 use App\Models\MembershipPointTransaction;
 use App\Models\UserMembership;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class MembershipController extends Controller
 {
@@ -107,5 +108,21 @@ class MembershipController extends Controller
         abort_unless($plan->pdf_file, 404);
 
         return response()->download(getFilePath('membershipPlanPdf') . '/' . $plan->pdf_file);
+    }
+
+    public function viewPdf($id)
+    {
+        $plan = MembershipPlan::findOrFail($id);
+        abort_unless($plan->pdf_file, 404);
+
+        $absolutePath = getFilePath('membershipPlanPdf') . '/' . $plan->pdf_file;
+        abort_unless(file_exists($absolutePath), 404);
+
+        $fileName = Str::slug($plan->name ?: 'membership-plan') . '.pdf';
+
+        return response()->file($absolutePath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('inline; filename="%s"', $fileName),
+        ]);
     }
 }
