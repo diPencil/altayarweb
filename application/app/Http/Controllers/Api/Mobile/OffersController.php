@@ -16,9 +16,10 @@ class OffersController extends Controller
     {
         $page = max((int) $request->query('page', 1), 1);
         $perPage = $this->perPageFromRequest($request);
+        $categoryFilter = $this->resolveCategoryFilter($request);
 
         $query = $this->baseQuery()
-            ->when($request->filled('category'), fn (Builder $builder) => $this->applyCategoryFilter($builder, (string) $request->query('category')))
+            ->when($categoryFilter !== null, fn (Builder $builder) => $this->applyCategoryFilter($builder, $categoryFilter))
             ->when($request->filled('destination'), fn (Builder $builder) => $this->applyDestinationFilter($builder, (string) $request->query('destination')))
             ->when($request->filled('currency'), fn (Builder $builder) => $this->applyCurrencyFilter($builder, (string) $request->query('currency')))
             ->when($request->filled('search'), fn (Builder $builder) => $this->applySearchFilter($builder, (string) $request->query('search')));
@@ -38,8 +39,10 @@ class OffersController extends Controller
 
     public function featured(Request $request): JsonResponse
     {
+        $categoryFilter = $this->resolveCategoryFilter($request);
+
         $offers = $this->baseQuery()
-            ->when($request->filled('category'), fn (Builder $builder) => $this->applyCategoryFilter($builder, (string) $request->query('category')))
+            ->when($categoryFilter !== null, fn (Builder $builder) => $this->applyCategoryFilter($builder, $categoryFilter))
             ->when($request->filled('destination'), fn (Builder $builder) => $this->applyDestinationFilter($builder, (string) $request->query('destination')))
             ->when($request->filled('currency'), fn (Builder $builder) => $this->applyCurrencyFilter($builder, (string) $request->query('currency')))
             ->when($request->filled('search'), fn (Builder $builder) => $this->applySearchFilter($builder, (string) $request->query('search')))
@@ -68,10 +71,21 @@ class OffersController extends Controller
 
     public function categories(): JsonResponse
     {
+        $counts = Listing::query()
+            ->active()
+            ->where(function (Builder $query) {
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', now()->toDateString());
+            })
+            ->selectRaw('listing_type_id, COUNT(*) as aggregate')
+            ->groupBy('listing_type_id')
+            ->pluck('aggregate', 'listing_type_id')
+            ->all();
+
         $categories = ListingType::active()
             ->orderBy('id')
             ->get()
-            ->map(fn (ListingType $listingType) => $this->normalizeCategory($listingType))
+            ->map(fn (ListingType $listingType) => $this->normalizeCategory($listingType, (int) ($counts[$listingType->id] ?? 0)))
             ->values();
 
         return response()->json([
@@ -116,6 +130,17 @@ class OffersController extends Controller
         }
 
         return $query->where('listing_type_id', $matchedType->id);
+    }
+
+    private function resolveCategoryFilter(Request $request): ?string
+    {
+        foreach (['category_id', 'type_id', 'category'] as $key) {
+            if ($request->filled($key)) {
+                return (string) $request->query($key);
+            }
+        }
+
+        return null;
     }
 
     private function applyDestinationFilter(Builder $query, string $destination): Builder
@@ -208,13 +233,13 @@ class OffersController extends Controller
         ];
     }
 
-    private function normalizeCategory(ListingType $listingType): array
+    private function normalizeCategory(ListingType $listingType, int $count = 0): array
     {
         return [
             'id' => (string) $listingType->id,
-            'name_en' => (string) ($listingType->getRawOriginal('name') ?? ''),
-            'name_ar' => (string) ($listingType->getRawOriginal('name_ar') ?? ''),
+            'name' => (string) ($listingType->name ?? $listingType->getRawOriginal('name') ?? ''),
             'slug' => $this->listingTypeSlug($listingType),
+            'count' => $count,
         ];
     }
 

@@ -16,9 +16,10 @@ class SpecialOffersController extends Controller
     {
         $page = max((int) $request->query('page', 1), 1);
         $perPage = $this->perPageFromRequest($request);
+        $categoryFilter = $this->resolveCategoryFilter($request);
 
         $query = $this->baseQuery()
-            ->when($request->filled('category'), fn (Builder $builder) => $this->applyCategoryFilter($builder, (string) $request->query('category')))
+            ->when($categoryFilter !== null, fn (Builder $builder) => $this->applyCategoryFilter($builder, $categoryFilter))
             ->when($request->filled('currency'), fn (Builder $builder) => $this->applyCurrencyFilter($builder, (string) $request->query('currency')))
             ->when($request->filled('search'), fn (Builder $builder) => $this->applySearchFilter($builder, (string) $request->query('search')));
 
@@ -37,8 +38,10 @@ class SpecialOffersController extends Controller
 
     public function featured(Request $request): JsonResponse
     {
+        $categoryFilter = $this->resolveCategoryFilter($request);
+
         $offers = $this->baseQuery()
-            ->when($request->filled('category'), fn (Builder $builder) => $this->applyCategoryFilter($builder, (string) $request->query('category')))
+            ->when($categoryFilter !== null, fn (Builder $builder) => $this->applyCategoryFilter($builder, $categoryFilter))
             ->when($request->filled('currency'), fn (Builder $builder) => $this->applyCurrencyFilter($builder, (string) $request->query('currency')))
             ->when($request->filled('search'), fn (Builder $builder) => $this->applySearchFilter($builder, (string) $request->query('search')))
             ->limit(8)
@@ -66,11 +69,18 @@ class SpecialOffersController extends Controller
 
     public function categories(): JsonResponse
     {
+        $counts = TourPackage::query()
+            ->where('user_type', 'admin')
+            ->selectRaw('category_id, COUNT(*) as aggregate')
+            ->groupBy('category_id')
+            ->pluck('aggregate', 'category_id')
+            ->all();
+
         $categories = Category::query()
             ->where('status', 1)
             ->orderByDesc('id')
             ->get()
-            ->map(fn (Category $category) => $this->normalizeCategory($category))
+            ->map(fn (Category $category) => $this->normalizeCategory($category, (int) ($counts[$category->id] ?? 0)))
             ->values();
 
         return response()->json([
@@ -129,6 +139,17 @@ class SpecialOffersController extends Controller
         }
 
         return $query->where('category_id', $matchedCategory->id);
+    }
+
+    private function resolveCategoryFilter(Request $request): ?string
+    {
+        foreach (['category_id', 'type_id', 'category'] as $key) {
+            if ($request->filled($key)) {
+                return (string) $request->query($key);
+            }
+        }
+
+        return null;
     }
 
     private function applyCurrencyFilter(Builder $query, string $currency): Builder
@@ -192,13 +213,13 @@ class SpecialOffersController extends Controller
         ];
     }
 
-    private function normalizeCategory(Category $category): array
+    private function normalizeCategory(Category $category, int $count = 0): array
     {
         return [
             'id' => (string) $category->id,
-            'name_en' => (string) ($category->getRawOriginal('name') ?? ''),
-            'name_ar' => (string) ($category->getRawOriginal('name_ar') ?? ''),
+            'name' => (string) ($category->name ?? $category->getRawOriginal('name') ?? ''),
             'slug' => $this->categorySlug($category),
+            'count' => $count,
         ];
     }
 
