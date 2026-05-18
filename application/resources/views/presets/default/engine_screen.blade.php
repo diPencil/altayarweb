@@ -8,21 +8,21 @@
             <div class="container position-relative">
                 <div class="row align-items-center gy-5">
                     <div class="col-lg-6">
-                        <span class="engine-screen-kicker">@lang('Travel Operations Hub')</span>
+                        <span class="engine-screen-kicker">@lang('AltayarVIP Search Center')</span>
                         <h1 class="engine-screen-title">
-                            @lang('ALTAYARVIP Travel Engine')
+                            @lang('AltayarVIP Booking Engine')
                         </h1>
                         <p class="engine-screen-lead">
-                            @lang('A focused travel workspace built to keep bookings, flights, hotels, transfers, and support in one place. Fast access, clear workflow, and a premium experience designed around your customers.')
+                            @lang('Search hotels, flights, packages, transfers, and travel services through our dedicated booking engine. Accessible anytime for our VIP members and business clients.')
                         </p>
 
                         <div class="engine-screen-actions">
                             <a href="https://altayarvip.net/" target="_blank" rel="noopener"
                                 class="btn btn--base btn--lg pills">
-                                @lang('Login to Your Screen') <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                @lang('Access Booking Engine') <i class="fa-solid fa-arrow-right-to-bracket"></i>
                             </a>
-                            <a href="{{ route('public.membership.card') }}" class="btn btn-outline--base btn--lg pills">
-                                @lang('Explore Services')
+                            <a href="{{ route('public.membership.details') }}" class="btn btn-outline--base btn--lg pills">
+                                @lang('View Membership Plans')
                             </a>
                         </div>
 
@@ -30,16 +30,16 @@
                             <div class="engine-mini-card">
                                 <span class="engine-mini-card__icon"><i class="fas fa-shield-alt"></i></span>
                                 <div>
-                                    <h6>@lang('Secure access')</h6>
-                                    <p>@lang('Protected logins and structured operations.')
+                                    <h6>@lang('Secure Access')</h6>
+                                    <p>@lang('Protected logins and secure travel operations for all subscribers.')
                                     </p>
                                 </div>
                             </div>
                             <div class="engine-mini-card">
                                 <span class="engine-mini-card__icon"><i class="fas fa-bolt"></i></span>
                                 <div>
-                                    <h6>@lang('Fast workflow')</h6>
-                                    <p>@lang('Move between products and booking steps quickly.')
+                                    <h6>@lang('Fast Search')</h6>
+                                    <p>@lang('Compare thousands of rates and travel products in one screen.')
                                     </p>
                                 </div>
                             </div>
@@ -51,8 +51,8 @@
                             <img src="{{ asset('assets/presets/default/images/Live-travel-control-center.jpg') }}"
                                 class="img-fluid engine-screen-visual" alt="Live travel control center">
                             <div class="engine-screen-card__overlay">
-                                <h5>@lang('One screen. Full control.')</h5>
-                                <p>@lang('Manage the journey from discovery to confirmation with a cleaner interface.')
+                                <h5>@lang('One search. End-to-end luxury.')</h5>
+                                <p>@lang('Find the best rates, hotels, flights, and packages through a premium tailored travel experience.')
                                 </p>
                             </div>
                         </div>
@@ -64,41 +64,41 @@
         <div class="container engine-screen-content">
             <div class="engine-info-strip">
                 <div class="engine-info-item">
-                    <span>@lang('Book faster')</span>
-                    <strong>@lang('Hotels, flights, tours, and transfers') </strong>
+                    <span>@lang('Global Hotels')</span>
+                    <strong>@lang('Access exclusive luxury rates worldwide') </strong>
                 </div>
                 <div class="engine-info-item">
-                    <span>@lang('Serve better')</span>
-                    <strong>@lang('Organized tools for daily operations')</strong>
+                    <span>@lang('Flight Booking')</span>
+                    <strong>@lang('Compare and book flights across all airlines')</strong>
                 </div>
                 <div class="engine-info-item">
-                    <span>@lang('Work smarter')</span>
-                    <strong>@lang('Clear navigation and premium usability')</strong>
+                    <span>@lang('Premium Services')</span>
+                    <strong>@lang('First-class transfers and cruise packages')</strong>
                 </div>
             </div>
 
             <div class="row g-4 align-items-stretch engine-section-gap">
                 <div class="col-lg-4">
                     <div class="engine-feature-card engine-feature-card--accent">
-                        <i class="fas fa-compass"></i>
-                        <h5>@lang('Simple navigation')</h5>
-                        <p>@lang('A clean dashboard-style experience that makes it easy to move through the booking flow without confusion.')
+                        <i class="fa-solid fa-list-check"></i>
+                        <h5>@lang('Unified Search Hub')</h5>
+                        <p>@lang('Compare flights, hotels, Nile cruises, and tours instantly inside a single luxury workspace.')
                         </p>
                     </div>
                 </div>
                 <div class="col-lg-4">
                     <div class="engine-feature-card">
-                        <i class="fas fa-lock"></i>
-                        <h5>@lang('Trusted operations')</h5>
-                        <p>@lang('Everything is structured for secure access, stable handling, and a professional customer journey.')
+                        <i class="fa-solid fa-bolt"></i>
+                        <h5>@lang('Faster VIP Rates')</h5>
+                        <p>@lang('Get rapid access to curated travel offers and pre-negotiated elite rates specifically for our members.')
                         </p>
                     </div>
                 </div>
                 <div class="col-lg-4">
                     <div class="engine-feature-card">
-                        <i class="fas fa-headset"></i>
-                        <h5>@lang('Support ready')</h5>
-                        <p>@lang('Built to keep your team close to the customer, with services and follow-up in one branded place.')
+                        <i class="fa-solid fa-user-shield"></i>
+                        <h5>@lang('Tailored for Members')</h5>
+                        <p>@lang('Designed with high-end tools that align with your membership plan benefits and VIP traveler profile.')
                         </p>
                     </div>
                 </div>
@@ -107,34 +107,34 @@
             <div class="row align-items-stretch g-4 engine-section-gap">
                 <div class="col-lg-6">
                     <div class="engine-panel">
-                        <span class="engine-panel__label">@lang('What this screen is for')</span>
-                        <h2>@lang('A premium entry point for employees and travel customers')</h2>
-                        <p>@lang('Use this page to introduce the travel engine, explain the system, and direct employees to their login area with a clearer message and a stronger first impression.')
+                        <span class="engine-panel__label">@lang('Who Is This For?')</span>
+                        <h2>@lang('Designed for Premium and Corporate Travel')</h2>
+                        <p>@lang('The AltayarVIP booking engine is tailored to meet the needs of subscribed members, business accounts, and travel partners who demand fast, secure, and exclusive rates.')
                         </p>
 
                         <div class="engine-panel__list">
                             <div class="engine-panel__list-item">
                                 <i class="fas fa-check"></i>
-                                <span>@lang('Showcase the travel system in a clean, branded layout.')</span>
+                                <span>@lang('AltayarVIP members who want self-service luxury bookings.')</span>
                             </div>
                             <div class="engine-panel__list-item">
                                 <i class="fas fa-check"></i>
-                                <span>@lang('Guide the user toward employee login and service discovery.')</span>
+                                <span>@lang('Business and corporate clients seeking managed travel options.')</span>
                             </div>
                             <div class="engine-panel__list-item">
                                 <i class="fas fa-check"></i>
-                                <span>@lang('Keep the content short, professional, and easy to scan.')</span>
+                                <span>@lang('Travel companies and agents needing fast and robust travel searches.')</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-6">
                     <div class="engine-quote-card engine-quote-card--image">
-                        <span class="engine-quote-card__tag">@lang('Important note')</span>
+                        <span class="engine-quote-card__tag">@lang('Membership Access Notice')</span>
                         <div class="engine-quote-card__content">
-                            <h4>@lang('Please use the account sent by the customer service team to access your reservations area.')
+                            <h4>@lang('An active membership plan is required to access reservation features.')
                             </h4>
-                            <p>@lang('If you have both a public account and a reservations account, they may not be the same. Always sign in with the account provided for the booking system to avoid access issues.')
+                            <p>@lang('Please sign in with your VIP credentials or subscribe to one of our membership plans to unlock full searching, comparisons, and booking requests on the engine.')
                             </p>
                         </div>
                     </div>
@@ -143,37 +143,42 @@
 
             <div class="engine-stats-grid engine-section-gap">
                 <div class="engine-stat-card">
-                    <i class="fas fa-person-running"></i>
-                    <strong>9.7k+</strong>
-                    <span>@lang('Happy travelers')</span>
+                    <i class="fa-solid fa-user-plus"></i>
+                    <strong>@lang('Step 1')</strong>
+                    <span>@lang('Sign in or Join AltayarVIP')</span>
                 </div>
                 <div class="engine-stat-card">
-                    <i class="fas fa-plane-arrival"></i>
-                    <strong>14.2k+</strong>
-                    <span>@lang('Completed tours')</span>
+                    <i class="fa-solid fa-id-card"></i>
+                    <strong>@lang('Step 2')</strong>
+                    <span>@lang('Choose your plan')</span>
                 </div>
                 <div class="engine-stat-card">
-                    <i class="fas fa-star-half-alt"></i>
-                    <strong>91.6%</strong>
-                    <span>@lang('Positive reviews')</span>
+                    <i class="fa-solid fa-arrow-pointer"></i>
+                    <strong>@lang('Step 3')</strong>
+                    <span>@lang('Access Booking Engine')</span>
                 </div>
                 <div class="engine-stat-card">
-                    <i class="fas fa-certificate"></i>
-                    <strong>8.9k+</strong>
-                    <span>@lang('Membership cards')</span>
+                    <i class="fa-solid fa-magnifying-glass-location"></i>
+                    <strong>@lang('Step 4')</strong>
+                    <span>@lang('Search & request bookings')</span>
                 </div>
             </div>
 
-            <div class="engine-cta-band engine-section-gap">
+            <div class="engine-cta-band engine-section-gap flex-column flex-md-row text-center text-md-start">
                 <div>
-                    <span class="engine-cta-band__eyebrow">@lang('Membership Required')</span>
-                    <h3>@lang('Join our elite community and unlock full <br> access to the booking engine by subscribing <br> to a membership plan.')
-                    </h3>
+                    <span class="engine-cta-band__eyebrow">@lang('Ready to start searching?')</span>
+                    <h3>@lang('Unlock the premium booking engine experience now.')</h3>
                 </div>
-                <a href="{{ route('public.membership.details') }}"
-                    class="btn btn--base btn--lg pills bg-white text--base border-0 custom-hover-btn">
-                    @lang('Explore Memberships')
-                </a>
+                <div class="d-flex flex-wrap gap-3 mt-3 mt-md-0 justify-content-center justify-content-md-end">
+                    <a href="https://altayarvip.net/" target="_blank" rel="noopener"
+                        class="btn btn--base btn--lg pills bg-white text--base border-0 custom-hover-btn">
+                        @lang('Access Booking Engine')
+                    </a>
+                    <a href="{{ route('public.membership.details') }}"
+                        class="btn btn-outline-light btn--lg pills border-white text-white custom-hover-btn-outline">
+                        @lang('Explore Membership Plans')
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -182,6 +187,11 @@
         <style>
             .custom-hover-btn:hover {
                 color: #fff !important;
+            }
+
+            .custom-hover-btn-outline:hover {
+                background: #fff !important;
+                color: #2257bf !important;
             }
 
             .engine-screen-shell {
