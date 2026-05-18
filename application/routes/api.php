@@ -30,6 +30,7 @@ Route::namespace('Api')->name('api.')->group(function(){
     Route::middleware('auth:sanctum')->prefix('mobile')->group(function () {
         Route::get('wallet/me', [\App\Http\Controllers\Api\Mobile\WalletController::class, 'me']);
         Route::get('wallet/me/transactions', [\App\Http\Controllers\Api\Mobile\WalletController::class, 'transactions']);
+        Route::get('wallet/transactions', [\App\Http\Controllers\Api\Mobile\WalletController::class, 'transactions']);
         Route::controller(\App\Http\Controllers\Api\Mobile\ChatController::class)->group(function () {
             Route::get('chat/my', 'my');
             Route::get('chat/my/active', 'active');
@@ -39,6 +40,7 @@ Route::namespace('Api')->name('api.')->group(function(){
         });
         Route::get('points/me', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'me']);
         Route::get('points/me/transactions', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'transactions']);
+        Route::get('points/history', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'transactions']);
         Route::get('notifications', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'index']);
         Route::get('notifications/stats', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'stats']);
         Route::get('notifications/unread-count', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'unreadCount']);
@@ -53,18 +55,23 @@ Route::namespace('Api')->name('api.')->group(function(){
         });
 
         Route::controller(\App\Http\Controllers\Api\Mobile\OrdersController::class)->group(function () {
+            Route::get('orders', 'me');
             Route::get('orders/me', 'me');
             Route::get('orders/{id}', 'show')->whereNumber('id');
         });
 
         Route::controller(\App\Http\Controllers\Api\Mobile\BookingsController::class)->group(function () {
+            Route::get('bookings', 'me');
             Route::get('bookings/me', 'me');
             Route::get('bookings/{id}', 'show')->whereNumber('id');
         });
 
         Route::controller(\App\Http\Controllers\Api\Mobile\PaymentsController::class)->group(function () {
+            Route::get('payments', 'myPayments');
             Route::get('payments/my-payments', 'myPayments');
         });
+
+        Route::get('invoices', [\App\Http\Controllers\Api\Mobile\OrdersController::class, 'me']);
     });
 
     Route::prefix('mobile')->group(function () {

@@ -335,7 +335,7 @@ Route::middleware('admin')->group(function () {
 
         Route::post('reject', 'reject')->name('reject');
         Route::post('approve/{id}', 'approve')->name('approve');
-        Route::post('refresh-link/{id}', 'App\Http\Controllers\PaymentLinkController@refresh')->name('refresh.link');
+        Route::post('refresh-link/{id}', [\App\Http\Controllers\PaymentLinkController::class, 'refresh'])->name('refresh.link');
     });
 
 
