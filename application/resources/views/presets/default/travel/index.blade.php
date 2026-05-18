@@ -76,6 +76,10 @@
 
 
 
+        @if ($currentSection === 'packages')
+            @include($activeTemplate . 'components.package_search')
+        @endif
+
         {{-- Section pills + filters (matches Limited Offers hub) --}}
         <div class="container py-4">
         </div>
@@ -257,6 +261,19 @@
         </section>
     </article>
 @endsection
+
+@push('style-lib')
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/datepicker.min.css') }}">
+@endpush
+
+@push('script-lib')
+    <script src="{{ asset('assets/admin/js/datepicker.min.js') }}"></script>
+    @if ($docLang === 'ar')
+        <script src="{{ asset('assets/admin/js/datepicker.ar.js') }}"></script>
+    @else
+        <script src="{{ asset('assets/admin/js/datepicker.en.js') }}"></script>
+    @endif
+@endpush
 
 @push('style')
     <style>
