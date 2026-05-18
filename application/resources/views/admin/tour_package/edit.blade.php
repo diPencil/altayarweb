@@ -222,20 +222,33 @@
             });
 
             $('#images').on('change', function(event) {
-                $('#image_preview').empty();
+                // Keep the previews of existing images (which contain the old_tour_package_images hidden input)
+                // and only remove the previously generated new previews.
+                $('#image_preview .img-div').not(':has(input[name="old_tour_package_images[]"])').remove();
+
                 const files = event.target.files || [];
 
-                Array.from(files).forEach(function(file) {
+                Array.from(files).forEach(function(file, index) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         $('#image_preview').append(`
-                            <div class="img-div">
-                                <img src="${e.target.result}" class="image img-fluid rounded border" alt="preview">
+                            <div class="img-div new-preview" id="new-img-div${index}">
+                                <img src="${e.target.result}" class="image img-fluid rounded border img-thumbnail" alt="preview">
+                                <div class="middle">
+                                    <button type="button" class="btn btn--danger btn--sm remove-new-img" data-index="${index}">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
                         `);
                     };
                     reader.readAsDataURL(file);
                 });
+            });
+
+            $(document).on('click', '.remove-new-img', function() {
+                const index = $(this).data('index');
+                $(`#new-img-div${index}`).remove();
             });
 
             if (typeof ClassicEditor !== 'undefined') {
@@ -246,5 +259,33 @@
                 });
             }
         });
+
+        function imageDelete(object, id) {
+            if (!confirm("Are you sure you want to delete this image?")) {
+                return false;
+            }
+            var url = "{{ route('admin.tour.package.image.delete') }}";
+            var token = '{{ csrf_token() }}';
+            var data = {
+                id: id,
+                _token: token
+            };
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        $(object).remove();
+                        notify('success', response.success);
+                    } else if (response.error) {
+                        notify('error', response.error);
+                    }
+                },
+                error: function(data, status, error) {
+                    notify('error', "Something went wrong while deleting the image.");
+                }
+            });
+        }
     </script>
 @endpush

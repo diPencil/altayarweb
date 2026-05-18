@@ -2,6 +2,25 @@
     $package = $tourPackage ?? null;
     $scalar = fn ($value, $default = '') => is_scalar($value) || is_null($value) ? ($value ?? $default) : $default;
     $field = fn ($key, $default = '') => $scalar(old($key, data_get($package, $key, $default)), $default);
+    
+    $tourStartFormatted = '';
+    if ($package && $package->tour_start) {
+        try {
+            $tourStartFormatted = \Carbon\Carbon::parse($package->tour_start)->format('m/d/Y , h:i a');
+        } catch (\Exception $e) {
+            $tourStartFormatted = $package->tour_start;
+        }
+    }
+    
+    $tourEndFormatted = '';
+    if ($package && $package->tour_end) {
+        try {
+            $tourEndFormatted = \Carbon\Carbon::parse($package->tour_end)->format('m/d/Y , h:i a');
+        } catch (\Exception $e) {
+            $tourEndFormatted = $package->tour_end;
+        }
+    }
+
     $destinationField = fn ($key, $default = '') => $scalar(old('destination_overview.' . $key, data_get($package, 'destination_overview.' . $key, $default)), $default);
     $plainList = function ($value) {
         return collect(is_object($value) ? (array) $value : (array) $value)
@@ -75,7 +94,7 @@
             <div class="col-lg-3 col-md-6">
                 <div class="form-group">
                     <label class="mb-2 form--label">@lang('Category')</label>
-                    <select name="category_id" class="form-control" required>
+                    <select name="category_id" class="form-control">
                         <option value="">@lang('Select category')</option>
                         @foreach ($categories ?? [] as $item)
                             <option value="{{ $item->id }}" @selected($item->id == $field('category_id', data_get($package, 'category_id')))>{{ $item->name }}</option>
@@ -180,7 +199,7 @@
             <div class="col-lg-3 col-md-6">
                 <div class="form-group">
                     <label class="mb-2 form--label">@lang('Flexible Date')</label>
-                    <select name="flexible_date" class="form-control" required>
+                    <select name="flexible_date" class="form-control">
                         <option value="">@lang('Select flexible date')</option>
                         <option value="2" @selected($field('flexible_date', data_get($package, 'flexible_date')) == 2)>@lang('Fixed Date')</option>
                         <option value="1" @selected($field('flexible_date', data_get($package, 'flexible_date')) == 1)>@lang('Custom Date')</option>
@@ -190,25 +209,25 @@
             <div class="col-lg-3 col-md-6">
                 <div class="form-group">
                     <label class="mb-2 form--label">@lang('Tour Start Date')</label>
-                    <input type="text" name="start_date" class="form-control datepicker-active" data-language="en" placeholder="@lang('Start date')" value="{{ $field('start_date', data_get($package, 'tour_start')) }}" required>
+                    <input type="text" name="start_date" class="form-control datepicker-active" data-language="en" placeholder="@lang('Start date')" value="{{ $field('start_date', $tourStartFormatted) }}" required>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="form-group">
                     <label class="mb-2 form--label">@lang('Tour End Date')</label>
-                    <input type="text" name="end_date" class="form-control datepicker-active" data-language="en" placeholder="@lang('End date')" value="{{ $field('end_date', data_get($package, 'tour_end')) }}" required>
+                    <input type="text" name="end_date" class="form-control datepicker-active" data-language="en" placeholder="@lang('End date')" value="{{ $field('end_date', $tourEndFormatted) }}" required>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="form-group">
                     <label class="mb-2 form--label">@lang('Duration') / @lang('Stay day & nights')</label>
-                    <input type="text" name="day_nights" class="form-control" placeholder="@lang('3 day & 2 nights')" value="{{ $field('day_nights', data_get($package, 'day_nights')) }}" required>
+                    <input type="text" name="day_nights" class="form-control" placeholder="@lang('3 day & 2 nights')" value="{{ $field('day_nights', data_get($package, 'day_nights')) }}">
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="form-group">
                     <label class="mb-2 form--label">@lang('Person Capability')</label>
-                    <input type="number" step="any" name="person_capability" class="form-control" placeholder="@lang('Person Capability')" value="{{ $field('person_capability', data_get($package, 'person_capability')) }}" required>
+                    <input type="number" step="any" name="person_capability" class="form-control" placeholder="@lang('Person Capability')" value="{{ $field('person_capability', data_get($package, 'person_capability')) }}">
                 </div>
             </div>
         </div>
@@ -223,7 +242,7 @@
                 <div class="form-group">
                     <label class="mb-2 form--label">@lang('Price')</label>
                     <div class="input-group">
-                        <input type="number" step="0.01" inputmode="decimal" class="form-control" placeholder="@lang('Price')" name="price" value="{{ $field('price', data_get($package, 'price')) }}" required>
+                        <input type="number" step="0.01" inputmode="decimal" class="form-control" placeholder="@lang('Price')" name="price" value="{{ $field('price', data_get($package, 'price')) }}">
                     </div>
                 </div>
             </div>
@@ -273,10 +292,31 @@
             <div class="col-12">
                 <div class="form-group">
                     <label for="images">{{ $imagesLabel }}</label>
-                    <input type="file" name="images[]" id="images" accept=".png, .jpg, .jpeg" multiple class="form-control" @if(!$package) required @endif>
+                    <input type="file" name="images[]" id="images" accept=".png, .jpg, .jpeg" multiple class="form-control">
                 </div>
                 <div class="form-group mt-3">
-                    <div id="image_preview" class="image_preview-wrapper"></div>
+                    <div id="image_preview" class="image_preview-wrapper">
+                        @if ($package && $package->tour_package_images)
+                            @foreach ($package->tour_package_images as $i => $img)
+                                <div class='img-div' id='img-div{{ $i }}'
+                                    @if ($i != 0) onclick="imageDelete(this,{{ $img->id }});" @endif>
+                                    <input type="hidden" name="old_tour_package_images[]" value="{{ $img->id }}">
+                                    <img src="{{ getImage(getFilePath('tourPackageImage') . '/' . $img->image) }}"
+                                        class='img-responsive image img-thumbnail'
+                                        title='{{ $img->image }}' alt="tour-image">
+                                    @if ($i != 0)
+                                        <div class='middle'>
+                                            <button type="button" id='action-icon' value='img-div{{ $i }}'
+                                                class='delete-btn btn btn--danger'
+                                                role='{{ $img->image }}'>
+                                                <i class='fa fa-trash'></i>
+                                            </button>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -481,7 +521,7 @@
                             <i class="fa fa-plus"></i> @lang('Add New')
                         </button>
                     </div>
-                    <input type="text" name="highlights[]" id="highlights" class="form-control form--control mb-3" required placeholder="@lang('Destination Highlights')" value="{{ $highlights[0] ?? '' }}" />
+                    <input type="text" name="highlights[]" id="highlights" class="form-control form--control mb-3" placeholder="@lang('Destination Highlights')" value="{{ $highlights[0] ?? '' }}" />
                     <div class="mt-2">
                         <label class="form-label">@lang('Destination Highlights Arabic')</label>
                         <input type="text" name="highlights_ar[]" id="highlightsAr" class="form-control form--control mb-0" placeholder="@lang('Destination Highlights Arabic')" value="{{ $highlightsAr[0] ?? '' }}" />
@@ -521,7 +561,7 @@
                             <div class="file-upload">
                                 <label class="form-label">@lang('Destination icons')</label>
                                 <div class="file-upload input-group">
-                                    <input type="text" name="icons[]" id="inputIcon" class="form-control form--control iconPicker icon" value="{{ $icons[0] ?? '' }}" placeholder="@lang('Icons')" required>
+                                    <input type="text" name="icons[]" id="inputIcon" class="form-control form--control iconPicker icon" value="{{ $icons[0] ?? '' }}" placeholder="@lang('Icons')">
                                     <span class="input-group-text input-group-addon" data-icon="las la-home"></span>
                                 </div>
                             </div>
@@ -529,7 +569,7 @@
                         <div class="col-lg-4 col-md-4">
                             <div class="file-upload">
                                 <label class="form-label">@lang('Destination Features')</label>
-                                <input type="text" name="features[]" id="features" class="form-control form--control mb-0" required placeholder="@lang('Destination Features')" value="{{ data_get($features->first(), 'feature', '') }}" />
+                                <input type="text" name="features[]" id="features" class="form-control form--control mb-0" placeholder="@lang('Destination Features')" value="{{ data_get($features->first(), 'feature', '') }}" />
                             </div>
                         </div>
                         <div class="col-lg-5 col-md-4" dir="rtl">
@@ -544,13 +584,13 @@
                             <div class="row elements g-3 mt-2">
                                 <div class="col-lg-3 col-md-4 my-2">
                                     <div class="file-upload input-group">
-                                        <input type="text" name="icons[]" class="form-control form--control iconPicker icon" placeholder="@lang('Icons')" value="{{ data_get($item, 'icon', '') }}" required>
+                                        <input type="text" name="icons[]" class="form-control form--control iconPicker icon" placeholder="@lang('Icons')" value="{{ data_get($item, 'icon', '') }}">
                                         <span class="input-group-text input-group-addon" data-icon="las la-home"></span>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-4 my-2">
                                     <div class="file-upload input-group">
-                                        <input type="text" name="features[]" class="form-control form--control" placeholder="@lang('Destination Features')" value="{{ data_get($item, 'feature', '') }}" required />
+                                        <input type="text" name="features[]" class="form-control form--control" placeholder="@lang('Destination Features')" value="{{ data_get($item, 'feature', '') }}" />
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-3 my-2" dir="rtl">
