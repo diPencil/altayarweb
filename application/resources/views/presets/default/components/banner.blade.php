@@ -305,47 +305,117 @@
                 </div>
 
                 <div class="col-lg-11">
-                    <div class="booking-engine-banner mt-4 mt-lg-5 mx-auto">
-                        <div class="booking-engine-banner__heading text-center mb-3 mb-lg-4">
-                            <p class="booking-engine-banner__eyebrow mb-2">@lang('Booking Engine')</p>
-                            <h3 class="booking-engine-banner__title mb-2">@lang('Search hotels, flights, and travel services through our booking engine')</h3>
-                        </div>
-                        <form action="https://altayarvip.net/" method="GET" class="booking-engine-banner__form" autocomplete="off">
-                            <div class="row g-3 align-items-end">
-                                <div class="col-12 col-lg-4">
-                                    <label class="form-label booking-engine-banner__label">@lang('Destination / City / Hotel')</label>
-                                    <div class="position-relative">
-                                        <span class="booking-engine-banner__icon"><i class="fa-solid fa-location-dot"></i></span>
-                                        <input type="text" name="destination" class="form-control booking-engine-banner__control" placeholder="@lang('Where would you like to go?')">
-                                    </div>
+                    <form action="https://altayarvip.net/" method="GET" autocomplete="off" class="mt-3 mt-lg-4 mx-auto w-100 booking-engine-home">
+                        <div class="banner--filter__wrap d-flex flex-column flex-lg-row gap--16 align-items-stretch align-items-lg-end">
+                            <div class="banner--filter__inputs d-flex flex-column flex-md-row flex-wrap flex-lg-nowrap gap-3 flex-grow-1">
+                                <div class="form-group position-relative pills flex-grow-1">
+                                    <span class="icon--wrap position-absolute fs--18">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                    </span>
+                                    <input class="form--control pills" type="text" name="destination" dir="auto"
+                                        placeholder="@lang('Destination / Hotel')" list="booking-destinations">
+                                    <datalist id="booking-destinations">
+                                        <!-- Egypt -->
+                                        <option value="Cairo, Egypt">
+                                        <option value="New Cairo, Egypt">
+                                        <option value="6th of October, Egypt">
+                                        <option value="Giza, Egypt">
+                                        <option value="Alexandria, Egypt">
+                                        <option value="North Coast, Egypt">
+                                        <option value="El Alamein, Egypt">
+                                        <option value="Marsa Matrouh, Egypt">
+                                        <option value="Sharm El Sheikh, Egypt">
+                                        <option value="Hurghada, Egypt">
+                                        <option value="El Gouna, Egypt">
+                                        <option value="Sahl Hasheesh, Egypt">
+                                        <option value="Makadi Bay, Egypt">
+                                        <option value="Marsa Alam, Egypt">
+                                        <option value="Luxor, Egypt">
+                                        <option value="Aswan, Egypt">
+                                        <option value="Dahab, Egypt">
+                                        <option value="Nuweiba, Egypt">
+                                        <option value="Siwa Oasis, Egypt">
+                                        <option value="Fayoum, Egypt">
+
+                                        <!-- Gulf -->
+                                        <option value="Dubai, UAE">
+                                        <option value="Abu Dhabi, UAE">
+                                        <option value="Sharjah, UAE">
+                                        <option value="Ras Al Khaimah, UAE">
+                                        <option value="Riyadh, Saudi Arabia">
+                                        <option value="Jeddah, Saudi Arabia">
+                                        <option value="Makkah, Saudi Arabia">
+                                        <option value="Madinah, Saudi Arabia">
+                                        <option value="Dammam, Saudi Arabia">
+                                        <option value="Al Khobar, Saudi Arabia">
+                                        <option value="Doha, Qatar">
+                                        <option value="Kuwait City, Kuwait">
+                                        <option value="Manama, Bahrain">
+                                        <option value="Muscat, Oman">
+
+                                        <!-- International -->
+                                        <option value="Istanbul, Turkey">
+                                        <option value="Antalya, Turkey">
+                                        <option value="London, United Kingdom">
+                                        <option value="Manchester, United Kingdom">
+                                        <option value="Paris, France">
+                                        <option value="Rome, Italy">
+                                        <option value="Milan, Italy">
+                                        <option value="Barcelona, Spain">
+                                        <option value="Madrid, Spain">
+                                        <option value="Berlin, Germany">
+                                        <option value="Munich, Germany">
+                                        <option value="Amsterdam, Netherlands">
+                                        <option value="Vienna, Austria">
+                                        <option value="Athens, Greece">
+                                        <option value="Tbilisi, Georgia">
+                                        <option value="Baku, Azerbaijan">
+                                        <option value="Bangkok, Thailand">
+                                        <option value="Kuala Lumpur, Malaysia">
+
+                                        <!-- Airports / Hotels -->
+                                        <option value="Cairo International Airport">
+                                        <option value="Hurghada International Airport">
+                                        <option value="Sharm El Sheikh International Airport">
+                                        <option value="Dubai International Airport">
+                                        <option value="King Abdulaziz International Airport">
+                                        <option value="Cairo Hotels">
+                                        <option value="Dubai Hotels">
+                                        <option value="Riyadh Hotels">
+                                        <option value="Jeddah Hotels">
+                                        <option value="Sharm El Sheikh Hotels">
+                                        <option value="Hurghada Hotels">
+                                    </datalist>
                                 </div>
-                                <div class="col-12 col-sm-6 col-lg-2">
-                                    <label class="form-label booking-engine-banner__label">@lang('Check-in')</label>
-                                    <div class="position-relative">
-                                        <span class="booking-engine-banner__icon"><i class="fa-regular fa-calendar-days"></i></span>
-                                        <input type="date" name="checkin" class="form-control booking-engine-banner__control booking-engine-banner__control--date">
-                                    </div>
+                                <div class="form-group position-relative pills flex-grow-1">
+                                    <span class="icon--wrap position-absolute fs--18">
+                                        <i class="fa-regular fa-calendar-days"></i>
+                                    </span>
+                                    <input class="form--control pills datepicker-here" name="checkin" dir="auto"
+                                        data-language="{{ $bannerDatepickerLang }}" placeholder="@lang('Check-in Date')">
                                 </div>
-                                <div class="col-12 col-sm-6 col-lg-2">
-                                    <label class="form-label booking-engine-banner__label">@lang('Check-out')</label>
-                                    <div class="position-relative">
-                                        <span class="booking-engine-banner__icon"><i class="fa-regular fa-calendar-days"></i></span>
-                                        <input type="date" name="checkout" class="form-control booking-engine-banner__control booking-engine-banner__control--date">
-                                    </div>
+                                <div class="form-group position-relative pills flex-grow-1">
+                                    <span class="icon--wrap position-absolute fs--18">
+                                        <i class="fa-regular fa-calendar-days"></i>
+                                    </span>
+                                    <input class="form--control pills datepicker-here" name="checkout" dir="auto"
+                                        data-language="{{ $bannerDatepickerLang }}" placeholder="@lang('Check-out Date')">
                                 </div>
-                                <div class="col-12 col-lg-2">
-                                    <label class="form-label booking-engine-banner__label">@lang('Guests / Rooms')</label>
-                                    <div class="position-relative">
-                                        <span class="booking-engine-banner__icon"><i class="fa-regular fa-user"></i></span>
-                                        <input type="number" min="1" name="guests" class="form-control booking-engine-banner__control" placeholder="2">
-                                    </div>
-                                </div>
-                                <div class="col-12 col-lg-2">
-                                    <button type="submit" class="btn btn--base booking-engine-banner__btn w-100">@lang('Search Booking Engine')</button>
+                                <div class="form-group position-relative pills flex-grow-1">
+                                    <span class="icon--wrap position-absolute fs--18">
+                                        <i class="fa-regular fa-user"></i>
+                                    </span>
+                                    <input class="form--control pills" type="number" min="1" name="guests" dir="auto"
+                                        placeholder="@lang('Guests / Rooms')">
                                 </div>
                             </div>
-                        </form>
-                    </div>
+                            <div class="banner--filter__btn flex-shrink-0">
+                                <button type="submit" class="btn btn--base btn--lg pills w-100">
+                                    <i class="fa-solid fa-magnifying-glass"></i> @lang('Search')
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
 
                 <div class="col-lg-12">
@@ -453,103 +523,8 @@
         </div>
     </div>
 </section>
-<!--  Hero Section />-->
-@push('style')
-    <style>
-        .booking-engine-banner {
-            max-width: 1120px;
-            padding: 22px;
-            border-radius: 28px;
-            background: rgba(255, 255, 255, 0.96);
-            border: 1px solid rgba(17, 94, 160, 0.08);
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.10);
-            backdrop-filter: blur(8px);
-        }
 
-        .booking-engine-banner__heading {
-            max-width: 880px;
-            margin-inline: auto;
-        }
 
-        .booking-engine-banner__eyebrow {
-            color: #1d6fd6;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            font-size: 11px;
-        }
-
-        .booking-engine-banner__title {
-            color: #173c36;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            font-size: clamp(18px, 2vw, 24px);
-            line-height: 1.35;
-        }
-
-        .booking-engine-banner__label {
-            margin-bottom: 8px;
-            color: #4b5b73;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .booking-engine-banner__control {
-            min-height: 56px;
-            border-radius: 18px;
-            border: 1px solid #dce7f5;
-            background: #f8fbff;
-            padding-inline-start: 46px;
-            padding-inline-end: 16px;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
-        }
-
-        .booking-engine-banner__control:focus {
-            border-color: #7cc4ff;
-            box-shadow: 0 0 0 4px rgba(29, 111, 214, 0.12);
-            background: #fff;
-        }
-
-        .booking-engine-banner__control--date {
-            padding-inline-start: 46px;
-        }
-
-        .booking-engine-banner__icon {
-            position: absolute;
-            inset-inline-start: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #1d6fd6;
-            font-size: 16px;
-            pointer-events: none;
-        }
-
-        .booking-engine-banner__btn {
-            min-height: 56px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, #1d6fd6 0%, #3fa8ff 100%);
-            border: 0;
-            box-shadow: 0 12px 26px rgba(29, 111, 214, 0.24);
-            font-weight: 700;
-        }
-
-        .booking-engine-banner__btn:hover,
-        .booking-engine-banner__btn:focus {
-            background: linear-gradient(135deg, #145cba 0%, #2f95f0 100%);
-        }
-
-        @media (max-width: 991px) {
-            .booking-engine-banner {
-                padding: 18px;
-                border-radius: 24px;
-            }
-
-            .booking-engine-banner__btn {
-                width: 100%;
-            }
-        }
-    </style>
-@endpush
 @push('script-lib')
     @if ($bannerDatepickerLang === 'ar')
         <script src="{{ asset('assets/admin/js/datepicker.ar.js') }}"></script>

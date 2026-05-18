@@ -52,19 +52,25 @@
                 ? route('public.travel.index', ['section' => 'packages'])
                 : route('public.travel.index', ['section' => $currentSection]);
 
+        $packageSearchHtml = $currentSection === 'packages'
+            ? '<div class="mb-4">' . view($activeTemplate . "components.package_search", ['tourCategories' => $tourCategories])->render() . '</div>'
+            : '';
+
         $customPills = '<div class="offers-hub__filters offers-hub__filters--pillnav d-flex justify-content-center gap-2 mb-0 pb-1 px-1 px-md-2 flex-wrap" role="navigation">
             <a href="'.route('public.travel.index').'" class="offers-hub__chip btn rounded-pill btn-md '.($currentSection === 'overview' ? 'btn--base' : 'btn-outline-dark bg-white').'">'.__('Overview').'</a>';
         foreach ($travelSections as $slug => $section) {
             $customPills .= '<a href="'.route('public.travel.index', ['section' => $slug]).'" class="offers-hub__chip btn rounded-pill btn-md '.($currentSection === $slug ? 'btn--base' : 'btn-outline-dark bg-white').'">'.__($section['label']).'</a>';
         }
         $customPills .= '</div>';
+
+        $customForm = $packageSearchHtml . $customPills;
     @endphp
 
     @include($activeTemplate . 'components.hero', [
         'heroTitle' => $tp['hero_kicker'] ?? __('Travel Center'),
         'heroHeading' => $tp['hero_title'] ?? __('Explore More, Travel Smart!'),
         'heroSubHeading' => $tp['hero_lead'] ?? __('Best deals for your next journey.'),
-        'customForm' => $customPills
+        'customForm' => $customForm
     ])
     <article class="travel-hub travel-hub--saas offers-hub section--bg position-relative" lang="{{ $docLang }}" dir="{{ $docDir }}">
         
@@ -73,13 +79,6 @@
         @else
         {{-- Full Immersive Hero for Specific Sections removed to match request --}}
         @endif
-
-
-
-        @if ($currentSection === 'packages')
-            @include($activeTemplate . 'components.package_search')
-        @endif
-
         {{-- Section pills + filters (matches Limited Offers hub) --}}
         <div class="container py-4">
         </div>

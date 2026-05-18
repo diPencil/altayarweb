@@ -551,3 +551,81 @@
         height: 30px !important;
     }
 }
+
+/* Global Datepicker Foreground Popup Fix */
+.datepickers-container {
+    z-index: 999999 !important;
+}
+
+.datepicker,
+.datepicker-dropdown,
+.ui-datepicker,
+.air-datepicker,
+.air-datepicker-global-container {
+    z-index: 999999 !important;
+}
+
+.booking-engine-home,
+.booking-engine-home .banner--filter__wrap,
+.booking-engine-home .banner--filter__inputs,
+.booking-engine-home .form-group,
+.booking-engine-home .form--control,
+.custom-hero-form,
+.custom-hero-form .banner--filter__wrap,
+.custom-hero-form .banner--filter__inputs,
+.custom-hero-form .form-group,
+.custom-hero-form .form--control {
+    overflow: visible !important;
+}
+
+/* Mobile Search Bars Styling for Home Booking Engine & Packages Search */
+@media (max-width: 991px) {
+  .booking-engine-home .banner--filter__wrap,
+  .custom-hero-form .banner--filter__wrap {
+      width: calc(100% - 32px) !important;
+      max-width: none !important;
+      padding: 16px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      box-sizing: border-box !important;
+      border-radius: 26px !important;
+  }
+
+  .booking-engine-home .banner--filter__inputs,
+  .custom-hero-form .banner--filter__inputs {
+      width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 12px !important;
+  }
+
+  .booking-engine-home .banner--filter__inputs > div,
+  .booking-engine-home .banner--filter__btn,
+  .custom-hero-form .banner--filter__inputs > div,
+  .custom-hero-form .banner--filter__btn {
+      width: 100% !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      flex: 0 0 auto !important;
+      box-sizing: border-box !important;
+  }
+
+  .booking-engine-home .form--control,
+  .booking-engine-home select,
+  .booking-engine-home input,
+  .custom-hero-form .form--control,
+  .custom-hero-form select,
+  .custom-hero-form input {
+      width: 100% !important;
+      max-width: none !important;
+      box-sizing: border-box !important;
+  }
+
+  .booking-engine-home .select2-container,
+  .custom-hero-form .select2-container {
+      width: 100% !important;
+      max-width: none !important;
+      display: block !important;
+  }
+}

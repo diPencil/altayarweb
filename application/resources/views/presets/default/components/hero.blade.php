@@ -291,7 +291,7 @@
 
     <div class="hero-content--wrap">
         <div class="container position-relative">
-            <div class="row gy-4 justify-content-center">
+            <div class="row gy-2 gy-lg-3 justify-content-center">
                 <div class="col-lg-8 d-flex align-items-center justify-content-center">
                     <div class="hero--content position-relative d-flex flex-column justify-content-center">
 
@@ -311,7 +311,7 @@
 
                 <div class="col-lg-11">
                     @if(isset($customForm))
-                        <div class="custom-hero-form mt-4">
+                        <div class="custom-hero-form mt-2 mt-lg-3">
                             {!! $customForm !!}
                         </div>
                     @elseif(!isset($isCustomHero) || !$isCustomHero)
