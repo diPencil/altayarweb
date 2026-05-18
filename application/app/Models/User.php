@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -39,6 +40,11 @@ class User extends Authenticatable
         return $this->hasMany(UserLogin::class);
     }
 
+    public function tourBookings(): HasMany
+    {
+        return $this->hasMany(TourBooking::class)->orderBy('id', 'desc');
+    }
+
     public function assignedEmployee()
     {
         return $this->belongsTo(Employee::class, 'agent_id');
@@ -52,6 +58,16 @@ class User extends Authenticatable
     public function memberships()
     {
         return $this->hasMany(UserMembership::class)->orderBy('id', 'desc');
+    }
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class)->orderBy('id', 'desc');
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class)->orderBy('id', 'desc');
     }
 
     public function userMembershipBenefits()
@@ -82,6 +98,16 @@ class User extends Authenticatable
     public function serviceBookings()
     {
         return $this->hasMany(ServiceBooking::class)->orderBy('id', 'desc');
+    }
+
+    public function depositRecords(): HasMany
+    {
+        return $this->hasMany(Deposit::class)->orderBy('id', 'desc');
+    }
+
+    public function withdrawalRecords(): HasMany
+    {
+        return $this->hasMany(Withdrawal::class)->orderBy('id', 'desc');
     }
 
     public function membershipPointsBalance(): Attribute
@@ -164,6 +190,41 @@ class User extends Authenticatable
     public function hasActiveMembership()
     {
         return $this->currentMembership && $this->currentMembership->status == 1;
+    }
+
+    protected function countOrExists(string $countKey, string $relation): bool
+    {
+        if (array_key_exists($countKey, $this->getAttributes())) {
+            return (int) $this->getAttribute($countKey) > 0;
+        }
+
+        return $this->{$relation}()->exists();
+    }
+
+    public function deleteBlockReason(): ?string
+    {
+        if ($this->hasActiveMembership() || $this->countOrExists('memberships_count', 'memberships')) {
+            return __('Cannot delete user with membership. Please deactivate/ban instead.');
+        }
+
+        $hasRelatedRecords = $this->countOrExists('tour_bookings_count', 'tourBookings')
+            || $this->countOrExists('service_bookings_count', 'serviceBookings')
+            || $this->countOrExists('invoices_count', 'invoices')
+            || $this->countOrExists('deposit_records_count', 'depositRecords')
+            || $this->countOrExists('withdrawal_records_count', 'withdrawalRecords')
+            || $this->countOrExists('transactions_count', 'transactions')
+            || $this->countOrExists('support_tickets_count', 'supportTickets')
+            || $this->countOrExists('membership_plan_histories_count', 'membershipPlanHistories')
+            || $this->countOrExists('membership_point_transactions_count', 'membershipPointTransactions')
+            || $this->countOrExists('membership_cashback_transactions_count', 'membershipCashbackTransactions')
+            || $this->countOrExists('user_membership_benefits_count', 'userMembershipBenefits')
+            || $this->countOrExists('login_logs_count', 'loginLogs');
+
+        if ($hasRelatedRecords) {
+            return __('This user has related records and cannot be deleted. Please ban/deactivate instead.');
+        }
+
+        return null;
     }
 
 }

@@ -165,7 +165,23 @@ class ManageUsersController extends Controller
                                 ->orWhere('email', 'like', "%$search%");
                       });
         }
-        return $users->with('currentMembership.plan')->orderBy('id','desc')->paginate(getPaginate());
+        return $users->with('currentMembership.plan')
+            ->withCount([
+                'memberships',
+                'membershipPlanHistories',
+                'userMembershipBenefits',
+                'membershipPointTransactions',
+                'membershipCashbackTransactions',
+                'tourBookings',
+                'serviceBookings',
+                'supportTickets',
+                'invoices',
+                'transactions',
+                'depositRecords',
+                'withdrawalRecords',
+                'loginLogs',
+            ])
+            ->orderBy('id','desc')->paginate(getPaginate());
     }
 
 
@@ -561,6 +577,44 @@ class ManageUsersController extends Controller
         $user->save();
         return back()->withNotify($notify);
 
+    }
+
+    public function delete($id)
+    {
+        $user = User::findOrFail($id);
+        $user->loadMissing('currentMembership');
+        $user->loadCount([
+            'memberships',
+            'membershipPlanHistories',
+            'userMembershipBenefits',
+            'membershipPointTransactions',
+            'membershipCashbackTransactions',
+            'tourBookings',
+            'serviceBookings',
+            'supportTickets',
+            'invoices',
+            'transactions',
+            'depositRecords',
+            'withdrawalRecords',
+            'loginLogs',
+        ]);
+
+        $blockReason = $user->deleteBlockReason();
+
+        if ($blockReason) {
+            $notify[] = ['error', $blockReason];
+            return back()->withNotify($notify);
+        }
+
+        try {
+            $user->delete();
+        } catch (\Throwable $throwable) {
+            $notify[] = ['error', __('This user has related records and cannot be deleted. Please ban/deactivate instead.')];
+            return back()->withNotify($notify);
+        }
+
+        $notify[] = ['success', __('User deleted successfully')];
+        return back()->withNotify($notify);
     }
 
 

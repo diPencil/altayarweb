@@ -155,7 +155,12 @@ class ManageEmployeesController extends Controller
                                 ->orWhere('email', 'like', "%$search%");
                       });
         }
-        return $users->orderBy('id','desc')->paginate(getPaginate());
+        return $users->withCount([
+            'assignedUsers',
+            'transactions',
+            'loginLogs',
+            'supportTickets',
+        ])->orderBy('id','desc')->paginate(getPaginate());
     }
 
 
@@ -350,6 +355,35 @@ class ManageEmployeesController extends Controller
         $user->save();
         return back()->withNotify($notify);
 
+    }
+
+    public function delete($id)
+    {
+        $user = Employee::findOrFail($id);
+        $user->loadCount([
+            'assignedUsers',
+            'transactions',
+            'withdrawals',
+            'loginLogs',
+            'supportTickets',
+        ]);
+
+        $blockReason = $user->deleteBlockReason();
+
+        if ($blockReason) {
+            $notify[] = ['error', $blockReason];
+            return back()->withNotify($notify);
+        }
+
+        try {
+            $user->delete();
+        } catch (\Throwable $throwable) {
+            $notify[] = ['error', __('This employee has related records and cannot be deleted. Please ban/deactivate instead.')];
+            return back()->withNotify($notify);
+        }
+
+        $notify[] = ['success', __('Employee deleted successfully')];
+        return back()->withNotify($notify);
     }
 
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Authenticatable
 {
@@ -41,6 +42,11 @@ class Employee extends Authenticatable
         return $this->hasMany(UserLogin::class, 'agent_id');
     }
 
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class, 'agent_id');
+    }
+
     public function assignedUsers()
     {
         return $this->hasMany(User::class, 'agent_id');
@@ -59,6 +65,24 @@ class Employee extends Authenticatable
     }
 
 
+
+    protected function countOrExists(string $countKey, string $relation): bool
+    {
+        if (array_key_exists($countKey, $this->getAttributes())) {
+            return (int) $this->getAttribute($countKey) > 0;
+        }
+
+        return $this->{$relation}()->exists();
+    }
+
+    public function deleteBlockReason(): ?string
+    {
+        if ((int) $this->status === 1) {
+            return __('This employee is active and cannot be deleted. Please ban/deactivate first.');
+        }
+
+        return null;
+    }
 
     public function fullname(): Attribute {
         return new Attribute(

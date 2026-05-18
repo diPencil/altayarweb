@@ -77,6 +77,30 @@
                                                     <i class="las la-info-circle text--shadow"></i>
                                                 </a>
                                             @endif
+                                            <a title="{{ $user->status == 1 ? __('Ban User') : __('Unban User') }}"
+                                                href="javascript:void(0)"
+                                                class="btn btn-sm {{ $user->status == 1 ? 'btn--warning' : 'btn--success' }} userStatus"
+                                                data-bs-toggle="modal" data-bs-target="#userStatusModal"
+                                                data-action="{{ route('admin.users.status', $user->id) }}"
+                                                data-status="{{ $user->status }}"
+                                                data-ban-reason="{{ e($user->ban_reason) }}">
+                                                <i class="las {{ $user->status == 1 ? 'la-ban' : 'la-undo' }} text--shadow"></i>
+                                            </a>
+                                            @php($deleteBlockReason = $user->deleteBlockReason())
+                                            @if (!$deleteBlockReason)
+                                                <button type="button" class="btn btn-sm btn--danger confirmationBtn"
+                                                    data-question="{{ __('Are you sure you want to delete this user? This action cannot be undone.') }}"
+                                                    data-action="{{ route('admin.users.delete', $user->id) }}"
+                                                    aria-label="{{ __('Delete User') }}">
+                                                    <i class="las la-trash text--shadow"></i>
+                                                </button>
+                                            @else
+                                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $deleteBlockReason }}">
+                                                    <button type="button" class="btn btn-sm btn--danger opacity-50" aria-disabled="true" tabindex="-1">
+                                                        <i class="las la-trash text--shadow"></i>
+                                                    </button>
+                                                </span>
+                                            @endif
                                             <a title="@lang('User Profile')" href="{{ route('admin.users.detail', $user->id) }}"
                                                 class="btn btn-sm btn--primary">
                                                 <i class="las la-eye text--shadow"></i>
@@ -119,4 +143,79 @@
             </div>
         </form>
     </div>
+@endpush
+
+<div id="userStatusModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title status-modal-title"></h5>
+                <button type="button" class="close btn btn--danger" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="las la-times"></i>
+                </button>
+            </div>
+            <form action="" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="status-ban-block">
+                        <h6 class="mb-2">@lang('If you ban this user he/she won\'t be able to access his/her dashboard.')</h6>
+                        <div class="form-group">
+                            <label>@lang('Reason')</label>
+                            <textarea class="form-control" name="reason" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="status-unban-block d-none">
+                        <p class="mb-2"><span>@lang('Ban reason was'):</span></p>
+                        <p class="status-ban-reason mb-3"></p>
+                        <h4 class="text-center mt-3 status-unban-question"></h4>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn--dark status-unban-block-btn d-none" data-bs-dismiss="modal">@lang('No')</button>
+                    <button type="submit" class="btn btn--primary btn-global status-ban-submit">@lang('Save')</button>
+                    <button type="submit" class="btn btn--primary status-unban-submit d-none">@lang('Yes')</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('script')
+    <script>
+        (function ($) {
+            "use strict";
+
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((element) => {
+                new bootstrap.Tooltip(element);
+            });
+
+            $(document).on('click', '.userStatus', function () {
+                const modal = $('#userStatusModal');
+                const status = Number($(this).data('status'));
+                const action = $(this).data('action');
+                const banReason = $(this).data('ban-reason') || @json(__('No reason provided'));
+
+                modal.find('form').attr('action', action);
+                modal.find('textarea[name=reason]').val('').prop('required', status === 1);
+
+                if (status === 1) {
+                    modal.find('.status-modal-title').text(@json(__('Ban User')));
+                    modal.find('.status-ban-block').removeClass('d-none');
+                    modal.find('.status-unban-block').addClass('d-none');
+                    modal.find('.status-ban-submit').removeClass('d-none');
+                    modal.find('.status-unban-submit').addClass('d-none');
+                    modal.find('.status-unban-block-btn').addClass('d-none');
+                } else {
+                    modal.find('.status-modal-title').text(@json(__('Unban User')));
+                    modal.find('.status-ban-block').addClass('d-none');
+                    modal.find('.status-unban-block').removeClass('d-none');
+                    modal.find('.status-ban-submit').addClass('d-none');
+                    modal.find('.status-unban-submit').removeClass('d-none');
+                    modal.find('.status-unban-block-btn').removeClass('d-none');
+                    modal.find('.status-ban-reason').text(banReason);
+                    modal.find('.status-unban-question').text(@json(__('Are you sure to unban this user?')));
+                }
+            });
+        })(jQuery);
+    </script>
 @endpush

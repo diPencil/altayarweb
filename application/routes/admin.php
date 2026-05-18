@@ -72,6 +72,7 @@ Route::middleware('admin')->group(function () {
         Route::post('assign-membership/{id}', 'assignMembership')->name('membership.assign');
         Route::post('update-member-code/{id}', 'updateMemberCode')->name('membership.code.update');
         Route::post('remove-membership/{id}', 'removeMembership')->name('membership.remove');
+        Route::post('delete/{id}', 'delete')->name('delete');
         Route::get('send/notification/{id}', 'showNotificationSingleForm')->name('notification.single');
         Route::post('send/notification/{id}', 'sendNotificationSingle')->name('notification.single');
         Route::get('login/{id}', 'login')->name('login');
@@ -120,6 +121,7 @@ Route::middleware('admin')->group(function () {
         Route::get('send/notification/{id}', 'showNotificationSingleForm')->name('notification.single');
         Route::post('send/notification/{id}', 'sendNotificationSingle')->name('notification.single');
         Route::get('login/{id}', 'login')->name('login');
+        Route::post('delete/{id}', 'delete')->name('delete');
         Route::post('status/{id}', 'status')->name('status');
 
         Route::get('send/notification', 'showNotificationAllForm')->name('notification.all');
