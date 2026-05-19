@@ -83,6 +83,17 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::get('bookings', [\App\Http\Controllers\Api\Mobile\Admin\AdminBookingsController::class, 'index']);
         Route::get('orders', [\App\Http\Controllers\Api\Mobile\Admin\AdminOrdersController::class, 'index']);
         Route::get('payments', [\App\Http\Controllers\Api\Mobile\Admin\AdminPaymentsController::class, 'index']);
+
+        // Phase 4A: Remaining read-only admin endpoints
+        Route::get('wallets', [\App\Http\Controllers\Api\Mobile\Admin\AdminWalletsController::class, 'index']);
+        Route::get('points', [\App\Http\Controllers\Api\Mobile\Admin\AdminPointsController::class, 'index']);
+        Route::get('club-gifts', [\App\Http\Controllers\Api\Mobile\Admin\AdminClubGiftsController::class, 'index']);
+        Route::get('withdrawal-requests', [\App\Http\Controllers\Api\Mobile\Admin\AdminWithdrawalsController::class, 'index']);
+        Route::get('memberships', [\App\Http\Controllers\Api\Mobile\Admin\AdminMembershipsController::class, 'index']);
+        Route::get('memberships/{planId}/benefits', [\App\Http\Controllers\Api\Mobile\Admin\AdminMembershipsController::class, 'benefits'])->whereNumber('planId');
+        Route::get('offers', [\App\Http\Controllers\Api\Mobile\Admin\AdminOffersController::class, 'index']);
+        Route::get('reels', [\App\Http\Controllers\Api\Mobile\Admin\AdminReelsController::class, 'index']);
+        Route::get('reels/comments', [\App\Http\Controllers\Api\Mobile\Admin\AdminReelsController::class, 'comments']);
     });
 
     Route::middleware(['auth:sanctum', 'employee.mobile'])->prefix('mobile/employee')->group(function () {
