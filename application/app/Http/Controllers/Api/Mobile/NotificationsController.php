@@ -37,6 +37,7 @@ class NotificationsController extends Controller
         $user = $request->user();
         $perPage = max(1, min((int) $request->integer('per_page', 20), 100));
 
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $notifications */
         $notifications = NotificationLog::where('user_id', $user->id)
             ->orderByDesc('id')
             ->paginate($perPage);

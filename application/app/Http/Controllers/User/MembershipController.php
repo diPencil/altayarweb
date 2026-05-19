@@ -35,6 +35,7 @@ class MembershipController extends Controller
         $pageTitle = __('Plan Summary');
         $user = auth()->user();
         $currentMembership = $user->currentMembership()->with('plan')->first();
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $histories */
         $histories = MembershipPlanHistory::with(['previousPlan', 'newPlan', 'newMembership', 'previousMembership'])
             ->where('user_id', $user->id)
             ->latest('id')

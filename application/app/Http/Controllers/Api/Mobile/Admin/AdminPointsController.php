@@ -14,6 +14,7 @@ class AdminPointsController extends Controller
         try {
             $perPage = max(1, min((int) $request->integer('per_page', 30), 100));
 
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $transactions */
             $transactions = MembershipPointTransaction::query()
                 ->with('user:id,firstname,lastname,email,username')
                 ->orderByDesc('id')

@@ -15,6 +15,7 @@ class AdminReelsController extends Controller
         try {
             $perPage = max(1, min((int) $request->integer('per_page', 20), 100));
 
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $reels */
             $reels = Reel::query()
                 ->orderByDesc('id')
                 ->paginate($perPage);
@@ -88,6 +89,7 @@ class AdminReelsController extends Controller
                 $query->where('reel_id', $reelId);
             }
 
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $comments */
             $comments = $query->orderByDesc('id')->paginate($perPage);
 
             $mapped = $comments->getCollection()->map(function (ReelComment $c): array {

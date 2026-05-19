@@ -21,6 +21,7 @@ class AdminOffersController extends Controller
                 $query->where('status', $statusFilter);
             }
 
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $offers */
             $offers = $query->orderByDesc('id')->paginate($perPage);
 
             $mapped = $offers->getCollection()->map(function (Listing $offer): array {

@@ -24,6 +24,7 @@ class AdminWithdrawalsController extends Controller
                 }
             }
 
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $withdrawals */
             $withdrawals = $query->orderByDesc('id')->paginate($perPage);
 
             $statusLabels = [1 => 'APPROVED', 2 => 'PENDING', 3 => 'REJECTED'];

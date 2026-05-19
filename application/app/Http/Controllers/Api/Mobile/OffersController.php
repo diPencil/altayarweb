@@ -24,6 +24,7 @@ class OffersController extends Controller
             ->when($request->filled('currency'), fn (Builder $builder) => $this->applyCurrencyFilter($builder, (string) $request->query('currency')))
             ->when($request->filled('search'), fn (Builder $builder) => $this->applySearchFilter($builder, (string) $request->query('search')));
 
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
