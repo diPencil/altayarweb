@@ -47,6 +47,8 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::post('notifications/{id}/read', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'markAsRead'])
             ->whereNumber('id');
         Route::post('notifications/read-all', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'markAllAsRead']);
+        Route::post('notifications/token', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'updateDeviceToken']);
+        Route::delete('notifications/token', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'deleteDeviceToken']);
         Route::controller(\App\Http\Controllers\Api\Mobile\MembershipController::class)->group(function () {
             Route::get('membership/plans', 'plans');
             Route::get('membership/dashboard', 'dashboard');

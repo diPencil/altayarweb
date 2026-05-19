@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\NotificationLog;
+use App\Models\DeviceToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -115,6 +116,72 @@ class NotificationsController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'All notifications marked as read',
+        ]);
+    }
+
+    /**
+     * Store or update a device token for push notifications.
+     */
+    public function updateDeviceToken(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => ['required', 'string'],
+            'device_type' => ['nullable', 'string', 'in:ios,android,web'],
+            'provider' => ['nullable', 'string'],
+            'device_name' => ['nullable', 'string'],
+            'app_version' => ['nullable', 'string'],
+        ]);
+
+        $user = $request->user();
+        
+        $deviceToken = DeviceToken::where('token', $request->input('token'))->first();
+
+        if ($deviceToken) {
+            $deviceToken->update([
+                'tokenable_id' => $user->id,
+                'tokenable_type' => get_class($user),
+                'device_type' => $request->input('device_type') ?? $deviceToken->device_type,
+                'provider' => $request->input('provider') ?? $deviceToken->provider,
+                'device_name' => $request->input('device_name') ?? $deviceToken->device_name,
+                'app_version' => $request->input('app_version') ?? $deviceToken->app_version,
+            ]);
+        } else {
+            DeviceToken::create([
+                'tokenable_id' => $user->id,
+                'tokenable_type' => get_class($user),
+                'token' => $request->input('token'),
+                'device_type' => $request->input('device_type'),
+                'provider' => $request->input('provider') ?? 'expo',
+                'device_name' => $request->input('device_name'),
+                'app_version' => $request->input('app_version'),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Device token updated successfully',
+        ]);
+    }
+
+    /**
+     * Remove a device token.
+     */
+    public function deleteDeviceToken(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => ['required', 'string'],
+        ]);
+
+        $user = $request->user();
+        
+        DeviceToken::where('token', $request->input('token'))
+            ->where('tokenable_id', $user->id)
+            ->where('tokenable_type', get_class($user))
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Device token deleted successfully',
         ]);
     }
 }
