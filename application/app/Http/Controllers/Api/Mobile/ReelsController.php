@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminNotification;
 use App\Models\Reel;
 use App\Models\ReelComment;
 use App\Models\ReelInteraction;
@@ -76,7 +77,20 @@ class ReelsController extends Controller
             return response()->json(['detail' => 'Unauthenticated'], 401);
         }
 
+        $existingLike = ReelInteraction::where('user_id', $user->id)
+            ->where('reel_id', $reel->id)
+            ->where('type', 'like')
+            ->exists();
+
         $this->toggleInteraction($reel, $user->id, 'like');
+
+        if (! $existingLike) {
+            $adminNotification = new AdminNotification();
+            $adminNotification->user_id = $user->id;
+            $adminNotification->title = $user->username . ' liked a reel';
+            $adminNotification->click_url = route('admin.reels.index');
+            $adminNotification->save();
+        }
 
         return response()->json([
             'success' => true,
@@ -187,6 +201,12 @@ class ReelsController extends Controller
             'comment' => $validated['comment'],
             'status' => 1,
         ]);
+
+        $adminNotification = new AdminNotification();
+        $adminNotification->user_id = $user->id;
+        $adminNotification->title = $user->username . ' commented on a reel';
+        $adminNotification->click_url = route('admin.reels.comments');
+        $adminNotification->save();
 
         return response()->json([
             'success' => true,
