@@ -85,6 +85,13 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::get('payments', [\App\Http\Controllers\Api\Mobile\Admin\AdminPaymentsController::class, 'index']);
     });
 
+    Route::middleware(['auth:sanctum', 'employee.mobile'])->prefix('mobile/employee')->group(function () {
+        Route::get('stats/overview', [\App\Http\Controllers\Api\Mobile\Employee\EmployeeStatsController::class, 'overview']);
+        Route::get('orders', [\App\Http\Controllers\Api\Mobile\Employee\EmployeeOrdersController::class, 'index']);
+        Route::get('customers', [\App\Http\Controllers\Api\Mobile\Employee\EmployeeCustomersController::class, 'index']);
+        Route::get('notifications', [\App\Http\Controllers\Api\Mobile\NotificationsController::class, 'index']);
+    });
+
     Route::prefix('mobile')->group(function () {
         Route::get('membership/pdf/{membership}', [	\App\Http\Controllers\Api\Mobile\MembershipController::class, 'pdf'])
             ->whereNumber('membership')

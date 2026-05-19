@@ -85,5 +85,6 @@ class Kernel extends HttpKernel
         'employee.kyc' => \App\Http\Middleware\EmployeeKycMiddleware::class,
         'kyc' => \App\Http\Middleware\KycMiddleware::class,
         'admin.mobile' => \App\Http\Middleware\AdminMobileOnly::class,
+        'employee.mobile' => \App\Http\Middleware\EmployeeMobileOnly::class,
     ];
 }
