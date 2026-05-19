@@ -71,6 +71,7 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::controller(\App\Http\Controllers\Api\Mobile\PaymentsController::class)->group(function () {
             Route::get('payments', 'myPayments');
             Route::get('payments/my-payments', 'myPayments');
+            Route::get('payments/status/{id}', 'status');
         });
 
         Route::get('invoices', [\App\Http\Controllers\Api\Mobile\OrdersController::class, 'me']);
