@@ -130,6 +130,13 @@ Route::namespace('Api')->name('api.')->group(function(){
                 'source' => 'altayar-website',
             ]);
         });
+
+        Route::prefix('settings/public')->group(function () {
+            Route::get('onboarding', [\App\Http\Controllers\Api\Mobile\SettingsController::class, 'onboarding']);
+            Route::get('support', [\App\Http\Controllers\Api\Mobile\SettingsController::class, 'support']);
+            Route::get('about', [\App\Http\Controllers\Api\Mobile\SettingsController::class, 'about']);
+            Route::get('general', [\App\Http\Controllers\Api\Mobile\SettingsController::class, 'general']);
+        });
     });
 
     Route::get('general-setting',function()
