@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Admin;
+use App\Models\Employee;
 use App\Models\UserMembership;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,19 +28,34 @@ class AuthController extends Controller
         }
 
         $identifier = trim((string) $request->input('identifier'));
+        $password = (string) $request->input('password');
         $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
+        // 1. Try User
         $user = User::where($field, $identifier)->first();
-
-        if (! $user || ! Hash::check((string) $request->input('password'), (string) $user->password)) {
-            return response()->json(['detail' => 'Invalid credentials'], 401);
+        if ($user && Hash::check($password, (string) $user->password)) {
+            if ((int) ($user->status ?? 1) !== 1) {
+                return response()->json(['detail' => 'Account is not active'], 403);
+            }
+            return response()->json($this->buildAuthPayload($user));
         }
 
-        if ((int) ($user->status ?? 1) !== 1) {
-            return response()->json(['detail' => 'Account is not active'], 403);
+        // 2. Try Admin
+        $admin = Admin::where($field, $identifier)->first();
+        if ($admin && Hash::check($password, (string) $admin->password)) {
+            return response()->json($this->buildAuthPayload($admin));
         }
 
-        return response()->json($this->buildAuthPayload($user));
+        // 3. Try Employee
+        $employee = Employee::where($field, $identifier)->first();
+        if ($employee && Hash::check($password, (string) $employee->password)) {
+            if ((int) ($employee->status ?? 1) !== 1) {
+                return response()->json(['detail' => 'Account is not active'], 403);
+            }
+            return response()->json($this->buildAuthPayload($employee));
+        }
+
+        return response()->json(['detail' => 'Invalid credentials'], 401);
     }
 
     public function register(Request $request): JsonResponse
@@ -100,7 +117,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        if (! $user instanceof User) {
+        if (! $user) {
             return response()->json(['detail' => 'Unauthenticated'], 401);
         }
 
@@ -111,7 +128,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        if ($user instanceof User) {
+        if ($user) {
             $user->tokens()->delete();
         }
 
@@ -132,7 +149,7 @@ class AuthController extends Controller
         }
 
         $token = PersonalAccessToken::findToken((string) $request->input('refresh_token'));
-        if (! $token || ! $token->tokenable instanceof User) {
+        if (! $token || ! $token->tokenable) {
             return response()->json(['detail' => 'Invalid refresh token'], 401);
         }
 
@@ -144,7 +161,7 @@ class AuthController extends Controller
         ]);
     }
 
-    private function buildAuthPayload(User $user): array
+    private function buildAuthPayload($user): array
     {
         $accessToken = $user->createToken('mobile_access_token')->plainTextToken;
         $refreshToken = $user->createToken('mobile_refresh_token')->plainTextToken;
@@ -158,8 +175,40 @@ class AuthController extends Controller
         ];
     }
 
-    private function formatUser(User $user): array
+    private function formatUser($user): array
     {
+        if ($user instanceof Admin) {
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'first_name' => trim((string) ($user->name ?? '')),
+                'last_name' => '',
+                'phone' => null,
+                'role' => 'SUPER_ADMIN',
+                'type' => 'admin',
+                'language' => 'en',
+                'avatar' => $user->image ?? null,
+                'created_at' => optional($user->created_at)->toISOString(),
+            ];
+        }
+
+        if ($user instanceof Employee) {
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'first_name' => trim((string) ($user->firstname ?? '')),
+                'last_name' => trim((string) ($user->lastname ?? '')),
+                'phone' => $user->mobile ?? null,
+                'role' => 'EMPLOYEE',
+                'type' => 'employee',
+                'language' => 'en',
+                'avatar' => $user->image ?? null,
+                'permissions' => $user->dashboard_permissions ?? [],
+                'created_at' => optional($user->created_at)->toISOString(),
+            ];
+        }
         $membership = $user->currentMembership()->with('plan')->first();
         $planNameEn = $membership->plan->name ?? $membership->plan_name_en ?? $membership->display_name ?? null;
         $planNameAr = $membership->plan->name_ar ?? $membership->plan_name_ar ?? null;
@@ -178,6 +227,7 @@ class AuthController extends Controller
             'last_name' => $user->lastname ?: '',
             'phone' => $user->mobile ?: null,
             'role' => 'CUSTOMER',
+            'type' => 'user',
             'language' => $user->language ?? 'en',
             'avatar' => $user->avatar ?? $user->image ?? null,
             'email_verified' => (int) ($user->ev ?? 0) === 1,
