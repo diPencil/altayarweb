@@ -3,8 +3,15 @@
 namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
+use App\Models\Deposit;
+use App\Models\GatewayCurrency;
+use App\Models\TourBooking;
 use App\Models\TourPackage;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class TourPackagesController extends Controller
 {
@@ -18,6 +25,234 @@ class TourPackagesController extends Controller
             'success' => true,
             'data' => $this->normalizeTourPackage($tourPackage),
         ]);
+    }
+
+    public function book(Request $request, int $id): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'seat' => ['required', 'integer', 'min:1'],
+            'user_proposal_date' => ['nullable', 'date'],
+            'save_card' => ['nullable', 'boolean'],
+            'use_cashback' => ['nullable', 'boolean'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $tourPackage = TourPackage::query()->findOrFail($id);
+        $user = $request->user();
+        $seat = (int) $request->input('seat');
+        $saveCard = $request->boolean('save_card');
+        $useCashback = $request->boolean('use_cashback');
+        $userProposalDate = null;
+
+        if ((int) $tourPackage->flexible_date === 1 && filled($request->input('user_proposal_date'))) {
+            try {
+                $userProposalDate = Carbon::parse((string) $request->input('user_proposal_date'));
+            } catch (\Throwable) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid proposed date supplied',
+                    'errors' => [
+                        'user_proposal_date' => ['The proposed date is invalid.'],
+                    ],
+                ], 422);
+            }
+
+            if ($userProposalDate->lt(now())) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid proposed date supplied',
+                    'errors' => [
+                        'user_proposal_date' => ['The proposed date must be today or a future date.'],
+                    ],
+                ], 422);
+            }
+        }
+
+        if ($tourPackage->tour_end && Carbon::parse($tourPackage->tour_end)->lt(now())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tour package is expired',
+                'errors' => [
+                    'tour_package_id' => ['Tour package is expired.'],
+                ],
+            ], 422);
+        }
+
+        if ((int) $tourPackage->person_capability <= (int) $tourPackage->booking_person) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Seats are not available for this tour package',
+                'errors' => [
+                    'seat' => ['Seats are not available for this tour package.'],
+                ],
+            ], 422);
+        }
+
+        if ((int) $tourPackage->person_capability < ((int) $tourPackage->booking_person + $seat)) {
+            $availableSeats = max(0, (int) $tourPackage->person_capability - (int) $tourPackage->booking_person);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Seats are not available for this tour package',
+                'errors' => [
+                    'seat' => ["Seats are not available for this tour package. Available seats: {$availableSeats}"],
+                ],
+            ], 422);
+        }
+
+        $bookingAmount = (float) showTourPackageCalculateDiscount(((float) $tourPackage->price * $seat), (float) $tourPackage->discount);
+        $cashbackUsed = 0.0;
+
+        if ($useCashback) {
+            $cashbackUsed = min((float) ($user->cashback_balance ?? 0), $bookingAmount);
+        }
+
+        $amountToPay = max(0, $bookingAmount - $cashbackUsed);
+
+        $gatewayCurrency = $this->resolveTourBookingGateway($request);
+        if (! $gatewayCurrency) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No active online payment gateway is available',
+                'errors' => [
+                    'payment' => ['No active online payment gateway is available.'],
+                ],
+            ], 422);
+        }
+
+        if ($gatewayCurrency->min_amount > $amountToPay || $gatewayCurrency->max_amount < $amountToPay) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please follow deposit limit',
+                'errors' => [
+                    'amount' => ['Please follow deposit limit.'],
+                ],
+            ], 422);
+        }
+
+        try {
+            $result = DB::transaction(function () use (
+                $user,
+                $tourPackage,
+                $seat,
+                $userProposalDate,
+                $bookingAmount,
+                $cashbackUsed,
+                $amountToPay,
+                $gatewayCurrency,
+                $saveCard,
+                $useCashback
+            ): array {
+                $tourBooking = new TourBooking();
+                $tourBooking->user_id = $user->id;
+                $tourBooking->owner_id = $tourPackage->user_id;
+                $tourBooking->owner_type = $tourPackage->user_type;
+                $tourBooking->price = $bookingAmount;
+                $tourBooking->discount = $tourPackage->discount;
+                $tourBooking->cashback_used = $cashbackUsed;
+                $tourBooking->tour_package_id = $tourPackage->id;
+                $tourBooking->user_proposal_date = $userProposalDate ?? $tourPackage->tour_start;
+                $tourBooking->seat = $seat;
+                $tourBooking->status = 0;
+                $tourBooking->save();
+
+                $charge = (float) $gatewayCurrency->fixed_charge + ($amountToPay * (float) $gatewayCurrency->percent_charge / 100);
+                $payable = $amountToPay + $charge;
+                $finalAmo = $payable * (float) $gatewayCurrency->rate;
+
+                $deposit = new Deposit();
+                $deposit->user_id = $user->id;
+                $deposit->tour_booking_id = $tourBooking->id;
+                $deposit->method_code = $gatewayCurrency->method_code;
+                $deposit->method_currency = strtoupper((string) $gatewayCurrency->currency);
+                $deposit->amount = $amountToPay;
+                $deposit->charge = $charge;
+                $deposit->rate = $gatewayCurrency->rate;
+                $deposit->final_amo = $finalAmo;
+                $deposit->btc_amo = 0;
+                $deposit->btc_wallet = '';
+                $deposit->trx = getTrx();
+                $deposit->try = 0;
+                $deposit->status = 0;
+                $deposit->detail = (object) [
+                    'payment_flow' => 'tour_booking',
+                    'source' => 'tour_package',
+                    'save_card' => $saveCard,
+                    'use_cashback' => $useCashback,
+                    'tour_package_id' => $tourPackage->id,
+                    'seat' => $seat,
+                    'user_proposal_date' => optional($userProposalDate)->toDateTimeString() ?? optional($tourPackage->tour_start)->toDateTimeString(),
+                ];
+                $deposit->save();
+
+                return [
+                    'tour_booking' => $tourBooking,
+                    'deposit' => $deposit,
+                ];
+            });
+        } catch (\Throwable $throwable) {
+            report($throwable);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create tour package booking',
+                'errors' => [
+                    'booking' => ['Failed to create tour package booking.'],
+                ],
+            ], 500);
+        }
+
+        /** @var TourBooking $tourBooking */
+        $tourBooking = $result['tour_booking'];
+        /** @var Deposit $deposit */
+        $deposit = $result['deposit'];
+        $paymentUrl = route('deposit.app.confirm', ['hash' => encrypt($deposit->id)]);
+
+        return response()->json([
+            'success' => true,
+            'booking_id' => (string) $tourBooking->id,
+            'payment_id' => (string) $deposit->id,
+            'payment_url' => $paymentUrl,
+            'redirect_url' => $paymentUrl,
+            'amount' => (float) $deposit->final_amo,
+            'booking_amount' => (float) $tourBooking->price,
+            'currency' => strtoupper((string) $deposit->method_currency),
+            'booking_currency' => $tourPackage->displayCurrencyCode(),
+            'status' => 'PENDING',
+            'message' => 'Tour package booking created successfully',
+        ], 201);
+    }
+
+    private function resolveTourBookingGateway(Request $request): ?GatewayCurrency
+    {
+        $methodCode = $request->input('method_code');
+        $currency = $request->input('currency');
+
+        $query = GatewayCurrency::query()
+            ->whereHas('method', function ($gate) {
+                $gate->where('status', 1);
+            })
+            ->with('method')
+            ->where('method_code', '<', 1000)
+            ->whereRaw('LOWER(name) != ?', ['cash'])
+            ->orderBy('method_code');
+
+        if (filled($methodCode)) {
+            $query->where('method_code', (int) $methodCode);
+        }
+
+        if (filled($currency)) {
+            $query->whereRaw('UPPER(currency) = ?', [strtoupper((string) $currency)]);
+        }
+
+        return $query->first();
     }
 
     private function normalizeTourPackage(TourPackage $tourPackage): array

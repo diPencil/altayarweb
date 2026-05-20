@@ -68,6 +68,9 @@ Route::namespace('Api')->name('api.')->group(function(){
             Route::get('bookings/{id}', 'show')->whereNumber('id');
         });
 
+        Route::post('tour-packages/{id}/book', [\App\Http\Controllers\Api\Mobile\TourPackagesController::class, 'book'])
+            ->whereNumber('id');
+
         Route::controller(\App\Http\Controllers\Api\Mobile\PaymentsController::class)->group(function () {
             Route::get('payments', 'myPayments');
             Route::get('payments/my-payments', 'myPayments');
