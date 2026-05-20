@@ -78,6 +78,13 @@ Route::namespace('Api')->name('api.')->group(function(){
         });
 
         Route::get('invoices', [\App\Http\Controllers\Api\Mobile\OrdersController::class, 'me']);
+
+        Route::post('offers/{id}/favorite', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'addFavorite'])
+            ->whereNumber('id');
+        Route::delete('offers/{id}/favorite', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'removeFavorite'])
+            ->whereNumber('id');
+        Route::post('offers/{id}/rate', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'rate'])
+            ->whereNumber('id');
     });
 
     Route::middleware(['auth:sanctum', 'admin.mobile'])->prefix('mobile/admin')->group(function () {

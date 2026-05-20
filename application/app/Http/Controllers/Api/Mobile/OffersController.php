@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
+use App\Models\ListingFavorite;
+use App\Models\ListingRating;
 use App\Models\Listing;
 use App\Models\ListingType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class OffersController extends Controller
@@ -70,6 +73,114 @@ class OffersController extends Controller
         ]);
     }
 
+    public function addFavorite(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        $listing = $this->findActiveListing($id);
+
+        if (! $listing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Offer not found',
+            ], 404);
+        }
+
+        ListingFavorite::query()->updateOrCreate([
+            'user_id' => $user->id,
+            'listing_id' => $listing->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Offer added to favorites',
+            'is_favorite' => true,
+        ]);
+    }
+
+    public function removeFavorite(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        $listing = $this->findActiveListing($id);
+
+        if (! $listing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Offer not found',
+            ], 404);
+        }
+
+        ListingFavorite::query()
+            ->where('user_id', $user->id)
+            ->where('listing_id', $listing->id)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Offer removed from favorites',
+            'is_favorite' => false,
+        ]);
+    }
+
+    public function rate(Request $request, int $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'rating' => ['required', 'numeric', 'between:1,5'],
+        ]);
+
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        $listing = $this->findActiveListing($id);
+
+        if (! $listing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Offer not found',
+            ], 404);
+        }
+
+        DB::transaction(function () use ($user, $listing, $validated): void {
+            ListingRating::query()->updateOrCreate([
+                'user_id' => $user->id,
+                'listing_id' => $listing->id,
+            ], [
+                'rating' => (float) $validated['rating'],
+            ]);
+        });
+
+        $stats = $this->listingRatingStats($listing->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Rating submitted',
+            'rating' => (float) $validated['rating'],
+            'average_rating' => $stats['average_rating'],
+            'ratings_count' => $stats['ratings_count'],
+        ]);
+    }
+
     public function categories(): JsonResponse
     {
         $counts = Listing::query()
@@ -93,6 +204,23 @@ class OffersController extends Controller
             'success' => true,
             'data' => $categories,
         ]);
+    }
+
+    private function findActiveListing(int $id): ?Listing
+    {
+        return $this->baseQuery()
+            ->whereKey($id)
+            ->first();
+    }
+
+    private function listingRatingStats(int $listingId): array
+    {
+        $ratingQuery = ListingRating::query()->where('listing_id', $listingId);
+
+        return [
+            'average_rating' => round((float) ($ratingQuery->avg('rating') ?? 0), 1),
+            'ratings_count' => $ratingQuery->count(),
+        ];
     }
 
     private function baseQuery(): Builder
