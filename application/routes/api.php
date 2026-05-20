@@ -122,6 +122,9 @@ Route::namespace('Api')->name('api.')->group(function(){
         Route::get('special-offers/{id}', [\App\Http\Controllers\Api\Mobile\SpecialOffersController::class, 'show'])
             ->whereNumber('id');
 
+        Route::get('tour-packages/{id}', [\App\Http\Controllers\Api\Mobile\TourPackagesController::class, 'show'])
+            ->whereNumber('id');
+
         Route::get('offers', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'index']);
         Route::get('offers/featured', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'featured']);
         Route::get('offers/categories', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'categories']);
