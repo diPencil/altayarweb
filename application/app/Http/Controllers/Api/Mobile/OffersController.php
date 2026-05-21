@@ -15,6 +15,44 @@ use Illuminate\Support\Str;
 
 class OffersController extends Controller
 {
+    public function favorites(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        $favorites = ListingFavorite::query()
+            ->where('user_id', $user->id)
+            ->whereHas('listing', function (Builder $query) {
+                $query->active()
+                    ->where(function (Builder $builder) {
+                        $builder->whereNull('end_date')
+                            ->orWhereDate('end_date', '>=', now()->toDateString());
+                    });
+            })
+            ->with(['listing.listingType'])
+            ->latest()
+            ->get()
+            ->map(function (ListingFavorite $favorite) use ($user) {
+                $listing = $favorite->listing;
+
+                if (! $listing) {
+                    return null;
+                }
+
+                return $this->normalizeFavoriteOffer($listing, $user->id);
+            })
+            ->filter()
+            ->values();
+
+        return response()->json($favorites);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $page = max((int) $request->query('page', 1), 1);
@@ -203,6 +241,29 @@ class OffersController extends Controller
         return response()->json([
             'success' => true,
             'data' => $categories,
+        ]);
+    }
+
+    private function normalizeFavoriteOffer(Listing $listing, int $userId): array
+    {
+        $base = $this->normalizeOffer($listing);
+
+        $ratingStats = ListingRating::query()
+            ->where('listing_id', $listing->id)
+            ->selectRaw('COUNT(*) as ratings_count, COALESCE(ROUND(AVG(rating), 1), 0) as average_rating')
+            ->first();
+
+        $myRating = ListingRating::query()
+            ->where('listing_id', $listing->id)
+            ->where('user_id', $userId)
+            ->value('rating');
+
+        return array_merge($base, [
+            'is_favorited' => true,
+            'rating_count' => (int) ($ratingStats?->ratings_count ?? 0),
+            'ratings_count' => (int) ($ratingStats?->ratings_count ?? 0),
+            'average_rating' => (float) ($ratingStats?->average_rating ?? 0),
+            'my_rating' => $myRating !== null ? (float) $myRating : null,
         ]);
     }
 
