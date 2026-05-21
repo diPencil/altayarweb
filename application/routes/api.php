@@ -99,9 +99,13 @@ Route::namespace('Api')->name('api.')->group(function(){
     Route::middleware(['auth:sanctum', 'admin.mobile'])->prefix('mobile/admin')->group(function () {
         Route::get('stats/overview', [\App\Http\Controllers\Api\Mobile\Admin\AdminStatsController::class, 'overview']);
         Route::get('users', [\App\Http\Controllers\Api\Mobile\Admin\AdminUserController::class, 'index']);
+        Route::get('users/{id}', [\App\Http\Controllers\Api\Mobile\Admin\AdminUserController::class, 'show']);
         Route::get('bookings', [\App\Http\Controllers\Api\Mobile\Admin\AdminBookingsController::class, 'index']);
+        Route::get('bookings/{id}', [\App\Http\Controllers\Api\Mobile\Admin\AdminBookingsController::class, 'show'])->whereNumber('id');
         Route::get('orders', [\App\Http\Controllers\Api\Mobile\Admin\AdminOrdersController::class, 'index']);
+        Route::get('orders/{id}', [\App\Http\Controllers\Api\Mobile\Admin\AdminOrdersController::class, 'show'])->whereNumber('id');
         Route::get('payments', [\App\Http\Controllers\Api\Mobile\Admin\AdminPaymentsController::class, 'index']);
+        Route::get('payments/{id}', [\App\Http\Controllers\Api\Mobile\Admin\AdminPaymentsController::class, 'show'])->whereNumber('id');
 
         // Phase 4A: Remaining read-only admin endpoints
         Route::get('wallets', [\App\Http\Controllers\Api\Mobile\Admin\AdminWalletsController::class, 'index']);
