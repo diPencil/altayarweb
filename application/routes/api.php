@@ -70,6 +70,11 @@ Route::namespace('Api')->name('api.')->group(function(){
 
         Route::post('tour-packages/{id}/book', [\App\Http\Controllers\Api\Mobile\TourPackagesController::class, 'book'])
             ->whereNumber('id');
+        Route::get('tour-packages/favorites', [\App\Http\Controllers\Api\Mobile\TourPackagesController::class, 'favorites']);
+        Route::post('tour-packages/{id}/favorite', [\App\Http\Controllers\Api\Mobile\TourPackagesController::class, 'addFavorite'])
+            ->whereNumber('id');
+        Route::delete('tour-packages/{id}/favorite', [\App\Http\Controllers\Api\Mobile\TourPackagesController::class, 'removeFavorite'])
+            ->whereNumber('id');
 
         Route::controller(\App\Http\Controllers\Api\Mobile\PaymentsController::class)->group(function () {
             Route::get('payments', 'myPayments');
@@ -79,6 +84,7 @@ Route::namespace('Api')->name('api.')->group(function(){
 
         Route::get('invoices', [\App\Http\Controllers\Api\Mobile\OrdersController::class, 'me']);
 
+        Route::get('offers/favorites', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'favorites']);
         Route::post('offers/{id}/favorite', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'addFavorite'])
             ->whereNumber('id');
         Route::delete('offers/{id}/favorite', [\App\Http\Controllers\Api\Mobile\OffersController::class, 'removeFavorite'])

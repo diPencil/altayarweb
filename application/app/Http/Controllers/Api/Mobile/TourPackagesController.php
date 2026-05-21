@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\Deposit;
 use App\Models\GatewayCurrency;
+use App\Models\TourPackageFavorite;
 use App\Models\TourBooking;
 use App\Models\TourPackage;
 use Carbon\Carbon;
@@ -15,6 +16,42 @@ use Illuminate\Support\Facades\Validator;
 
 class TourPackagesController extends Controller
 {
+    public function favorites(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        $favorites = TourPackageFavorite::query()
+            ->where('user_id', $user->id)
+            ->with(['tourPackage.category', 'tourPackage.TourPackagePrimaryImage', 'tourPackage.tour_package_images'])
+            ->latest()
+            ->get()
+            ->map(function (TourPackageFavorite $favorite) {
+                $tourPackage = $favorite->tourPackage;
+
+                if (! $tourPackage) {
+                    return null;
+                }
+
+                return array_merge($this->normalizeTourPackage($tourPackage), [
+                    'is_favorite' => true,
+                ]);
+            })
+            ->filter()
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => $favorites,
+        ]);
+    }
+
     public function show(int $id): JsonResponse
     {
         $tourPackage = TourPackage::with(['category', 'TourPackagePrimaryImage', 'tour_package_images'])
@@ -24,6 +61,70 @@ class TourPackagesController extends Controller
         return response()->json([
             'success' => true,
             'data' => $this->normalizeTourPackage($tourPackage),
+        ]);
+    }
+
+    public function addFavorite(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        $tourPackage = TourPackage::query()->find($id);
+
+        if (! $tourPackage) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Package not found',
+            ], 404);
+        }
+
+        TourPackageFavorite::query()->updateOrCreate([
+            'user_id' => $user->id,
+            'tour_package_id' => $tourPackage->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Package added to favorites',
+            'is_favorite' => true,
+        ]);
+    }
+
+    public function removeFavorite(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        $tourPackage = TourPackage::query()->find($id);
+
+        if (! $tourPackage) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Package not found',
+            ], 404);
+        }
+
+        TourPackageFavorite::query()
+            ->where('user_id', $user->id)
+            ->where('tour_package_id', $tourPackage->id)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Package removed from favorites',
+            'is_favorite' => false,
         ]);
     }
 

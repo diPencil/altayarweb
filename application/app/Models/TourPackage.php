@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TourPackage extends Model
 {
@@ -402,6 +403,11 @@ class TourPackage extends Model
         }
 
         return $html;
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(TourPackageFavorite::class, 'tour_package_id', 'id');
     }
 
     public function tourPositionBadge()
