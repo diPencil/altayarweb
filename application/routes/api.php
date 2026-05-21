@@ -37,6 +37,9 @@ Route::namespace('Api')->name('api.')->group(function(){
             Route::post('chat/start', 'start');
             Route::get('chat/{id}', 'show')->whereNumber('id');
             Route::post('chat/{id}/message', 'message')->whereNumber('id');
+            Route::get('chat/admin/all', 'adminAll');
+            Route::post('chat/{id}/assign', 'assign')->whereNumber('id');
+            Route::get('chat/stats/admin', 'adminStats');
         });
         Route::get('points/me', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'me']);
         Route::get('points/me/transactions', [\App\Http\Controllers\Api\Mobile\PointsController::class, 'transactions']);

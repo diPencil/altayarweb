@@ -145,6 +145,81 @@ class ChatController extends Controller
         return response()->json($this->messagePayload($message->fresh()));
     }
 
+    public function adminAll(Request $request): JsonResponse
+    {
+        $query = ChatConversation::query()
+            ->with(['user', 'latestMessage'])
+            ->orderByDesc('last_message_at')
+            ->orderByDesc('id');
+
+        $statusFilter = strtolower(trim((string) $request->query('status_filter', '')));
+
+        if ($statusFilter !== '') {
+            $statusMap = [
+                'waiting' => ['waiting', 'human_requested'],
+                'active' => ['open', 'assigned', 'active'],
+                'closed' => ['closed', 'resolved'],
+            ];
+
+            if (array_key_exists($statusFilter, $statusMap)) {
+                $statuses = $statusMap[$statusFilter];
+                $query->whereRaw('LOWER(COALESCE(status, "")) IN (' . implode(',', array_fill(0, count($statuses), '?')) . ')', $statuses);
+            }
+        }
+
+        if ($request->boolean('unassigned_only')) {
+            $query->whereNull('assigned_admin_id');
+        }
+
+        $conversations = $query
+            ->get()
+            ->map(fn (ChatConversation $conversation) => $this->conversationSummaryPayload($conversation))
+            ->values();
+
+        return response()->json($conversations);
+    }
+
+    public function assign(Request $request, int $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'employee_id' => ['required', 'integer'],
+        ]);
+
+        $conversation = ChatConversation::query()->findOrFail($id);
+        $admin = Admin::find((int) $validated['employee_id']);
+
+        abort_if(! $admin, 404, 'Assigned admin not found.');
+
+        $conversation->update([
+            'assigned_admin_id' => $admin->id,
+            'status' => 'assigned',
+            'human_requested_at' => $conversation->human_requested_at ?? now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'conversation' => $this->conversationSummaryPayload($conversation->fresh(['user', 'latestMessage'])),
+        ]);
+    }
+
+    public function adminStats(): JsonResponse
+    {
+        $countByStatus = static function (array $statuses): int {
+            return ChatConversation::query()
+                ->whereRaw('LOWER(COALESCE(status, "")) IN (' . implode(',', array_fill(0, count($statuses), '?')) . ')', $statuses)
+                ->count();
+        };
+
+        return response()->json([
+            'success' => true,
+            'total_conversations' => ChatConversation::count(),
+            'open_conversations' => $countByStatus(['open', 'waiting', 'human_requested', 'assigned', 'active']),
+            'closed_conversations' => $countByStatus(['closed', 'resolved']),
+            'unassigned_conversations' => ChatConversation::query()->whereNull('assigned_admin_id')->count(),
+            'unread_admin_messages' => (int) ChatConversation::query()->sum('unread_admin_count'),
+        ]);
+    }
+
     protected function userConversationOrFail(User $user, int $id): ChatConversation
     {
         $conversation = ChatConversation::query()
@@ -199,6 +274,31 @@ class ChatController extends Controller
             'created_at' => optional($conversation->created_at)->toISOString(),
             'customer_avatar' => null,
             'messages' => $messages,
+        ];
+    }
+
+    protected function conversationSummaryPayload(ChatConversation $conversation): array
+    {
+        $conversation->loadMissing(['user', 'latestMessage']);
+
+        $subject = (string) data_get($conversation->metadata, 'subject', 'Support chat');
+
+        return [
+            'id' => $conversation->id,
+            'customer_id' => $conversation->user_id,
+            'customer_name' => $this->customerName($conversation->user ?? null, $conversation),
+            'assigned_to' => $conversation->assigned_admin_id,
+            'assigned_to_name' => $this->assignedAdminName($conversation->assigned_admin_id),
+            'status' => $this->normalizeStatus($conversation->status),
+            'subject' => $subject,
+            'last_message_at' => optional($conversation->last_message_at)->toISOString(),
+            'last_message_preview' => $conversation->latestMessage
+                ? Str::limit((string) $conversation->latestMessage->message, 120)
+                : $subject,
+            'customer_unread_count' => (int) $conversation->unread_user_count,
+            'employee_unread_count' => (int) $conversation->unread_admin_count,
+            'created_at' => optional($conversation->created_at)->toISOString(),
+            'customer_avatar' => null,
         ];
     }
 
