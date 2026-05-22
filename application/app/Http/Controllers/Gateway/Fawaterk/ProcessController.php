@@ -176,7 +176,11 @@ class ProcessController extends Controller
                 return response()->json(['status' => 'invalid', 'message' => 'Missing invoice reference.'], 422);
             }
 
-            $matchingDeposits = $this->matchingDepositsForInvoice($invoiceId);
+            $matchingDeposits = $this->matchingDepositsForInvoice($invoiceId, [0, 2]);
+            if ($matchingDeposits->isEmpty()) {
+                $matchingDeposits = $this->matchingDepositsForInvoice($invoiceId, [1, 3]);
+            }
+
             if ($matchingDeposits->isEmpty()) {
                 $this->writeFawaterkAuditLog($audit, null, 'deposit_not_found', 'Deposit not found.');
                 return response()->json(['status' => 'invalid', 'message' => 'Deposit not found.'], 404);
@@ -213,8 +217,13 @@ class ProcessController extends Controller
             }
 
             if ($deposit->status == 1) {
-                $this->writeFawaterkAuditLog($audit, $deposit, 'ignored', 'Deposit already successful.');
+                $this->writeFawaterkAuditLog($audit, $deposit, 'ignored_already_paid', 'Deposit already successful.');
                 return response()->json(['status' => 'success']);
+            }
+
+            if ($deposit->status == 3) {
+                $this->writeFawaterkAuditLog($audit, $deposit, 'duplicate_failed', 'Deposit already failed.');
+                return response()->json(['status' => 'failed']);
             }
 
             if ($currency && Str::upper((string) $currency) !== Str::upper((string) $deposit->method_currency)) {
@@ -241,9 +250,22 @@ class ProcessController extends Controller
                 return response()->json(['status' => 'success']);
             }
 
-            if (in_array($status, ['failed', 'fail', 'canceled', 'cancelled', 'rejected', 'expired', 'void'], true)) {
-                PaymentController::markDepositFailed($deposit, data_get($data, 'message') ?: 'Payment declined by the gateway.');
-                $this->writeFawaterkAuditLog($audit, $deposit, 'failed', data_get($data, 'message') ?: 'Payment declined by the gateway.');
+            $failureReason = $this->fawaterkFailureReason($data, $status);
+            if ($failureReason) {
+                $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
+                    'gateway_status' => $status ?: 'failed',
+                    'gateway_error_message' => $failureReason,
+                    'gateway_callback' => $data,
+                    'gateway_failed_at' => now()->toDateTimeString(),
+                    'gateway_reference_id' => $referenceId,
+                    'gateway_transaction_id' => $transactionId,
+                    'gateway_transaction_key' => $transactionKey,
+                ]);
+                $deposit->save();
+
+                $message = 'Gateway reported failed/rejected/expired payment: ' . $failureReason;
+                PaymentController::markDepositFailed($deposit, $message);
+                $this->writeFawaterkAuditLog($audit, $deposit, 'failed', $message);
                 return response()->json(['status' => 'failed']);
             }
 
@@ -312,16 +334,60 @@ class ProcessController extends Controller
         ], $references);
     }
 
-    protected function matchingDepositsForInvoice($invoiceId)
+    protected function matchingDepositsForInvoice($invoiceId, array $statuses = [0, 2])
     {
         return Deposit::with(['user', 'tour_booking', 'service_booking'])
-            ->whereIn('status', [0, 2])
+            ->whereIn('status', $statuses)
             ->where(function ($query) use ($invoiceId) {
                 $query->where('btc_wallet', $invoiceId)
                     ->orWhere('detail->gateway_invoice_id', $invoiceId)
                     ->orWhere('detail->gateway_invoice_id', (string) $invoiceId);
             })
             ->get();
+    }
+
+    protected function fawaterkFailureReason(array $data, string $status): ?string
+    {
+        $values = [
+            data_get($data, 'errorMessage'),
+            data_get($data, 'response.gatewayCode'),
+            data_get($data, 'response.gatewayMessage'),
+            data_get($data, 'message'),
+            $status,
+            data_get($data, 'status'),
+            data_get($data, 'invoice_status'),
+            data_get($data, 'payment_status'),
+        ];
+
+        $keywords = [
+            'failed',
+            'fail',
+            'rejected',
+            'reject',
+            'declined',
+            'decline',
+            'cancelled',
+            'canceled',
+            'expired',
+            'void',
+            'error',
+            'unsuccessful',
+        ];
+
+        foreach ($values as $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $normalized = Str::lower((string) $value);
+            foreach ($keywords as $keyword) {
+                if (Str::contains($normalized, $keyword)) {
+                    return (string) $value;
+                }
+            }
+        }
+
+        return null;
     }
 
     protected function describeDepositCandidates($deposits): array
