@@ -34,6 +34,17 @@ class PaymentLinkController extends Controller
 
         // Logic for Fawaterk (alias should be 'Fawaterk')
         if ($deposit->gateway && $deposit->gateway->alias == 'Fawaterk') {
+            $detail = (array) $deposit->detail;
+
+            if (
+                $deposit->status == 2 &&
+                !empty($detail['gateway_invoice_url']) &&
+                !empty($detail['gateway_invoice_id']) &&
+                !empty($deposit->btc_wallet)
+            ) {
+                return redirect($detail['gateway_invoice_url']);
+            }
+
             return $this->processFawaterk($deposit);
         }
 
