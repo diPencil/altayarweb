@@ -188,6 +188,12 @@ class PaymentController extends Controller
 
     public static function userDataUpdate($deposit, $isManual = null)
     {
+        // Guard: Handle guest E-Payment deposits without user wallet/transaction logic
+        if ($deposit->user_id === null && data_get($deposit->detail, 'payment_flow') === 'epayment') {
+            self::handleGuestEPaymentPaid($deposit);
+            return;
+        }
+
         $user = User::findOrFail($deposit->user_id);
         $gatewayCurrency = $deposit->gatewayCurrency();
         $gatewayName = $gatewayCurrency?->name ?? 'Payment';
@@ -363,6 +369,25 @@ class PaymentController extends Controller
                 ]);
             }
         }
+    }
+
+    protected static function handleGuestEPaymentPaid(Deposit $deposit): void
+    {
+        // Skip if already paid to avoid duplicate updates
+        if ((int) $deposit->status === 1) {
+            return;
+        }
+
+        // Mark deposit as paid
+        $deposit->status = 1;
+
+        // Update deposit detail with gateway final status
+        $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
+            'gateway_status' => 'paid',
+            'gateway_verified_at' => now()->toDateTimeString(),
+        ]);
+
+        $deposit->save();
     }
 
     public static function markDepositFailed($deposit, ?string $feedback = null): void
