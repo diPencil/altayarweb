@@ -206,14 +206,14 @@ class ReconcileFawaterkDeposits extends Command
 
         return [
             'decision' => 'pending',
-            'message' => 'Gateway invoice is still pending or unpaid.',
+            'message' => $this->gatewayPendingReason($payload) ?: 'Gateway invoice is still pending or unpaid.',
         ];
     }
 
     protected function gatewayConfirmsPaid(Deposit $deposit, array $payload): bool
     {
         $paid = (int) data_get($payload, 'data.paid') === 1
-            || in_array(Str::lower((string) data_get($payload, 'data.status')), ['paid', 'success', 'succeeded', 'completed', 'complete', 'captured'], true);
+            || $this->gatewayPaymentStatusContains($payload, ['paid', 'success', 'succeeded', 'completed', 'complete', 'captured']);
 
         if (!$paid) {
             return false;
@@ -234,19 +234,6 @@ class ReconcileFawaterkDeposits extends Command
 
     protected function gatewayFailureReason(array $payload): ?string
     {
-        $values = [
-            data_get($payload, 'errorMessage'),
-            data_get($payload, 'response.gatewayCode'),
-            data_get($payload, 'response.gatewayMessage'),
-            data_get($payload, 'message'),
-            data_get($payload, 'status'),
-            data_get($payload, 'invoice_status'),
-            data_get($payload, 'payment_status'),
-            data_get($payload, 'data.status'),
-            data_get($payload, 'data.invoice_status'),
-            data_get($payload, 'data.payment_status'),
-        ];
-
         $keywords = [
             'failed',
             'fail',
@@ -262,7 +249,7 @@ class ReconcileFawaterkDeposits extends Command
             'unsuccessful',
         ];
 
-        foreach ($values as $value) {
+        foreach ($this->gatewayStatusValues($payload) as $value) {
             if ($value === null || $value === '') {
                 continue;
             }
@@ -276,6 +263,83 @@ class ReconcileFawaterkDeposits extends Command
         }
 
         return null;
+    }
+
+    protected function gatewayPendingReason(array $payload): ?string
+    {
+        foreach ($this->gatewayPaymentStatusValues($payload) as $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $normalized = Str::lower((string) $value);
+            if (Str::contains($normalized, ['pending', 'unpaid', 'processing', 'initiated'])) {
+                return 'Gateway invoice is still pending or unpaid: ' . $value;
+            }
+        }
+
+        return null;
+    }
+
+    protected function gatewayPaymentStatusContains(array $payload, array $keywords): bool
+    {
+        foreach ($this->gatewayPaymentStatusValues($payload) as $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $normalized = Str::lower((string) $value);
+            foreach ($keywords as $keyword) {
+                if (Str::contains($normalized, $keyword)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    protected function gatewayPaymentStatusValues(array $payload): array
+    {
+        $values = [
+            data_get($payload, 'invoice_status'),
+            data_get($payload, 'payment_status'),
+            data_get($payload, 'data.status'),
+            data_get($payload, 'data.invoice_status'),
+            data_get($payload, 'data.payment_status'),
+        ];
+
+        foreach ((array) data_get($payload, 'data.invoice_transactions', []) as $transaction) {
+            $values[] = data_get($transaction, 'status');
+        }
+
+        return $values;
+    }
+
+    protected function gatewayStatusValues(array $payload): array
+    {
+        $values = [
+            data_get($payload, 'errorMessage'),
+            data_get($payload, 'response.gatewayCode'),
+            data_get($payload, 'response.gatewayMessage'),
+            data_get($payload, 'message'),
+            data_get($payload, 'status'),
+            data_get($payload, 'invoice_status'),
+            data_get($payload, 'payment_status'),
+            data_get($payload, 'data.status'),
+            data_get($payload, 'data.invoice_status'),
+            data_get($payload, 'data.payment_status'),
+        ];
+
+        foreach ((array) data_get($payload, 'data.invoice_transactions', []) as $transaction) {
+            $values[] = data_get($transaction, 'status');
+            $values[] = data_get($transaction, 'gatewayCode');
+            $values[] = data_get($transaction, 'gateway_code');
+            $values[] = data_get($transaction, 'gatewayMessage');
+            $values[] = data_get($transaction, 'gateway_message');
+        }
+
+        return $values;
     }
 
     protected function handlePaidDecision(Deposit $deposit, string $invoiceId, array $payload, string $message, bool $dryRun): void

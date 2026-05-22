@@ -154,8 +154,10 @@ class ProcessController extends Controller
             ?: data_get($data, 'data.payment_method');
         $hashKey = data_get($data, 'hashKey') ?: data_get($data, 'hash_key');
         $referenceId = data_get($data, 'referenceId')
+            ?: data_get($data, 'referenceNumber')
             ?: data_get($data, 'reference_id')
             ?: data_get($data, 'data.referenceId')
+            ?: data_get($data, 'data.referenceNumber')
             ?: data_get($data, 'data.reference_id');
         $transactionId = data_get($data, 'transactionId')
             ?: data_get($data, 'transaction_id')
