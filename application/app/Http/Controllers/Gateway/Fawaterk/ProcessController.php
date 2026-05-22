@@ -176,11 +176,19 @@ class ProcessController extends Controller
                 return response()->json(['status' => 'invalid', 'message' => 'Missing invoice reference.'], 422);
             }
 
-            $deposit = Deposit::with(['user', 'tour_booking', 'service_booking'])->where('btc_wallet', $invoiceId)->first();
-            if (!$deposit) {
+            $matchingDeposits = $this->matchingDepositsForInvoice($invoiceId);
+            if ($matchingDeposits->isEmpty()) {
                 $this->writeFawaterkAuditLog($audit, null, 'deposit_not_found', 'Deposit not found.');
                 return response()->json(['status' => 'invalid', 'message' => 'Deposit not found.'], 404);
             }
+
+            if ($matchingDeposits->count() > 1) {
+                $candidates = $this->describeDepositCandidates($matchingDeposits);
+                $this->writeFawaterkAuditLog($audit, null, 'ambiguous_invoice_match', 'Multiple active deposits match invoice: ' . json_encode($candidates));
+                return response()->json(['status' => 'invalid', 'message' => 'Ambiguous invoice match.'], 409);
+            }
+
+            $deposit = $matchingDeposits->first();
             $audit['local_status_before'] = $deposit->status;
 
             $gatewayCurrency = $deposit->gatewayCurrency();
@@ -302,6 +310,29 @@ class ProcessController extends Controller
             'payload' => $request->all(),
             'headers' => $request->headers->all(),
         ], $references);
+    }
+
+    protected function matchingDepositsForInvoice($invoiceId)
+    {
+        return Deposit::with(['user', 'tour_booking', 'service_booking'])
+            ->whereIn('status', [0, 2])
+            ->where(function ($query) use ($invoiceId) {
+                $query->where('btc_wallet', $invoiceId)
+                    ->orWhere('detail->gateway_invoice_id', $invoiceId)
+                    ->orWhere('detail->gateway_invoice_id', (string) $invoiceId);
+            })
+            ->get();
+    }
+
+    protected function describeDepositCandidates($deposits): array
+    {
+        return $deposits->map(function (Deposit $deposit) {
+            return [
+                'id' => $deposit->id,
+                'trx' => $deposit->trx,
+                'status' => $deposit->status,
+            ];
+        })->values()->all();
     }
 
     protected function writeFawaterkAuditLog(array $audit, ?Deposit $deposit = null, ?string $decision = null, ?string $message = null): void
