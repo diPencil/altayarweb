@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Gateway\Fawaterk;
 
 use App\Models\Deposit;
+use App\Models\PaymentGatewayLog;
 use App\Http\Controllers\Gateway\PaymentController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 class ProcessController extends Controller
 {
@@ -145,85 +148,124 @@ class ProcessController extends Controller
             ?: data_get($data, 'paymentMethod')
             ?: data_get($data, 'data.payment_method');
         $hashKey = data_get($data, 'hashKey') ?: data_get($data, 'hash_key');
+        $referenceId = data_get($data, 'referenceId')
+            ?: data_get($data, 'reference_id')
+            ?: data_get($data, 'data.referenceId')
+            ?: data_get($data, 'data.reference_id');
+        $transactionId = data_get($data, 'transactionId')
+            ?: data_get($data, 'transaction_id')
+            ?: data_get($data, 'data.transactionId')
+            ?: data_get($data, 'data.transaction_id');
+        $transactionKey = data_get($data, 'transactionKey')
+            ?: data_get($data, 'transaction_key')
+            ?: data_get($data, 'data.transactionKey')
+            ?: data_get($data, 'data.transaction_key');
 
-        if (!$invoiceId) {
-            return response()->json(['status' => 'invalid', 'message' => 'Missing invoice reference.'], 422);
-        }
-
-        $deposit = Deposit::with(['user', 'tour_booking', 'service_booking'])->where('btc_wallet', $invoiceId)->first();
-        if (!$deposit) {
-            return response()->json(['status' => 'invalid', 'message' => 'Deposit not found.'], 404);
-        }
-
-        $gatewayCurrency = $deposit->gatewayCurrency();
-        $gatewayConfig = json_decode((string) ($gatewayCurrency->gateway_parameter ?? '{}'));
-        $apiKeyForLookup = data_get($gatewayConfig, 'api_key.value')
-            ?: data_get($gatewayConfig, 'api_key');
-        $secretKey = data_get($deposit->detail, 'gateway_vendor_key')
-            ?: data_get($deposit->detail, 'gateway_provider_key')
-            ?: data_get($gatewayConfig, 'provider_key.value')
-            ?: data_get($gatewayConfig, 'provider_key')
-            ?: data_get($gatewayConfig, 'vendor_key.value')
-            ?: data_get($gatewayConfig, 'vendor_key')
-            ?: data_get($gatewayConfig, 'api_key.value')
-            ?: data_get($gatewayConfig, 'api_key');
-
-        if ($invoiceKey && $paymentMethod && $secretKey) {
-            $expectedHash = hash_hmac('sha256', 'InvoiceId=' . $invoiceId . '&InvoiceKey=' . $invoiceKey . '&PaymentMethod=' . $paymentMethod, (string) $secretKey, false);
-            if (!$hashKey || !hash_equals($expectedHash, (string) $hashKey)) {
-                return response()->json(['status' => 'invalid', 'message' => 'Invalid webhook signature.'], 403);
-            }
-        }
-
-        if ($deposit->status == 1) {
-            return response()->json(['status' => 'success']);
-        }
-
-        if ($currency && Str::upper((string) $currency) !== Str::upper((string) $deposit->method_currency)) {
-            PaymentController::markDepositFailed($deposit, 'Currency mismatch returned from gateway.');
-            return response()->json(['status' => 'failed', 'message' => 'Currency mismatch.'], 422);
-        }
-
-        if ($amount !== null && abs((float) $amount - (float) $deposit->final_amo) > 0.01) {
-            PaymentController::markDepositFailed($deposit, 'Amount mismatch returned from gateway.');
-            return response()->json(['status' => 'failed', 'message' => 'Amount mismatch.'], 422);
-        }
-
-        if (in_array($status, ['paid', 'success', 'succeeded', 'completed', 'complete', 'captured'], true)) {
-            if (!$this->confirmInvoiceFromGateway($deposit, $invoiceId, $apiKeyForLookup)) {
-                PaymentController::markDepositFailed($deposit, 'Gateway verification failed.');
-                return response()->json(['status' => 'failed', 'message' => 'Gateway verification failed.'], 422);
-            }
-
-            PaymentController::userDataUpdate($deposit);
-            return response()->json(['status' => 'success']);
-        }
-
-        if (in_array($status, ['failed', 'fail', 'canceled', 'cancelled', 'rejected', 'expired', 'void'], true)) {
-            PaymentController::markDepositFailed($deposit, data_get($data, 'message') ?: 'Payment declined by the gateway.');
-            return response()->json(['status' => 'failed']);
-        }
-
-        if (in_array($status, ['pending', 'processing', 'initiated'], true)) {
-            if ($deposit->status != 1) {
-                $deposit->status = 2;
-                $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
-                    'gateway_status' => $status,
-                    'gateway_callback' => $data,
-                ]);
-                $deposit->save();
-            }
-
-            return response()->json(['status' => 'pending']);
-        }
-
-        $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
-            'gateway_callback' => $data,
-            'gateway_status' => $status ?: 'unknown',
+        $audit = $this->fawaterkAuditData($request, [
+            'invoice_id' => $invoiceId,
+            'invoice_key' => $invoiceKey,
+            'reference_id' => $referenceId,
+            'transaction_id' => $transactionId,
+            'transaction_key' => $transactionKey,
+            'decision' => 'received',
         ]);
-        $deposit->save();
 
-        return response()->json(['status' => 'ignored']);
+        try {
+            if (!$invoiceId) {
+                $this->writeFawaterkAuditLog($audit, null, 'missing_reference', 'Missing invoice reference.');
+                return response()->json(['status' => 'invalid', 'message' => 'Missing invoice reference.'], 422);
+            }
+
+            $deposit = Deposit::with(['user', 'tour_booking', 'service_booking'])->where('btc_wallet', $invoiceId)->first();
+            if (!$deposit) {
+                $this->writeFawaterkAuditLog($audit, null, 'deposit_not_found', 'Deposit not found.');
+                return response()->json(['status' => 'invalid', 'message' => 'Deposit not found.'], 404);
+            }
+            $audit['local_status_before'] = $deposit->status;
+
+            $gatewayCurrency = $deposit->gatewayCurrency();
+            $gatewayConfig = json_decode((string) ($gatewayCurrency->gateway_parameter ?? '{}'));
+            $apiKeyForLookup = data_get($gatewayConfig, 'api_key.value')
+                ?: data_get($gatewayConfig, 'api_key');
+            $secretKey = data_get($deposit->detail, 'gateway_vendor_key')
+                ?: data_get($deposit->detail, 'gateway_provider_key')
+                ?: data_get($gatewayConfig, 'provider_key.value')
+                ?: data_get($gatewayConfig, 'provider_key')
+                ?: data_get($gatewayConfig, 'vendor_key.value')
+                ?: data_get($gatewayConfig, 'vendor_key')
+                ?: data_get($gatewayConfig, 'api_key.value')
+                ?: data_get($gatewayConfig, 'api_key');
+
+            if ($invoiceKey && $paymentMethod && $secretKey) {
+                $expectedHash = hash_hmac('sha256', 'InvoiceId=' . $invoiceId . '&InvoiceKey=' . $invoiceKey . '&PaymentMethod=' . $paymentMethod, (string) $secretKey, false);
+                if (!$hashKey || !hash_equals($expectedHash, (string) $hashKey)) {
+                    $this->writeFawaterkAuditLog($audit, $deposit, 'verification_failed', 'Invalid webhook signature.');
+                    return response()->json(['status' => 'invalid', 'message' => 'Invalid webhook signature.'], 403);
+                }
+            }
+
+            if ($deposit->status == 1) {
+                $this->writeFawaterkAuditLog($audit, $deposit, 'ignored', 'Deposit already successful.');
+                return response()->json(['status' => 'success']);
+            }
+
+            if ($currency && Str::upper((string) $currency) !== Str::upper((string) $deposit->method_currency)) {
+                PaymentController::markDepositFailed($deposit, 'Currency mismatch returned from gateway.');
+                $this->writeFawaterkAuditLog($audit, $deposit, 'failed', 'Currency mismatch.');
+                return response()->json(['status' => 'failed', 'message' => 'Currency mismatch.'], 422);
+            }
+
+            if ($amount !== null && abs((float) $amount - (float) $deposit->final_amo) > 0.01) {
+                PaymentController::markDepositFailed($deposit, 'Amount mismatch returned from gateway.');
+                $this->writeFawaterkAuditLog($audit, $deposit, 'failed', 'Amount mismatch.');
+                return response()->json(['status' => 'failed', 'message' => 'Amount mismatch.'], 422);
+            }
+
+            if (in_array($status, ['paid', 'success', 'succeeded', 'completed', 'complete', 'captured'], true)) {
+                if (!$this->confirmInvoiceFromGateway($deposit, $invoiceId, $apiKeyForLookup)) {
+                    PaymentController::markDepositFailed($deposit, 'Gateway verification failed.');
+                    $this->writeFawaterkAuditLog($audit, $deposit, 'verification_failed', 'Gateway verification failed.');
+                    return response()->json(['status' => 'failed', 'message' => 'Gateway verification failed.'], 422);
+                }
+
+                PaymentController::userDataUpdate($deposit);
+                $this->writeFawaterkAuditLog($audit, $deposit, 'paid', 'Payment verified and marked successful.');
+                return response()->json(['status' => 'success']);
+            }
+
+            if (in_array($status, ['failed', 'fail', 'canceled', 'cancelled', 'rejected', 'expired', 'void'], true)) {
+                PaymentController::markDepositFailed($deposit, data_get($data, 'message') ?: 'Payment declined by the gateway.');
+                $this->writeFawaterkAuditLog($audit, $deposit, 'failed', data_get($data, 'message') ?: 'Payment declined by the gateway.');
+                return response()->json(['status' => 'failed']);
+            }
+
+            if (in_array($status, ['pending', 'processing', 'initiated'], true)) {
+                if ($deposit->status != 1) {
+                    $deposit->status = 2;
+                    $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
+                        'gateway_status' => $status,
+                        'gateway_callback' => $data,
+                    ]);
+                    $deposit->save();
+                }
+
+                $this->writeFawaterkAuditLog($audit, $deposit, 'pending', 'Gateway reported pending status.');
+                return response()->json(['status' => 'pending']);
+            }
+
+            $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
+                'gateway_callback' => $data,
+                'gateway_status' => $status ?: 'unknown',
+            ]);
+            $deposit->save();
+
+            $this->writeFawaterkAuditLog($audit, $deposit, 'ignored', 'Gateway status ignored: ' . ($status ?: 'unknown'));
+            return response()->json(['status' => 'ignored']);
+        } catch (Throwable $throwable) {
+            $this->writeFawaterkAuditLog($audit, isset($deposit) ? $deposit : null, 'exception', $throwable->getMessage());
+
+            throw $throwable;
+        }
     }
 
     protected function confirmInvoiceFromGateway(Deposit $deposit, $invoiceId, ?string $apiKey): bool
@@ -249,6 +291,48 @@ class ProcessController extends Controller
                 && abs((float) data_get($result, 'data.total') - (float) $deposit->final_amo) <= 0.01;
         } catch (\Throwable $throwable) {
             return false;
+        }
+    }
+
+    protected function fawaterkAuditData(Request $request, array $references): array
+    {
+        return array_merge([
+            'gateway' => 'Fawaterk',
+            'event_type' => 'webhook',
+            'payload' => $request->all(),
+            'headers' => $request->headers->all(),
+        ], $references);
+    }
+
+    protected function writeFawaterkAuditLog(array $audit, ?Deposit $deposit = null, ?string $decision = null, ?string $message = null): void
+    {
+        try {
+            PaymentGatewayLog::create([
+                'gateway' => $audit['gateway'] ?? 'Fawaterk',
+                'event_type' => $audit['event_type'] ?? 'webhook',
+                'invoice_id' => isset($audit['invoice_id']) ? (string) $audit['invoice_id'] : null,
+                'invoice_key' => isset($audit['invoice_key']) ? (string) $audit['invoice_key'] : null,
+                'reference_id' => isset($audit['reference_id']) ? (string) $audit['reference_id'] : null,
+                'transaction_id' => isset($audit['transaction_id']) ? (string) $audit['transaction_id'] : null,
+                'transaction_key' => isset($audit['transaction_key']) ? (string) $audit['transaction_key'] : null,
+                'deposit_id' => $deposit?->id,
+                'trx' => $deposit?->trx,
+                'local_status_before' => $audit['local_status_before'] ?? $deposit?->getOriginal('status'),
+                'local_status_after' => $deposit?->status,
+                'decision' => $decision ?: ($audit['decision'] ?? null),
+                'message' => $message,
+                'payload' => $audit['payload'] ?? null,
+                'headers' => $audit['headers'] ?? null,
+            ]);
+        } catch (Throwable $throwable) {
+            Log::warning('Unable to write Fawaterk payment gateway audit log.', [
+                'error' => $throwable->getMessage(),
+                'audit' => $audit,
+                'decision' => $decision,
+                'message' => $message,
+                'deposit_id' => $deposit?->id,
+                'trx' => $deposit?->trx,
+            ]);
         }
     }
 }
