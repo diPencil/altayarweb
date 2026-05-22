@@ -219,6 +219,13 @@ class ReconcileFawaterkDeposits extends Command
             return false;
         }
 
+        // Try to verify using transaction-level amount/currency first
+        $verifiedTransaction = $this->verifyTransactionLevelAmount($deposit, $payload);
+        if ($verifiedTransaction !== null) {
+            return $verifiedTransaction;
+        }
+
+        // Fall back to top-level amount/currency if no transaction-level data available
         $currency = data_get($payload, 'data.currency');
         if ($currency && Str::upper((string) $currency) !== Str::upper((string) $deposit->method_currency)) {
             return false;
@@ -340,6 +347,60 @@ class ReconcileFawaterkDeposits extends Command
         }
 
         return $values;
+    }
+
+    protected function verifyTransactionLevelAmount(Deposit $deposit, array $payload): ?bool
+    {
+        $transactions = (array) data_get($payload, 'data.invoice_transactions', []);
+        
+        if (empty($transactions)) {
+            return null; // No transaction data, fall back to top-level
+        }
+
+        foreach ($transactions as $transaction) {
+            $transactionStatus = (string) data_get($transaction, 'status');
+            $isPaid = in_array(Str::lower($transactionStatus), ['success', 'successful', 'paid', 'completed', 'complete', 'captured'], true);
+            
+            if (!$isPaid) {
+                continue;
+            }
+
+            $paidWithIt = (int) data_get($transaction, 'paidWithIt');
+            if ($paidWithIt !== 1) {
+                continue;
+            }
+
+            // Parse transaction currency - may be in transactionCurrency or embedded in amount field
+            $transactionCurrency = data_get($transaction, 'transactionCurrency') 
+                ?: data_get($transaction, 'currency');
+            
+            if (!$transactionCurrency) {
+                continue; // No currency info at transaction level
+            }
+
+            // Parse transaction amount - may be in transactionAmount or amount
+            $transactionAmount = data_get($transaction, 'transactionAmount')
+                ?: data_get($transaction, 'amount');
+            
+            if ($transactionAmount === null) {
+                continue; // No amount info at transaction level
+            }
+
+            // Verify currency matches
+            if (Str::upper((string) $transactionCurrency) !== Str::upper((string) $deposit->method_currency)) {
+                continue; // Currency mismatch for this transaction
+            }
+
+            // Verify amount matches
+            if (abs((float) $transactionAmount - (float) $deposit->final_amo) > 0.01) {
+                continue; // Amount mismatch for this transaction
+            }
+
+            // Found matching paid transaction with correct currency and amount
+            return true;
+        }
+
+        return null; // No matching paid transaction, fall back to top-level
     }
 
     protected function handlePaidDecision(Deposit $deposit, string $invoiceId, array $payload, string $message, bool $dryRun): void

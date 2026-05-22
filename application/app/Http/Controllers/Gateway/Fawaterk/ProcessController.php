@@ -357,13 +357,74 @@ class ProcessController extends Controller
             }
 
             $result = $response->json();
-            return Str::lower((string) data_get($result, 'status')) === 'success'
-                && (int) data_get($result, 'data.paid') === 1
-                && (string) data_get($result, 'data.currency') === (string) $deposit->method_currency
+            
+            if (Str::lower((string) data_get($result, 'status')) !== 'success') {
+                return false;
+            }
+
+            if ((int) data_get($result, 'data.paid') !== 1) {
+                return false;
+            }
+
+            // Try transaction-level verification first
+            $verifiedTransaction = $this->verifyInvoiceTransactionAmount($deposit, $result);
+            if ($verifiedTransaction !== null) {
+                return $verifiedTransaction;
+            }
+
+            // Fall back to top-level verification if no transaction-level data
+            return (string) data_get($result, 'data.currency') === (string) $deposit->method_currency
                 && abs((float) data_get($result, 'data.total') - (float) $deposit->final_amo) <= 0.01;
         } catch (\Throwable $throwable) {
             return false;
         }
+    }
+
+    protected function verifyInvoiceTransactionAmount(Deposit $deposit, array $result): ?bool
+    {
+        $transactions = (array) data_get($result, 'data.invoice_transactions', []);
+        
+        if (empty($transactions)) {
+            return null; // No transaction data, fall back to top-level
+        }
+
+        foreach ($transactions as $transaction) {
+            $transactionStatus = (string) data_get($transaction, 'status');
+            $isPaid = in_array(Str::lower($transactionStatus), ['success', 'successful', 'paid', 'completed', 'complete', 'captured'], true);
+            
+            if (!$isPaid) {
+                continue;
+            }
+
+            $paidWithIt = (int) data_get($transaction, 'paidWithIt');
+            if ($paidWithIt !== 1) {
+                continue;
+            }
+
+            // Parse transaction currency
+            $transactionCurrency = data_get($transaction, 'transactionCurrency') 
+                ?: data_get($transaction, 'currency');
+            
+            if (!$transactionCurrency) {
+                continue;
+            }
+
+            // Parse transaction amount
+            $transactionAmount = data_get($transaction, 'transactionAmount')
+                ?: data_get($transaction, 'amount');
+            
+            if ($transactionAmount === null) {
+                continue;
+            }
+
+            // Verify currency and amount match
+            if (Str::upper((string) $transactionCurrency) === Str::upper((string) $deposit->method_currency)
+                && abs((float) $transactionAmount - (float) $deposit->final_amo) <= 0.01) {
+                return true;
+            }
+        }
+
+        return null; // No matching transaction, fall back to top-level
     }
 
     protected function verifiedFailureReasonFromGateway($invoiceId, ?string $apiKey): ?string
