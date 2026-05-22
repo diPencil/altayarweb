@@ -138,9 +138,14 @@ class ProcessController extends Controller
             ?: data_get($data, 'invoice_total')
             ?: data_get($data, 'cartTotal')
             ?: data_get($data, 'total');
+        $paidCurrency = data_get($data, 'paidCurrency')
+            ?: data_get($data, 'paid_currency')
+            ?: data_get($data, 'data.paidCurrency')
+            ?: data_get($data, 'data.paid_currency');
         $currency = data_get($data, 'currency')
             ?: data_get($data, 'invoice_currency')
-            ?: data_get($data, 'data.currency');
+            ?: data_get($data, 'data.currency')
+            ?: $paidCurrency;
         $invoiceKey = data_get($data, 'invoice_key')
             ?: data_get($data, 'invoiceKey')
             ?: data_get($data, 'data.invoice_key');
@@ -167,11 +172,19 @@ class ProcessController extends Controller
             'reference_id' => $referenceId,
             'transaction_id' => $transactionId,
             'transaction_key' => $transactionKey,
+            'paid_currency' => $paidCurrency,
             'decision' => 'received',
         ]);
 
         try {
+            $failureReason = $this->fawaterkFailureReason($data, $status);
+
             if (!$invoiceId) {
+                if ($this->isReferenceOnlyCancellationPayload($data, $status, $referenceId, $transactionId, $transactionKey)) {
+                    $this->writeFawaterkAuditLog($audit, null, 'unmatched_cancellation_reference', 'Cancellation/expired webhook has no invoice id; referenceId=' . ($referenceId ?: 'n/a'));
+                    return response()->json(['status' => 'ignored', 'message' => 'Cancellation reference received without invoice id.']);
+                }
+
                 $this->writeFawaterkAuditLog($audit, null, 'missing_reference', 'Missing invoice reference.');
                 return response()->json(['status' => 'invalid', 'message' => 'Missing invoice reference.'], 422);
             }
@@ -207,12 +220,29 @@ class ProcessController extends Controller
                 ?: data_get($gatewayConfig, 'vendor_key')
                 ?: data_get($gatewayConfig, 'api_key.value')
                 ?: data_get($gatewayConfig, 'api_key');
+            $failureVerifiedByGateway = false;
 
             if ($invoiceKey && $paymentMethod && $secretKey) {
-                $expectedHash = hash_hmac('sha256', 'InvoiceId=' . $invoiceId . '&InvoiceKey=' . $invoiceKey . '&PaymentMethod=' . $paymentMethod, (string) $secretKey, false);
-                if (!$hashKey || !hash_equals($expectedHash, (string) $hashKey)) {
+                $expectedHash = $this->expectedInvoiceHash($invoiceId, $invoiceKey, $paymentMethod, $secretKey);
+                if ($hashKey && !hash_equals($expectedHash, (string) $hashKey)) {
                     $this->writeFawaterkAuditLog($audit, $deposit, 'verification_failed', 'Invalid webhook signature.');
                     return response()->json(['status' => 'invalid', 'message' => 'Invalid webhook signature.'], 403);
+                }
+
+                if (!$hashKey) {
+                    if (!$failureReason) {
+                        $this->writeFawaterkAuditLog($audit, $deposit, 'verification_failed', 'Missing webhook signature.');
+                        return response()->json(['status' => 'invalid', 'message' => 'Missing webhook signature.'], 403);
+                    }
+
+                    $verifiedFailureReason = $this->verifiedFailureReasonFromGateway($invoiceId, $apiKeyForLookup);
+                    if (!$verifiedFailureReason) {
+                        $this->writeFawaterkAuditLog($audit, $deposit, 'verification_failed', 'Failed webhook missing signature and gateway verification did not confirm failure.');
+                        return response()->json(['status' => 'invalid', 'message' => 'Gateway verification failed.'], 422);
+                    }
+
+                    $failureReason = $verifiedFailureReason;
+                    $failureVerifiedByGateway = true;
                 }
             }
 
@@ -224,6 +254,17 @@ class ProcessController extends Controller
             if ($deposit->status == 3) {
                 $this->writeFawaterkAuditLog($audit, $deposit, 'duplicate_failed', 'Deposit already failed.');
                 return response()->json(['status' => 'failed']);
+            }
+
+            if ($failureReason && !$failureVerifiedByGateway && (!$hashKey || !$invoiceKey || !$paymentMethod || !$secretKey)) {
+                $verifiedFailureReason = $this->verifiedFailureReasonFromGateway($invoiceId, $apiKeyForLookup);
+                if (!$verifiedFailureReason) {
+                    $this->writeFawaterkAuditLog($audit, $deposit, 'verification_failed', 'Failed webhook signature could not be verified and gateway verification did not confirm failure.');
+                    return response()->json(['status' => 'invalid', 'message' => 'Gateway verification failed.'], 422);
+                }
+
+                $failureReason = $verifiedFailureReason;
+                $failureVerifiedByGateway = true;
             }
 
             if ($currency && Str::upper((string) $currency) !== Str::upper((string) $deposit->method_currency)) {
@@ -250,7 +291,6 @@ class ProcessController extends Controller
                 return response()->json(['status' => 'success']);
             }
 
-            $failureReason = $this->fawaterkFailureReason($data, $status);
             if ($failureReason) {
                 $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
                     'gateway_status' => $status ?: 'failed',
@@ -324,6 +364,33 @@ class ProcessController extends Controller
         }
     }
 
+    protected function verifiedFailureReasonFromGateway($invoiceId, ?string $apiKey): ?string
+    {
+        if (!$apiKey) {
+            return null;
+        }
+
+        try {
+            $response = Http::acceptJson()->withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $apiKey,
+            ])->timeout(30)->get('https://app.fawaterk.com/api/v2/getInvoiceData/' . $invoiceId);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $result = $response->json();
+            $gatewayStatus = Str::lower((string) (data_get($result, 'data.invoice_status')
+                ?: data_get($result, 'data.status')
+                ?: data_get($result, 'status')));
+
+            return $this->fawaterkFailureReason($result, $gatewayStatus);
+        } catch (\Throwable $throwable) {
+            return null;
+        }
+    }
+
     protected function fawaterkAuditData(Request $request, array $references): array
     {
         return array_merge([
@@ -332,6 +399,31 @@ class ProcessController extends Controller
             'payload' => $request->all(),
             'headers' => $request->headers->all(),
         ], $references);
+    }
+
+    protected function expectedInvoiceHash($invoiceId, $invoiceKey, $paymentMethod, $secretKey): string
+    {
+        return hash_hmac('sha256', 'InvoiceId=' . $invoiceId . '&InvoiceKey=' . $invoiceKey . '&PaymentMethod=' . $paymentMethod, (string) $secretKey, false);
+    }
+
+    protected function expectedCancellationHash($referenceId, $paymentMethod, $secretKey): string
+    {
+        return hash_hmac('sha256', 'referenceId=' . $referenceId . '&PaymentMethod=' . $paymentMethod, (string) $secretKey, false);
+    }
+
+    protected function isReferenceOnlyCancellationPayload(array $data, string $status, $referenceId, $transactionId, $transactionKey): bool
+    {
+        if (!$referenceId && !$transactionId && !$transactionKey) {
+            return false;
+        }
+
+        $reason = $this->fawaterkFailureReason($data, $status);
+
+        return $reason !== null && Str::contains(Str::lower($reason), [
+            'cancelled',
+            'canceled',
+            'expired',
+        ]);
     }
 
     protected function matchingDepositsForInvoice($invoiceId, array $statuses = [0, 2])
