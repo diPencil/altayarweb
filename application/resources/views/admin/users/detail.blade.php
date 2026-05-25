@@ -314,7 +314,7 @@
                                         <div class="input-group ">
                                             <span class="input-group-text mobile-code"></span>
                                             <input type="number" name="mobile" value="{{ old('mobile') }}" id="mobile"
-                                                class="form-control checkUser" required>
+                                                class="form-control checkUser">
                                         </div>
                                     </div>
                                 </div>

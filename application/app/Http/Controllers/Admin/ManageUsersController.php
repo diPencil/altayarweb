@@ -371,10 +371,11 @@ class ManageUsersController extends Controller
             'firstname' => 'required|string|max:40',
             'lastname' => 'required|string|max:40',
             'email' => 'required|email|string|max:40|unique:users,email,' . $user->id,
-            'mobile' => 'required|string|max:40|unique:users,mobile,' . $user->id,
+            'mobile' => 'nullable|string|max:40|unique:users,mobile,' . $user->id,
             'country' => 'required|in:'.$countries,
         ]);
-        $user->mobile = $dialCode.$request->mobile;
+        $mobile = trim((string) $request->mobile);
+        $user->mobile = $mobile !== '' ? $dialCode . $mobile : null;
         $user->country_code = $countryCode;
         $user->firstname = $request->firstname;
         $user->lastname = $request->lastname;
@@ -389,6 +390,7 @@ class ManageUsersController extends Controller
         $user->ev = $request->ev ? 1 : 0;
         $user->sv = $request->sv ? 1 : 0;
         $user->ts = $request->ts ? 1 : 0;
+        $user->tv = $user->ts ? $user->tv : 1;
         if (!$request->kv) {
             $user->kv = 0;
             if ($user->kyc_data) {
