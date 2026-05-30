@@ -12,8 +12,8 @@
         [
             'id' => 'epayment-menu',
             'label' => 'E-Payment',
-            'url' => route('e.payment'),
-            'active' => request()->routeIs('e.payment*'),
+            'url' => route('pay.online'),
+            'active' => request()->routeIs('pay.online*'),
         ],
         [
             'id' => 'travelers-guide-menu',

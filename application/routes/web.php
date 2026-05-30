@@ -106,6 +106,7 @@ Route::controller('SiteController')->group(function () {
     Route::redirect('subscription-cards', 'membership-details');
     Route::get('privilege-cards', 'privilegeCards')->name('public.privilege.cards.index');
     Route::get('engine-screen', 'engineScreen')->name('public.engine.screen');
+    Route::get('pay-online', 'EPaymentController@payOnline')->name('pay.online');
     Route::get('e-payment', 'EPaymentController@index')->name('e.payment');
     Route::post('e-payment', 'EPaymentController@store')->middleware('throttle:10,1')->name('e.payment.store');
     Route::get('e-payment/result/{trx?}', 'EPaymentController@result')->name('e.payment.result');

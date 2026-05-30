@@ -259,4 +259,10 @@ class EPaymentController extends Controller
 
         return redirect()->route($resultRoute, $deposit->trx)->withNotify($notify);
     }
+
+    public function payOnline()
+    {
+        $pageTitle = 'Pay Online';
+        return view($this->activeTemplate . 'pay_online', compact('pageTitle'));
+    }
 }
