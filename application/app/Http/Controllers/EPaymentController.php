@@ -215,4 +215,48 @@ class EPaymentController extends Controller
 
         return view($this->activeTemplate . 'e_payment_result', compact('pageTitle', 'deposit', 'status'));
     }
+
+    public function checkStatus($trx)
+    {
+        $resultRoute = auth('employee')->check() ? 'employee.e.payment.result' : 'e.payment.result';
+
+        $depositQuery = Deposit::with('gateway');
+        if (auth('employee')->check()) {
+            $depositQuery->where('agent_id', auth('employee')->id());
+        } elseif (auth()->check()) {
+            $depositQuery->where('user_id', auth()->id());
+        } else {
+            $depositQuery->whereNull('user_id')->where('detail->payment_flow', 'epayment');
+        }
+
+        $deposit = $depositQuery->where('trx', $trx)->latest('id')->firstOrFail();
+
+        if ($deposit->status == 1) {
+            $notify[] = ['success', 'This payment is already confirmed.'];
+            return redirect()->route($resultRoute, $deposit->trx)->withNotify($notify);
+        }
+
+        if ($deposit->status == 3) {
+            $notify[] = ['error', 'This payment has failed.'];
+            return redirect()->route($resultRoute, $deposit->trx)->withNotify($notify);
+        }
+
+        $dirName = $deposit->gateway?->alias ?: 'Fawaterk';
+        if ($dirName !== 'Fawaterk') {
+            $notify[] = ['error', 'Manual status check is not supported for this gateway.'];
+            return back()->withNotify($notify);
+        }
+
+        $result = \App\Http\Controllers\Gateway\Fawaterk\ProcessController::checkStatus($deposit);
+
+        if ($result['status'] === 'success') {
+            $notify[] = ['success', $result['message']];
+        } elseif ($result['status'] === 'failed') {
+            $notify[] = ['error', $result['message']];
+        } else {
+            $notify[] = ['info', $result['message']];
+        }
+
+        return redirect()->route($resultRoute, $deposit->trx)->withNotify($notify);
+    }
 }

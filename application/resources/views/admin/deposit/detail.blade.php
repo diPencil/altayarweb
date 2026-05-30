@@ -78,6 +78,29 @@
                         @lang('Status')
                         @php echo $deposit->statusBadge @endphp
                     </li>
+                    @if($deposit->method_code < 1000)
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @lang('Gateway Invoice ID')
+                        <span class="fw-bold">{{ data_get($deposit->detail, 'gateway_invoice_id') ?: $deposit->btc_wallet ?: __('-') }}</span>
+                    </li>
+                    @if(isset($latestGatewayLog))
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @lang('Gateway Decision')
+                        <span class="fw-bold text--info">{{ __($latestGatewayLog->decision) }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>@lang('Gateway Log Message')</strong>
+                        <br>
+                        <p class="text-muted small mb-0">{{ __($latestGatewayLog->message) }}</p>
+                    </li>
+                    @endif
+                    @if(data_get($deposit->detail, 'last_checked_at'))
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @lang('Last Checked At')
+                        <span class="fw-bold">{{ showDateTime(data_get($deposit->detail, 'last_checked_at')) }}</span>
+                    </li>
+                    @endif
+                    @endif
                     @if($deposit->admin_feedback)
                     <li class="list-group-item">
                         <strong>@lang('Admin Response')</strong>

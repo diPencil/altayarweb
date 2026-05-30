@@ -142,7 +142,13 @@ class DepositController extends Controller
             'currency' => $general->cur_text,
         ]);
         $details = ($deposit->detail != null) ? json_encode($deposit->detail) : null;
-        return view('admin.deposit.detail', compact('pageTitle', 'deposit','details'));
+        
+        $latestGatewayLog = \App\Models\PaymentGatewayLog::where('deposit_id', $deposit->id)
+            ->orWhere('trx', $deposit->trx)
+            ->latest('id')
+            ->first();
+
+        return view('admin.deposit.detail', compact('pageTitle', 'deposit','details', 'latestGatewayLog'));
     }
 
 

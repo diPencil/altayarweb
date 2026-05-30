@@ -23,7 +23,7 @@
             $badgeClass = 'bg-warning text-dark';
             $icon = 'fa-hourglass-half';
             $headline = __('Payment is pending confirmation');
-            $message = __('We received the payment request and are waiting for the gateway confirmation callback.');
+            $message = __('Your payment has not been confirmed yet. If your card was charged, the status will update automatically once the gateway confirms it. If no amount was deducted, please try again or use another card.');
         } else {
             $panelClass = 'border-secondary';
             $badgeClass = 'bg-secondary';
@@ -111,7 +111,15 @@
                                         @lang('Try again')
                                     </a>
                                 @elseif($status === 2 || $status === 0)
-                                    <a href="{{ route('e.payment.result', $deposit->trx) }}" class="btn btn-outline-secondary btn-lg pills">
+                                    @if($deposit->gateway?->alias === 'Fawaterk')
+                                        <form action="{{ route(auth('employee')->check() ? 'employee.e.payment.check' : 'e.payment.check', $deposit->trx) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-primary btn-lg pills">
+                                                <i class="fa-solid fa-arrows-rotate me-1"></i> @lang('Check payment status')
+                                            </button>
+                                        </form>
+                                    @endif
+                                    <a href="{{ route(auth('employee')->check() ? 'employee.e.payment.result' : 'e.payment.result', $deposit->trx) }}" class="btn btn-outline-secondary btn-lg pills">
                                         @lang('Refresh status')
                                     </a>
                                 @endif

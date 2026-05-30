@@ -109,6 +109,7 @@ Route::controller('SiteController')->group(function () {
     Route::get('e-payment', 'EPaymentController@index')->name('e.payment');
     Route::post('e-payment', 'EPaymentController@store')->middleware('throttle:10,1')->name('e.payment.store');
     Route::get('e-payment/result/{trx?}', 'EPaymentController@result')->name('e.payment.result');
+    Route::post('e-payment/check/{trx}', 'EPaymentController@checkStatus')->middleware('throttle:5,1')->name('e.payment.check');
 
     Route::get('tour-package/{slug}/{id}', 'tourPackageDetails')->name('tour.package.details');
     Route::get('client-feedback', 'clientFeedback')->name('public.client.feedback');

@@ -1,4 +1,6 @@
 {
+    "Your payment has not been confirmed yet. If your card was charged, the status will update automatically once the gateway confirms it. If no amount was deducted, please try again or use another card.": "لم يتم تأكيد الدفع بعد. إذا تم خصم المبلغ من بطاقتك، سيتم تحديث الحالة تلقائيًا بمجرد وصول تأكيد بوابة الدفع. إذا لم يتم الخصم، يمكنك إعادة المحاولة أو استخدام بطاقة أخرى.",
+    "Check payment status": "التحقق من حالة الدفع",
     "0": "403",
     "+4k": "+4k",
     "+4k Subscribers": "+4k Subscribers",

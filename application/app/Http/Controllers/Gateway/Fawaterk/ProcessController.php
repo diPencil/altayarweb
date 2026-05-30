@@ -14,6 +14,148 @@ use Throwable;
 
 class ProcessController extends Controller
 {
+    /**
+     * Safely queries Fawaterk invoice API and updates the local Deposit status
+     */
+    public static function checkStatus(Deposit $deposit): array
+    {
+        $gatewayCurrency = $deposit->gatewayCurrency();
+        if (!$gatewayCurrency) {
+            return [
+                'status' => 'error',
+                'message' => 'Payment gateway configuration not found.',
+            ];
+        }
+
+        $gatewayConfig = json_decode((string) ($gatewayCurrency->gateway_parameter ?? '{}'));
+        $apiKey = data_get($gatewayConfig, 'api_key.value') ?: data_get($gatewayConfig, 'api_key');
+        if (!$apiKey) {
+            return [
+                'status' => 'error',
+                'message' => 'Gateway API key is missing.',
+            ];
+        }
+
+        $invoiceId = data_get($deposit->detail, 'gateway_invoice_id') ?: $deposit->btc_wallet;
+        if (!$invoiceId) {
+            return [
+                'status' => 'error',
+                'message' => 'Gateway invoice ID not found.',
+            ];
+        }
+
+        try {
+            $response = Http::acceptJson()->withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $apiKey,
+            ])->timeout(30)->get('https://app.fawaterk.com/api/v2/getInvoiceData/' . $invoiceId);
+
+            if (!$response->successful()) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Failed to query Fawaterk API.',
+                ];
+            }
+
+            $result = $response->json();
+            $invoiceData = data_get($result, 'data');
+            if (!$invoiceData) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Invalid response from Fawaterk API.',
+                ];
+            }
+
+            $gatewayStatus = Str::lower((string) (data_get($invoiceData, 'invoice_status')
+                ?: data_get($invoiceData, 'status')
+                ?: data_get($result, 'status')));
+            
+            $isPaid = (int) data_get($invoiceData, 'paid') === 1;
+
+            $audit = [
+                'gateway' => 'Fawaterk',
+                'event_type' => 'manual_check',
+                'invoice_id' => $invoiceId,
+                'local_status_before' => $deposit->status,
+                'payload' => $result,
+            ];
+
+            $instance = new self();
+
+            // 1. Paid confirmation (Phase 4C logic)
+            if ($isPaid) {
+                $verifiedTransaction = $instance->verifyInvoiceTransactionAmount($deposit, $result);
+                $amountMatches = ($verifiedTransaction !== null) 
+                    ? $verifiedTransaction 
+                    : ((string) data_get($invoiceData, 'currency') === (string) $deposit->method_currency
+                        && abs((float) data_get($invoiceData, 'total') - (float) $deposit->final_amo) <= 0.01);
+
+                if ($amountMatches) {
+                    if ($deposit->status != 1) {
+                        PaymentController::userDataUpdate($deposit);
+                        $instance->writeFawaterkAuditLog($audit, $deposit, 'paid', 'Payment verified and marked successful via manual check.');
+                    }
+                    return [
+                        'status' => 'success',
+                        'message' => 'Payment has been successfully confirmed.',
+                    ];
+                } else {
+                    $instance->writeFawaterkAuditLog($audit, $deposit, 'verification_failed', 'Currency/Amount mismatch during manual check.');
+                    return [
+                        'status' => 'error',
+                        'message' => 'Payment verification failed: amount or currency mismatch.',
+                    ];
+                }
+            }
+
+            // 2. Explicit failures
+            $failureReason = $instance->fawaterkFailureReason($result, $gatewayStatus);
+            if ($failureReason) {
+                if ($deposit->status != 3 && $deposit->status != 1) {
+                    $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
+                        'gateway_status' => $gatewayStatus ?: 'failed',
+                        'gateway_error_message' => $failureReason,
+                        'gateway_failed_at' => now()->toDateTimeString(),
+                    ]);
+                    $deposit->save();
+                    PaymentController::markDepositFailed($deposit, 'Gateway reported failed/rejected/expired payment via manual check: ' . $failureReason);
+                    $instance->writeFawaterkAuditLog($audit, $deposit, 'failed', 'Deposit marked failed via manual check: ' . $failureReason);
+                }
+                return [
+                    'status' => 'failed',
+                    'message' => 'Payment was reported as failed, canceled, or expired by the gateway.',
+                ];
+            }
+
+            // 3. Keep pending if still unpaid
+            if ($deposit->status != 1 && $deposit->status != 3) {
+                $deposit->status = 2; // pending
+                $deposit->detail = array_merge((array) ($deposit->detail ?? []), [
+                    'gateway_status' => $gatewayStatus ?: 'pending',
+                    'last_checked_at' => now()->toDateTimeString(),
+                ]);
+                $deposit->save();
+                $instance->writeFawaterkAuditLog($audit, $deposit, 'manual_check_pending', 'Gateway reported pending status during manual check.');
+            }
+
+            return [
+                'status' => 'pending',
+                'message' => 'Payment is still pending confirmation by the gateway/bank.',
+            ];
+
+        } catch (\Throwable $throwable) {
+            Log::error('Fawaterk manual check status error: ' . $throwable->getMessage(), [
+                'exception' => $throwable,
+                'deposit_id' => $deposit->id,
+                'trx' => $deposit->trx,
+            ]);
+            return [
+                'status' => 'error',
+                'message' => 'Unable to check payment status right now. Please try again shortly.',
+            ];
+        }
+    }
+
     /*
      * Fawaterk Gateway Process
      */

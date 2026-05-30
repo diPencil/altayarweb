@@ -1,4 +1,6 @@
 {
+    "Your payment has not been confirmed yet. If your card was charged, the status will update automatically once the gateway confirms it. If no amount was deducted, please try again or use another card.": "Your payment has not been confirmed yet. If your card was charged, the status will update automatically once the gateway confirms it. If no amount was deducted, please try again or use another card.",
+    "Check payment status": "Check payment status",
     "403": "403",
     "Balance": "Balance",
     "Choose a chat from Recent Chats to start the conversation here.": "Choose a chat from Recent Chats to start the conversation here.",

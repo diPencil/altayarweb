@@ -73,6 +73,7 @@ Route::middleware('employee')->name('employee.')->group(function () {
                 Route::get('e-payment', '\App\Http\Controllers\EPaymentController@index')->name('e.payment');
                 Route::post('e-payment', '\App\Http\Controllers\EPaymentController@store')->name('e.payment.store');
                 Route::get('e-payment/result/{trx?}', '\App\Http\Controllers\EPaymentController@result')->name('e.payment.result');
+                Route::post('e-payment/check/{trx}', '\App\Http\Controllers\EPaymentController@checkStatus')->middleware('throttle:5,1')->name('e.payment.check');
             });
 
               //KYC
