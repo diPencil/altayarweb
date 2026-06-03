@@ -1241,7 +1241,7 @@ class SiteController extends Controller
         $staticRoutes = [
             'home', 'browse', 'blog', 'contact', 'public.membership.details', 
             'public.privilege.cards.index', 'packages.intro', 'listings',
-            'pay.online', 'e.payment'
+            'pay.online', 'e.payment', 'policy.website', 'policy.terms'
         ];
 
         foreach ($staticRoutes as $route) {
@@ -1255,6 +1255,65 @@ class SiteController extends Controller
             } catch (\Exception $e) {
                 // Skip if route not defined
             }
+        }
+
+        // More Travel Sections
+        $travelSections = ['packages', 'destinations', 'hotels', 'flights', 'transportation'];
+        try {
+            $urls[] = [
+                'loc' => route('public.travel.index'),
+                'lastmod' => now()->toAtomString(),
+                'priority' => '0.8',
+                'changefreq' => 'daily'
+            ];
+        } catch (\Exception $e) {}
+
+        foreach ($travelSections as $sect) {
+            try {
+                $urls[] = [
+                    'loc' => route('public.travel.index', [$sect]),
+                    'lastmod' => now()->toAtomString(),
+                    'priority' => '0.8',
+                    'changefreq' => 'daily'
+                ];
+            } catch (\Exception $e) {
+                // Skip if route not defined
+            }
+        }
+
+        // Offers Categories
+        $offersCategories = ['limited', 'yearly', 'weekend', 'spa-beauty', 'coupons', 'vouchers'];
+        foreach ($offersCategories as $cat) {
+            try {
+                $urls[] = [
+                    'loc' => route('public.offers.index', [$cat]),
+                    'lastmod' => now()->toAtomString(),
+                    'priority' => '0.8',
+                    'changefreq' => 'daily'
+                ];
+            } catch (\Exception $e) {
+                // Skip if route not defined
+            }
+        }
+
+        // Membership Plan Details
+        try {
+            $plans = \App\Models\MembershipPlan::active()->get();
+            foreach ($plans as $plan) {
+                if (empty($plan->id)) {
+                    continue;
+                }
+                $date = $plan->updated_at ?: $plan->created_at;
+                $lastmod = $date ? $date->toAtomString() : now()->toAtomString();
+                $urls[] = [
+                    'loc' => route('public.membership.details.show', [$plan->id]),
+                    'lastmod' => $lastmod,
+                    'priority' => '0.7',
+                    'changefreq' => 'monthly'
+                ];
+            }
+        } catch (\Exception $e) {
+            // Skip if model or route not defined
         }
 
         // Tour Packages
