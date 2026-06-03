@@ -10,6 +10,34 @@ class TourPackage extends Model
 {
     use HasFactory;
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($model) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('tour_packages', 'slug')) {
+                if (empty($model->slug) && !empty($model->title)) {
+                    $baseSlug = \Illuminate\Support\Str::slug($model->title);
+                    $slug = $baseSlug;
+                    $counter = 1;
+                    while (static::where('slug', $slug)->where('id', '!=', $model->id)->exists()) {
+                        if ($model->id) {
+                            $slug = $baseSlug . '-' . $model->id;
+                            if (static::where('slug', $slug)->where('id', '!=', $model->id)->exists()) {
+                                $slug = $baseSlug . '-' . $model->id . '-' . $counter;
+                                $counter++;
+                            }
+                        } else {
+                            $slug = $baseSlug . '-' . $counter;
+                            $counter++;
+                        }
+                    }
+                    $model->slug = $slug;
+                }
+            }
+        });
+    }
+
     protected $casts = [
         'features' => 'object',
         'destination_features_ar' => 'object',
