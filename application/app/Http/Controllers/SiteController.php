@@ -1240,8 +1240,8 @@ class SiteController extends Controller
         // Static Routes
         $staticRoutes = [
             'home', 'browse', 'blog', 'contact', 'public.membership.details', 
-            'public.privilege.cards.index', 'membership.login', 'membership.register', 'packages.intro',
-            'listings'
+            'public.privilege.cards.index', 'packages.intro', 'listings',
+            'pay.online', 'e.payment'
         ];
 
         foreach ($staticRoutes as $route) {
@@ -1260,9 +1260,14 @@ class SiteController extends Controller
         // Tour Packages
         $packages = TourPackage::whereIn('status', [1, 2, 3])->get();
         foreach ($packages as $package) {
+            if (empty($package->slug) || empty($package->id)) {
+                continue;
+            }
+            $date = $package->updated_at ?: $package->created_at;
+            $lastmod = $date ? $date->toAtomString() : now()->toAtomString();
             $urls[] = [
                 'loc' => route('tour.package.details', [$package->slug, $package->id]),
-                'lastmod' => $package->updated_at->toAtomString(),
+                'lastmod' => $lastmod,
                 'priority' => '0.9',
                 'changefreq' => 'weekly'
             ];
@@ -1271,9 +1276,14 @@ class SiteController extends Controller
         // Listings
         $listings = Listing::active()->get();
         foreach ($listings as $listing) {
+            if (empty($listing->slug) || empty($listing->id)) {
+                continue;
+            }
+            $date = $listing->updated_at ?: $listing->created_at;
+            $lastmod = $date ? $date->toAtomString() : now()->toAtomString();
             $urls[] = [
                 'loc' => route('listing.details', [$listing->slug, $listing->id]),
-                'lastmod' => $listing->updated_at->toAtomString(),
+                'lastmod' => $lastmod,
                 'priority' => '0.9',
                 'changefreq' => 'weekly'
             ];
@@ -1282,9 +1292,27 @@ class SiteController extends Controller
         // Blogs
         $blogs = Frontend::where('data_keys', 'blog.element')->get();
         foreach ($blogs as $blog) {
+            if (empty($blog->id) || empty($blog->data_values)) {
+                continue;
+            }
+
+            $dataValues = $blog->data_values;
+            $title = null;
+            if (is_object($dataValues)) {
+                $title = $dataValues->title ?? null;
+            } elseif (is_array($dataValues)) {
+                $title = $dataValues['title'] ?? null;
+            }
+
+            if (empty($title)) {
+                continue;
+            }
+
+            $date = $blog->updated_at ?: $blog->created_at;
+            $lastmod = $date ? $date->toAtomString() : now()->toAtomString();
             $urls[] = [
-                'loc' => route('blog.details', [slug($blog->data_values->title), $blog->id]),
-                'lastmod' => $blog->updated_at->toAtomString(),
+                'loc' => route('blog.details', [slug($title), $blog->id]),
+                'lastmod' => $lastmod,
                 'priority' => '0.7',
                 'changefreq' => 'monthly'
             ];
@@ -1293,10 +1321,12 @@ class SiteController extends Controller
         // Custom Pages
         $pages = Page::where('tempname', $this->activeTemplate)->get();
         foreach ($pages as $page) {
-            if ($page->slug == '/') continue;
+            if (empty($page->slug) || $page->slug == '/') continue;
+            $date = $page->updated_at ?: $page->created_at;
+            $lastmod = $date ? $date->toAtomString() : now()->toAtomString();
             $urls[] = [
                 'loc' => route('pages', [$page->slug]),
-                'lastmod' => $page->updated_at->toAtomString(),
+                'lastmod' => $lastmod,
                 'priority' => '0.6',
                 'changefreq' => 'monthly'
             ];
@@ -1307,10 +1337,10 @@ class SiteController extends Controller
         
         foreach ($urls as $url) {
             $xml .= '<url>';
-            $xml .= '<loc>' . $url['loc'] . '</loc>';
-            $xml .= '<lastmod>' . $url['lastmod'] . '</lastmod>';
-            $xml .= '<changefreq>' . $url['changefreq'] . '</changefreq>';
-            $xml .= '<priority>' . $url['priority'] . '</priority>';
+            $xml .= '<loc>' . htmlspecialchars($url['loc']) . '</loc>';
+            $xml .= '<lastmod>' . htmlspecialchars($url['lastmod']) . '</lastmod>';
+            $xml .= '<changefreq>' . htmlspecialchars($url['changefreq']) . '</changefreq>';
+            $xml .= '<priority>' . htmlspecialchars($url['priority']) . '</priority>';
             $xml .= '</url>';
         }
         
@@ -1322,7 +1352,7 @@ class SiteController extends Controller
     public function robots()
     {
         $content = "User-agent: *\n";
-        $content .= "Allow: /\n\n";
+        $content .= "Allow: /\n";
         $content .= "Sitemap: " . route('sitemap') . "\n";
 
         return response($content)->header('Content-Type', 'text/plain');
