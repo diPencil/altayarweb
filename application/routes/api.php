@@ -83,6 +83,8 @@ Route::namespace('Api')->name('api.')->group(function(){
             Route::get('payments', 'myPayments');
             Route::get('payments/my-payments', 'myPayments');
             Route::get('payments/status/{id}', 'status');
+            Route::post('payments/create', 'create');
+            Route::post('payments/quick-pay', 'quickPay');
         });
 
         Route::get('invoices', [\App\Http\Controllers\Api\Mobile\OrdersController::class, 'me']);

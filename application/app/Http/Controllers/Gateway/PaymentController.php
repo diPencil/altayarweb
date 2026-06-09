@@ -195,6 +195,17 @@ class PaymentController extends Controller
         }
 
         $user = User::findOrFail($deposit->user_id);
+
+        // Handle invoice payments if applicable
+        $detail = (object) ($deposit->detail ?? []);
+        if (isset($detail->invoice_id)) {
+            $invoice = \App\Models\Invoice::find($detail->invoice_id);
+            if ($invoice) {
+                $invoice->status = 1; // Paid
+                $invoice->paid_amount = $invoice->total_amount;
+                $invoice->save();
+            }
+        }
         $gatewayCurrency = $deposit->gatewayCurrency();
         $gatewayName = $gatewayCurrency?->name ?? 'Payment';
         $tourBooking = null;
