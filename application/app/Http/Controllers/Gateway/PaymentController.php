@@ -201,9 +201,15 @@ class PaymentController extends Controller
         if (isset($detail->invoice_id)) {
             $invoice = \App\Models\Invoice::find($detail->invoice_id);
             if ($invoice) {
-                $invoice->status = 1; // Paid
-                $invoice->paid_amount = $invoice->total_amount;
-                $invoice->save();
+                if ($invoice->user_id == $deposit->user_id) {
+                    if ($invoice->status != 1) {
+                        $invoice->status = 1; // Paid
+                        $invoice->paid_amount = $invoice->total_amount; // The deposit amount represents the full payment for this invoice flow
+                        $invoice->save();
+                    }
+                } else {
+                    \Illuminate\Support\Facades\Log::warning("Invoice user mismatch on deposit payment. Deposit user: {$deposit->user_id}, Invoice user: {$invoice->user_id}");
+                }
             }
         }
         $gatewayCurrency = $deposit->gatewayCurrency();
