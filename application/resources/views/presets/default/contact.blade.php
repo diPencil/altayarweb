@@ -16,16 +16,16 @@
             <div class="row gy-4 align-items-stretch justify-content-center mb-4">
                 <div class="col-xxl-3 col-lg-4 col-md-6 d-flex align-items-stretch">
                     <div
-                        class="contact--box bg--white radius--20 d-flex flex-column justify-content-start align-items-stretch position-relative h-100 w-100">
+                        class="contact--box bg--white radius--20 d-flex flex-column justify-content-start align-items-stretch position-relative h-100 w-100"
+                        @if ($contactPhone) onclick="window.open('https://wa.me/{{ preg_replace('/[^0-9]/', '', $contactPhone) }}', '_blank', 'noopener,noreferrer')" @endif>
                         <div class="icon-wrap d-flex justify-content-center align-items-center position-absolute">
-                            <i class="fa-solid fa-phone-volume"></i>
+                            <i class="fa-brands fa-whatsapp"></i>
                         </div>
                         <div class="content-wrap d-flex flex-column justify-content-start align-items-start w--100">
-                            <p class="text-start fw--400 fs--14 mb-2">@lang('Phone Number')</p>
+                            <p class="text-start fw--400 fs--14 mb-2">@lang('WhatsApp')</p>
                             @if ($contactPhone)
-                                <a class="contact-ltr-value fs--18 text--black7 fw--600 d-block"
-                                    dir="ltr"
-                                    href="tel:{{ preg_replace('/\s+/', '', $contactPhone) }}">{{ $contactPhone }}</a>
+                                <span class="contact-ltr-value fs--18 text--black7 fw--600 d-block"
+                                    dir="ltr">{{ $contactPhone }}</span>
                             @else
                                 <span class="text-start fs--18 text--black7 fw--600 d-block">&mdash;</span>
                             @endif
