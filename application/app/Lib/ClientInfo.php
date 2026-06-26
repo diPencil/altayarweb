@@ -13,14 +13,14 @@ class ClientInfo{
 	{
 	    $ip = getRealIP();
 
-	    $xml = @simplexml_load_file("http://www.geoplugin.net/xml.gp?ip=" . $ip);
+	    $xml = @simplexml_load_file("https://ssl.geoplugin.net/xml.gp?ip=" . $ip);
 
-	    $country = $xml->geoplugin_countryName ?? 'Unknown';
-	    $city = $xml->geoplugin_city ?? 'Unknown';
-	    $area = $xml->geoplugin_areaCode ?? 'Unknown';
-	    $code = $xml->geoplugin_countryCode ?? 'Unknown';
-	    $long = $xml->geoplugin_longitude ?? 'Unknown';
-	    $lat = $xml->geoplugin_latitude ?? 'Unknown';
+	    $country = $xml ? ($xml->geoplugin_countryName ?? 'Unknown') : 'Unknown';
+	    $city = $xml ? ($xml->geoplugin_city ?? 'Unknown') : 'Unknown';
+	    $area = $xml ? ($xml->geoplugin_areaCode ?? 'Unknown') : 'Unknown';
+	    $code = $xml ? ($xml->geoplugin_countryCode ?? 'Unknown') : 'Unknown';
+	    $long = $xml ? ($xml->geoplugin_longitude ?? 'Unknown') : 'Unknown';
+	    $lat = $xml ? ($xml->geoplugin_latitude ?? 'Unknown') : 'Unknown';
 
 	    $data['country'] = (string) $country;
 	    $data['city'] = (string) $city;

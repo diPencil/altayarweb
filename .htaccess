@@ -5,6 +5,15 @@
 
     RewriteEngine On
 
+    <IfModule mod_headers.c>
+        Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set X-Frame-Options "SAMEORIGIN"
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+        Header always set Permissions-Policy "accelerometer=(), camera=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=(), fullscreen=(self)"
+        Header always unset X-Powered-By
+    </IfModule>
+
     # Canonical HTTPS host for production.
     RewriteCond %{HTTP_HOST} ^www\.altayarvip\.com$ [NC]
     RewriteRule ^ https://altayarvip.com%{REQUEST_URI} [L,R=301,NE]
