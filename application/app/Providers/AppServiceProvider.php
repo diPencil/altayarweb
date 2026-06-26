@@ -20,6 +20,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -146,8 +147,17 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        if($general->force_ssl && config('app.env') !== 'local'){
-            \URL::forceScheme('https');
+        $appUrl = (string) config('app.url');
+        $host = request()->getHost();
+        $isProductionDomain = in_array($host, ['altayarvip.com', 'www.altayarvip.com'], true);
+
+        if (
+            app()->environment('production') ||
+            str_starts_with($appUrl, 'https://') ||
+            $isProductionDomain ||
+            ($general->force_ssl && config('app.env') !== 'local')
+        ) {
+            URL::forceScheme('https');
         }
 
 

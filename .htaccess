@@ -5,6 +5,15 @@
 
     RewriteEngine On
 
+    # Canonical HTTPS host for production.
+    RewriteCond %{HTTP_HOST} ^www\.altayarvip\.com$ [NC]
+    RewriteRule ^ https://altayarvip.com%{REQUEST_URI} [L,R=301,NE]
+
+    RewriteCond %{HTTP_HOST} ^altayarvip\.com$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteRule ^ https://altayarvip.com%{REQUEST_URI} [L,R=301,NE]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
