@@ -5,8 +5,11 @@
     $isActive = !empty($item['active']);
     $isExpanded = !empty($item['expanded']);
     $submenuId = $item['id'] ?? 'menu-item-' . $depth;
-    $label = __($item['label']);
+    $label = array_key_exists('translate', $item) && $item['translate'] === false ? $item['label'] : __($item['label']);
     $url = $item['url'] ?? '#';
+    $target = $item['target'] ?? null;
+    $rel = $item['rel'] ?? null;
+    $linkAttributes = trim(($target ? ' target="' . e($target) . '"' : '') . ($rel ? ' rel="' . e($rel) . '"' : ''));
 @endphp
 
 @if ($mode === 'desktop')
@@ -23,7 +26,7 @@
                     @endforeach
                 </ul>
             @else
-                <a class="main-menu-link {{ $isActive ? 'active' : '' }}" href="{{ $url }}">{{ $label }}</a>
+                <a class="main-menu-link {{ $isActive ? 'active' : '' }}" href="{{ $url }}"{!! $linkAttributes ? ' ' . $linkAttributes : '' !!}>{{ $label }}</a>
             @endif
         </li>
     @else
@@ -39,7 +42,7 @@
                     @endforeach
                 </ul>
             @else
-                <a class="main-menu-sublink {{ $isActive ? 'active' : '' }}" href="{{ $url }}">{{ $label }}</a>
+                <a class="main-menu-sublink {{ $isActive ? 'active' : '' }}" href="{{ $url }}"{!! $linkAttributes ? ' ' . $linkAttributes : '' !!}>{{ $label }}</a>
             @endif
         </li>
     @endif
@@ -60,7 +63,7 @@
         </li>
     @else
         <li class="side-Nav__item">
-            <a class="side-Nav__link {{ $isActive ? 'active' : '' }}" href="{{ $url }}" aria-current="{{ $isActive ? 'page' : 'false' }}">{{ $label }}</a>
+            <a class="side-Nav__link {{ $isActive ? 'active' : '' }}" href="{{ $url }}" aria-current="{{ $isActive ? 'page' : 'false' }}"{!! $linkAttributes ? ' ' . $linkAttributes : '' !!}>{{ $label }}</a>
         </li>
     @endif
 @endif

@@ -12,8 +12,11 @@
         [
             'id' => 'epayment-menu',
             'label' => 'E-Payment',
-            'url' => route('pay.online'),
-            'active' => request()->routeIs('pay.online*'),
+            'translate' => false,
+            'url' => 'https://app.fawaterk.com/ec/altayarvip-e-payment',
+            'target' => '_blank',
+            'rel' => 'noopener noreferrer',
+            'active' => false,
         ],
         [
             'id' => 'travelers-guide-menu',
