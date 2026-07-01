@@ -46,6 +46,9 @@
                 'answer' => __('You can use the Contact Now button, join the membership area, or reach the support team directly through the WhatsApp contact card in the hero section. Every path is meant to shorten the time between a question and a real answer.')
             ],
         ];
+        $contact = getContent('contact_us.content', true);
+        $dv = $contact?->data_values ?? (object) [];
+        $contactPhone = trim((string) ($dv->contact_number ?? '')) ?: trim((string) config('site_contact.phone'));
     @endphp
 
     <section class="about-hero py-100">
@@ -70,7 +73,7 @@
                                     <p class="mb-0 text-muted">@lang('Chat with our experts') @lang('and start your journey with a professional support team.')</p>
                                 </div>
                             </div>
-                            <a class="btn btn--base btn-sm pills about-hero__contact-btn" href="https://api.whatsapp.com/send?phone=966574734062" target="_blank" rel="noopener">@lang('Chat with our experts')</a>
+                            <a class="btn btn--base btn-sm pills about-hero__contact-btn" href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $contactPhone) }}" target="_blank" rel="noopener noreferrer">@lang('Chat with our experts')</a>
                         </div>
                     </div>
                 </div>
