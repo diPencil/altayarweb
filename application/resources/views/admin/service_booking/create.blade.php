@@ -13,9 +13,9 @@
                             <div class="col-md-6">
                                 <label class="form-label">@lang('Client')</label>
                                 <select name="user_id" class="form-control select2-basic" required>
-                                    <option value="">@lang('Select Client')</option>
+                                    <option value="" data-balance="0">@lang('Select Client')</option>
                                     @foreach($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->username }} - {{ $user->firstname }} {{ $user->lastname }}</option>
+                                        <option value="{{ $user->id }}" data-balance="{{ $user->balance }}">{{ $user->username }} - {{ $user->firstname }} {{ $user->lastname }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -63,6 +63,14 @@
                                     <option value="3">@lang('Canceled')</option>
                                 </select>
                             </div>
+                            <div class="col-12" id="walletDeductionDiv" style="display:none;">
+                                <div class="form-check form--check">
+                                    <input class="form-check-input" type="checkbox" name="deduct_wallet" id="deductWallet" value="1">
+                                    <label class="form-check-label" for="deductWallet">
+                                        @lang('Deduct from Wallet') (@lang('Current Balance'): <span id="currentWalletBalance" class="fw-bold"></span>)
+                                    </label>
+                                </div>
+                            </div>
                             <div class="col-12">
                                 <label class="form-label">@lang('Notes')</label>
                                 <textarea name="notes" class="form-control" rows="4" placeholder="@lang('Optional details about the booking')"></textarea>
@@ -83,6 +91,28 @@
         (function ($) {
             'use strict';
             $('.select2-basic').select2();
+
+            const userSelect = $('select[name="user_id"]');
+            const statusSelect = $('select[name="status"]');
+            const walletDiv = $('#walletDeductionDiv');
+            const balanceSpan = $('#currentWalletBalance');
+
+            function toggleWalletDeduction() {
+                const selectedUser = userSelect.find('option:selected');
+                const status = statusSelect.val();
+
+                if (status == 1 && selectedUser.val()) {
+                    const balance = parseFloat(selectedUser.data('balance') || 0).toFixed(2);
+                    balanceSpan.text(balance);
+                    walletDiv.slideDown();
+                } else {
+                    walletDiv.slideUp();
+                    $('#deductWallet').prop('checked', false);
+                }
+            }
+
+            userSelect.on('change', toggleWalletDeduction);
+            statusSelect.on('change', toggleWalletDeduction);
         })(jQuery);
     </script>
 @endpush

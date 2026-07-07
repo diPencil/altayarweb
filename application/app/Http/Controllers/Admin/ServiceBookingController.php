@@ -278,7 +278,7 @@ class ServiceBookingController extends Controller
     public function create()
     {
         $pageTitle = __('Add Tour Package Booking');
-        $users = User::orderBy('username')->get(['id', 'username', 'firstname', 'lastname']);
+        $users = User::orderBy('username')->get(['id', 'username', 'firstname', 'lastname', 'balance']);
 
         return view('admin.service_booking.create', compact('pageTitle', 'users'));
     }
@@ -339,7 +339,7 @@ class ServiceBookingController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        ServiceBooking::create([
+        $booking = ServiceBooking::create([
             'user_id' => $request->user_id,
             'created_by_admin_id' => auth('admin')->id(),
             'booking_type' => $request->booking_type,
@@ -352,6 +352,25 @@ class ServiceBookingController extends Controller
             'status' => $request->status,
             'notes' => $request->notes,
         ]);
+
+        if ($request->status == 1 && $request->has('deduct_wallet')) {
+            $user = User::find($request->user_id);
+            if ($user && $user->balance >= $request->amount) {
+                $user->balance -= $request->amount;
+                $user->save();
+
+                $transaction = new \App\Models\Transaction();
+                $transaction->user_id = $user->id;
+                $transaction->amount = $request->amount;
+                $transaction->post_balance = $user->balance;
+                $transaction->charge = 0;
+                $transaction->trx_type = '-';
+                $transaction->remark = 'booking_payment';
+                $transaction->details = 'Payment for booking: ' . $request->title;
+                $transaction->trx = getTrx();
+                $transaction->save();
+            }
+        }
 
         $notify[] = ['success', __('Booking added successfully')];
         return back()->withNotify($notify);
