@@ -3,7 +3,7 @@
 @push('style')
     <style>
         body { background: #050816; }
-        .header-main-area, .footer-area, .scroll-top, .breadcrumb { display: none !important; }
+        .header-main-area, .footer-area, .scroll-top, .breadcrumb, .ai-chat-assistant-shell { display: none !important; }
         .reels-page {
             min-height: 100vh;
             overflow: hidden;
