@@ -369,6 +369,15 @@ class ServiceBookingController extends Controller
                 $transaction->details = 'Payment for booking: ' . $request->title;
                 $transaction->trx = getTrx();
                 $transaction->save();
+
+                $walletRequest = new \App\Models\UserWalletRequest();
+                $walletRequest->user_id = $user->id;
+                $walletRequest->amount = $request->amount;
+                $walletRequest->type = 'use';
+                $walletRequest->status = 1;
+                $walletRequest->details = 'Payment for booking: ' . $request->title;
+                $walletRequest->admin_feedback = 'Auto-deducted for booking confirmation.';
+                $walletRequest->save();
             }
         }
 
