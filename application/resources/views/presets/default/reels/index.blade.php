@@ -35,11 +35,13 @@
             inset: 0;
             display: flex;
             align-items: flex-end;
-            padding: 1.2rem 1.2rem 4rem 1.2rem;
+            padding: 1.2rem 1.2rem 1.5rem 1.2rem;
             background: linear-gradient(180deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.15) 48%, rgba(3, 7, 18, 0.88) 100%);
             color: #fff;
+            pointer-events: none;
         }
         .reel-meta {
+            pointer-events: auto;
             width: 100%;
             max-width: calc(100% - 65px);
             backdrop-filter: blur(16px);
@@ -61,7 +63,8 @@
             display: flex;
             flex-direction: column;
             gap: .8rem;
-            z-index: 3;
+            z-index: 5;
+            pointer-events: auto;
         }
         [dir="rtl"] .reel-actions { right: auto; left: 1rem; }
         .reel-action-btn {
@@ -155,7 +158,8 @@
                 width: min(100%, 460px);
                 height: calc(100vh - 3rem);
                 border-radius: 34px;
-                overflow: hidden;
+                overflow-y: auto;
+                overflow-x: hidden;
                 box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
                 background: #020617;
             }
