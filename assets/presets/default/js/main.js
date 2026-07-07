@@ -450,67 +450,66 @@
     gsap.registerPlugin(ScrollTrigger);
     ScrollTrigger.config({ ignoreMobileResize: true });
 
+    let isMobileGSAP = window.matchMedia("(max-width: 768px)").matches;
+
     function animateBubble(bubble) {
       const containerWidth = container.offsetWidth;
       const containerHeight = container.offsetHeight;
       const startX = Math.random() * containerWidth;
-      const endX = startX + (Math.random() * 100 - 50);
-      const duration = Math.random() * 4 + 2;
-      const size = Math.random() * 50 + 30;
+      const startY = Math.random() * containerHeight;
 
-      gsap.set(bubble, {
-        x: startX,
-        y: containerHeight,
-        scale: size / 50,
-        opacity: 1,
-      });
+      gsap.set(bubble, { x: startX, y: startY, scale: 0, opacity: 0 });
 
       gsap.to(bubble, {
-        x: endX,
-        y: 0,
-        scale: 1,
-        opacity: 1,
-        duration: duration,
+        x: startX + (Math.random() - 0.5) * 100,
+        y: startY - 100 - Math.random() * 100,
+        scale: Math.random() * 1.5 + 0.5,
+        opacity: Math.random() * 0.5 + 0.3,
+        duration: Math.random() * 2 + 2,
         ease: "power1.out",
         onComplete: () => {
-          gsap.set(bubble, { x: startX, y: containerHeight, opacity: 1 });
           animateBubble(bubble);
         },
       });
     }
-    bubbles.forEach((bubble) => {
-      animateBubble(bubble);
-    });
 
-
-    const whychooseElement = document.querySelector(".why-choose .bg--element");
-    if (whychooseElement) {
-      gsap.to(whychooseElement, {
-        rotation: 360,
-        ease: "none",
-        duration: 3,
-        scrollTrigger: {
-          trigger: ".why-choose",
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1,
-        },
+    if (container && bubbles.length > 0 && !isMobileGSAP) {
+      bubbles.forEach((bubble) => {
+        animateBubble(bubble);
       });
     }
 
-    const aboutElement = document.querySelector(".about--us .bg--element");
-    if (aboutElement) {
-      gsap.to(aboutElement, {
-        rotation: 360,
-        ease: "none",
-        duration: 3,
-        scrollTrigger: {
-          trigger: ".about--us",
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1,
-        },
-      });
+    const whychooseElement = document.querySelector(".why-choose-us .globe");
+    const aboutElement = document.querySelector(".about--us .globe");
+
+    if (!isMobileGSAP) {
+      if (whychooseElement) {
+        gsap.to(whychooseElement, {
+          rotation: 360,
+          ease: "none",
+          duration: 3,
+          scrollTrigger: {
+            trigger: ".why-choose",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1,
+          },
+        });
+      }
+
+      if (aboutElement) {
+        gsap.to(aboutElement, {
+          rotation: 360,
+          ease: "none",
+          duration: 3,
+          scrollTrigger: {
+            trigger: ".about--us",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1,
+          },
+        });
+      }
     }
   });
 
