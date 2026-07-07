@@ -251,6 +251,7 @@
     $scrollTopBtn.on("click", function (event) {
       event.preventDefault();
       event.stopPropagation();
+      if(!$(this).hasClass("show")) return false;
       $("html, body").animate({ scrollTop: 0 }, 800);
       return false;
     });
@@ -447,6 +448,7 @@
     const bubbles = document.querySelectorAll(".fly--thumb");
 
     gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
     function animateBubble(bubble) {
       const containerWidth = container.offsetWidth;
