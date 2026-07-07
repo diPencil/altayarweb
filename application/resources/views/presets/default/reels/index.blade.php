@@ -77,25 +77,7 @@
         }
         .reel-action-btn:hover { transform: translateY(-2px) scale(1.03); }
         .reel-action-btn.is-active { background: #ff4d6d; }
-        .reel-sound-btn {
-            position: absolute;
-            top: 4.5rem;
-            right: 1rem;
-            z-index: 4;
-            width: 46px;
-            height: 46px;
-            border: 0;
-            border-radius: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            background: rgba(255,255,255,0.12);
-            backdrop-filter: blur(12px);
-            transition: transform .2s ease, background .2s ease, opacity .2s ease;
-        }
-        .reel-sound-btn:hover { transform: translateY(-2px) scale(1.03); }
-        .reel-sound-btn.is-active { background: rgba(34,197,94,0.92); }
+        .reel-action-btn.js-reel-sound-toggle.is-active { background: rgba(34,197,94,0.92); }
         .reel-cta {
             display: inline-flex;
             align-items: center;
@@ -245,16 +227,6 @@
                             data-src="{{ $reel->video_url }}"
                         ></video>
 
-                        <button
-                            type="button"
-                            class="reel-sound-btn js-reel-sound-toggle"
-                            aria-label="@lang('Toggle sound')"
-                            aria-pressed="false"
-                            title="@lang('Toggle sound')"
-                        >
-                            <i class="fa-solid fa-volume-xmark"></i>
-                        </button>
-
                         <div class="reel-actions">
                             <button type="button" class="reel-action-btn js-reel-like @if($isLiked) is-active @endif" data-action-url="{{ route('reels.like', $reel->id) }}" aria-label="@lang('Like')">
                                 <i class="fa-solid fa-heart"></i>
@@ -264,6 +236,15 @@
                             </button>
                             <button type="button" class="reel-action-btn js-reel-share" data-share-url="{{ route('reels.index') }}?reel={{ $reel->id }}" aria-label="@lang('Share')">
                                 <i class="fa-solid fa-share-nodes"></i>
+                            </button>
+                            <button
+                                type="button"
+                                class="reel-action-btn js-reel-sound-toggle"
+                                aria-label="@lang('Toggle sound')"
+                                aria-pressed="false"
+                                title="@lang('Toggle sound')"
+                            >
+                                <i class="fa-solid fa-volume-xmark"></i>
                             </button>
                         </div>
 
