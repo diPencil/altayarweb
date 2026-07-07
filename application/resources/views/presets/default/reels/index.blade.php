@@ -35,12 +35,13 @@
             inset: 0;
             display: flex;
             align-items: flex-end;
-            padding: 1.2rem 1.2rem 2.5rem 1.2rem;
+            padding: 1.2rem 1.2rem 4rem 1.2rem;
             background: linear-gradient(180deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.15) 48%, rgba(3, 7, 18, 0.88) 100%);
             color: #fff;
         }
         .reel-meta {
-            max-width: min(680px, 78vw);
+            width: 100%;
+            max-width: calc(100% - 65px);
             backdrop-filter: blur(16px);
             background: rgba(2, 6, 23, 0.38);
             border: 1px solid rgba(255,255,255,0.08);
@@ -55,7 +56,8 @@
         .reel-actions {
             position: absolute;
             right: 1rem;
-            bottom: 7.5rem;
+            top: 50%;
+            transform: translateY(-50%);
             display: flex;
             flex-direction: column;
             gap: .8rem;
@@ -228,15 +230,6 @@
                         ></video>
 
                         <div class="reel-actions">
-                            <button type="button" class="reel-action-btn js-reel-like @if($isLiked) is-active @endif" data-action-url="{{ route('reels.like', $reel->id) }}" aria-label="@lang('Like')">
-                                <i class="fa-solid fa-heart"></i>
-                            </button>
-                            <button type="button" class="reel-action-btn js-reel-save @if($isSaved) is-active @endif" data-action-url="{{ route('reels.save', $reel->id) }}" aria-label="@lang('Save')">
-                                <i class="fa-solid fa-bookmark"></i>
-                            </button>
-                            <button type="button" class="reel-action-btn js-reel-share" data-share-url="{{ route('reels.index') }}?reel={{ $reel->id }}" aria-label="@lang('Share')">
-                                <i class="fa-solid fa-share-nodes"></i>
-                            </button>
                             <button
                                 type="button"
                                 class="reel-action-btn js-reel-sound-toggle"
@@ -245,6 +238,15 @@
                                 title="@lang('Toggle sound')"
                             >
                                 <i class="fa-solid fa-volume-xmark"></i>
+                            </button>
+                            <button type="button" class="reel-action-btn js-reel-like @if($isLiked) is-active @endif" data-action-url="{{ route('reels.like', $reel->id) }}" aria-label="@lang('Like')">
+                                <i class="fa-solid fa-heart"></i>
+                            </button>
+                            <button type="button" class="reel-action-btn js-reel-save @if($isSaved) is-active @endif" data-action-url="{{ route('reels.save', $reel->id) }}" aria-label="@lang('Save')">
+                                <i class="fa-solid fa-bookmark"></i>
+                            </button>
+                            <button type="button" class="reel-action-btn js-reel-share" data-share-url="{{ route('reels.index') }}?reel={{ $reel->id }}" aria-label="@lang('Share')">
+                                <i class="fa-solid fa-share-nodes"></i>
                             </button>
                         </div>
 
