@@ -35,7 +35,7 @@
             inset: 0;
             display: flex;
             align-items: flex-end;
-            padding: 1.2rem;
+            padding: 1.2rem 1.2rem 2.5rem 1.2rem;
             background: linear-gradient(180deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.15) 48%, rgba(3, 7, 18, 0.88) 100%);
             color: #fff;
         }
@@ -55,7 +55,7 @@
         .reel-actions {
             position: absolute;
             right: 1rem;
-            bottom: 5.5rem;
+            bottom: 7.5rem;
             display: flex;
             flex-direction: column;
             gap: .8rem;
@@ -79,7 +79,7 @@
         .reel-action-btn.is-active { background: #ff4d6d; }
         .reel-sound-btn {
             position: absolute;
-            top: 1rem;
+            top: 4.5rem;
             right: 1rem;
             z-index: 4;
             width: 46px;
