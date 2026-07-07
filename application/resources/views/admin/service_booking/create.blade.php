@@ -63,15 +63,12 @@
                                     <option value="3">@lang('Canceled')</option>
                                 </select>
                             </div>
-                            <div class="col-12" id="walletDeductionDiv" style="display:none;">
-                                <div class="form-check form--check mb-2">
-                                    <input class="form-check-input" type="checkbox" name="deduct_wallet" id="deductWallet" value="1">
-                                    <label class="form-check-label" for="deductWallet">
-                                        @lang('Deduct from Wallet') (@lang('Current Balance'): <span id="currentWalletBalance" class="fw-bold"></span>)
-                                    </label>
-                                </div>
+                            <div class="col-md-4" id="walletDeductionDiv" style="display:none;">
+                                <label class="form-label" for="deductWallet">
+                                    <input type="checkbox" name="deduct_wallet" id="deductWallet" value="1" class="me-1">
+                                    @lang('Deduct from Wallet') (<span id="currentWalletBalance" class="fw-bold"></span>)
+                                </label>
                                 <div id="deductAmountDiv" style="display:none;">
-                                    <label class="form-label">@lang('Deduction Amount')</label>
                                     <input type="number" step="any" min="0" name="deduct_amount" class="form-control" placeholder="@lang('Amount to deduct')">
                                 </div>
                             </div>
