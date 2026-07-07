@@ -353,15 +353,16 @@ class ServiceBookingController extends Controller
             'notes' => $request->notes,
         ]);
 
-        if ($request->status == 1 && $request->has('deduct_wallet')) {
+        if ($request->status == 1 && $request->has('deduct_wallet') && $request->deduct_amount > 0) {
+            $deductAmount = $request->deduct_amount;
             $user = User::find($request->user_id);
-            if ($user && $user->balance >= $request->amount) {
-                $user->balance -= $request->amount;
+            if ($user && $user->balance >= $deductAmount) {
+                $user->balance -= $deductAmount;
                 $user->save();
 
                 $transaction = new \App\Models\Transaction();
                 $transaction->user_id = $user->id;
-                $transaction->amount = $request->amount;
+                $transaction->amount = $deductAmount;
                 $transaction->post_balance = $user->balance;
                 $transaction->charge = 0;
                 $transaction->trx_type = '-';
@@ -372,7 +373,7 @@ class ServiceBookingController extends Controller
 
                 $walletRequest = new \App\Models\UserWalletRequest();
                 $walletRequest->user_id = $user->id;
-                $walletRequest->amount = $request->amount;
+                $walletRequest->amount = $deductAmount;
                 $walletRequest->type = 'use';
                 $walletRequest->status = 1;
                 $walletRequest->details = 'Payment for booking: ' . $request->title;

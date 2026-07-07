@@ -64,11 +64,15 @@
                                 </select>
                             </div>
                             <div class="col-12" id="walletDeductionDiv" style="display:none;">
-                                <div class="form-check form--check">
+                                <div class="form-check form--check mb-2">
                                     <input class="form-check-input" type="checkbox" name="deduct_wallet" id="deductWallet" value="1">
                                     <label class="form-check-label" for="deductWallet">
                                         @lang('Deduct from Wallet') (@lang('Current Balance'): <span id="currentWalletBalance" class="fw-bold"></span>)
                                     </label>
+                                </div>
+                                <div id="deductAmountDiv" style="display:none;">
+                                    <label class="form-label">@lang('Deduction Amount')</label>
+                                    <input type="number" step="any" min="0" name="deduct_amount" class="form-control" placeholder="@lang('Amount to deduct')">
                                 </div>
                             </div>
                             <div class="col-12">
@@ -96,6 +100,16 @@
             const statusSelect = $('select[name="status"]');
             const walletDiv = $('#walletDeductionDiv');
             const balanceSpan = $('#currentWalletBalance');
+            const deductWalletCb = $('#deductWallet');
+            const deductAmountDiv = $('#deductAmountDiv');
+
+            deductWalletCb.on('change', function() {
+                if ($(this).is(':checked')) {
+                    deductAmountDiv.slideDown();
+                } else {
+                    deductAmountDiv.slideUp();
+                }
+            });
 
             function toggleWalletDeduction() {
                 const selectedUser = userSelect.find('option:selected');
@@ -107,7 +121,7 @@
                     walletDiv.slideDown();
                 } else {
                     walletDiv.slideUp();
-                    $('#deductWallet').prop('checked', false);
+                    deductWalletCb.prop('checked', false).trigger('change');
                 }
             }
 
