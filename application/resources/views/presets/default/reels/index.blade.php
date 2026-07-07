@@ -35,7 +35,7 @@
             inset: 0;
             display: flex;
             align-items: flex-end;
-            padding: 1.2rem 1.2rem 1.5rem 1.2rem;
+            padding: 1.2rem 1.2rem 6rem 1.2rem;
             background: linear-gradient(180deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.15) 48%, rgba(3, 7, 18, 0.88) 100%);
             color: #fff;
             pointer-events: none;
@@ -43,7 +43,7 @@
         .reel-meta {
             pointer-events: auto;
             width: 100%;
-            max-width: calc(100% - 65px);
+            max-width: 100%;
             backdrop-filter: blur(16px);
             background: rgba(2, 6, 23, 0.38);
             border: 1px solid rgba(255,255,255,0.08);
@@ -58,8 +58,7 @@
         .reel-actions {
             position: absolute;
             right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
+            bottom: 13rem;
             display: flex;
             flex-direction: column;
             gap: .8rem;
