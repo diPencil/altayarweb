@@ -17,6 +17,12 @@
             overflow-y: auto;
             scroll-snap-type: y mandatory;
             overscroll-behavior-y: contain;
+            /* Hide scrollbar */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .reels-feed::-webkit-scrollbar {
+            display: none;
         }
         .reel-item {
             position: relative;
