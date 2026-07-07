@@ -175,11 +175,20 @@
   window.setTimeout(hidePreloader, 1800);
 
   // sticky header
+  var $headerMainArea = $(".header-main-area");
+  var $header = $(".header");
+  
   $(window).on("scroll", function () {
     if ($(window).scrollTop() >= 60) {
-      $(".header").addClass("fixed-header");
+      if (!$header.hasClass("fixed-header")) {
+        $headerMainArea.css("min-height", $header.outerHeight() + "px");
+        $header.addClass("fixed-header");
+      }
     } else {
-      $(".header").removeClass("fixed-header");
+      if ($header.hasClass("fixed-header")) {
+        $headerMainArea.css("min-height", "");
+        $header.removeClass("fixed-header");
+      }
     }
   });
 
