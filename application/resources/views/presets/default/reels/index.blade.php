@@ -58,7 +58,7 @@
         .reel-actions {
             position: absolute;
             right: 1rem;
-            bottom: 13rem;
+            top: 5.5rem;
             display: flex;
             flex-direction: column;
             gap: .8rem;
