@@ -1,5 +1,8 @@
-<div class="feedback-form mb-5 pb-4 border-bottom" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
-    <h3 class="mb-4">@lang('client_feedback.heading')</h3>
+<div class="feedback-form mb-5" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+    <div class="feedback-form-heading d-flex align-items-center gap-3 mb-4">
+        <span class="feedback-form-icon text--base" aria-hidden="true"><i class="fas fa-comment-alt"></i></span>
+        <h3 class="mb-0">@lang('client_feedback.heading')</h3>
+    </div>
     @if(session('feedback_success'))
         <div class="alert alert-success" role="status">{{ session('feedback_success') }}</div>
     @endif
@@ -53,8 +56,49 @@
     </form>
 </div>
 <style>
-    .feedback-form .form-control { min-height: 44px; background: #fff; color: #222; }
-    .feedback-form .feedback-rating { min-height: 44px; cursor: pointer; }
+    .feedback-form {
+        padding: 32px;
+        background: #fff;
+        border: 1px solid #e0e8ed;
+        border-top: 3px solid #32bff2;
+        border-radius: 8px;
+        box-shadow: 0 8px 28px rgba(25, 50, 65, 0.08);
+    }
+    .feedback-form-heading h3 { font-size: 24px; line-height: 1.4; overflow-wrap: anywhere; }
+    .feedback-form-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        border-radius: 8px;
+        background: #effaff;
+        font-size: 20px;
+    }
+    .feedback-form .form-label { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .feedback-form .form-control {
+        min-height: 48px;
+        background: #f8fafb;
+        border: 1px solid #dbe3e8;
+        border-radius: 6px;
+        color: #222;
+        font-size: 16px;
+    }
+    .feedback-form .form-control:focus {
+        background: #fff;
+        border-color: #32bff2;
+        box-shadow: 0 0 0 3px rgba(50, 191, 242, 0.15);
+    }
+    .feedback-form textarea.form-control { min-height: 140px; resize: vertical; }
+    .feedback-form .feedback-rating { min-height: 44px; cursor: pointer; background: #fff; }
+    .feedback-form .feedback-rating:has(input:checked) { background: #effaff; border-color: #32bff2 !important; }
+    .feedback-form .feedback-rating:focus-within { outline: 2px solid #32bff2; outline-offset: 2px; }
     .feedback-form input[type="radio"] { appearance: auto; width: 18px; height: 18px; flex: 0 0 18px; }
     .feedback-form .btn { min-height: 44px; }
+    @media (max-width: 575px) {
+        .feedback-form { padding: 20px 16px; }
+        .feedback-form-heading h3 { font-size: 20px; }
+        .feedback-form .btn { width: 100%; }
+    }
 </style>
