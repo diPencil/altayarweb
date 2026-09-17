@@ -383,6 +383,16 @@
             'image' => asset('assets/images/general/favicon.png')
         ]
     ];
+    $professions = collect($customTestimonials)->pluck('designation')->map(function ($designation) {
+        return trim(explode(' - ', $designation, 2)[1] ?? '');
+    })->merge($approvedFeedback->pluck('profession'))->filter()->unique()->sort()->values();
+    $cities = collect(config('client_feedback.cities'))->merge(
+        collect($customTestimonials)->pluck('designation')->map(function ($designation) {
+            return trim(explode(' - ', $designation, 2)[0]);
+        })
+    )->merge($approvedFeedback->pluck('city'))->filter()->unique()->sort()->values();
+    $customTestimonials = $approvedFeedback->toBase()->map(fn ($feedback) => $feedback->testimonial())
+        ->merge($customTestimonials)->all();
 @endphp
 
 
@@ -407,6 +417,8 @@
                 </div>
             </div>
         </div>
+
+        @include($activeTemplate . 'components.client_feedback_form')
 
         <div class="row g-4 align-items-stretch">
             @foreach($customTestimonials as $item)

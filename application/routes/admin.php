@@ -30,6 +30,14 @@ Route::namespace('Auth')->group(function () {
 });
 
 Route::middleware('admin')->group(function () {
+    Route::controller('ClientFeedbackController')->prefix('client-feedback')->name('client-feedback.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('{id}/edit', 'edit')->name('edit');
+        Route::post('{id}/update', 'update')->name('update');
+        Route::post('{id}/approve', 'approve')->name('approve');
+        Route::post('{id}/delete', 'destroy')->name('delete');
+    });
+
     Route::controller('AdminController')->group(function () {
         Route::get('dashboard', 'dashboard')->name('dashboard');
         Route::get('profile', 'profile')->name('profile');

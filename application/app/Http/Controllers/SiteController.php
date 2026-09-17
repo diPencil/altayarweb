@@ -109,7 +109,8 @@ class SiteController extends Controller
     public function clientFeedback()
     {
         $pageTitle = 'Client Feedback';
-        return view($this->activeTemplate . 'client_feedback', compact('pageTitle'));
+        $approvedFeedback = \App\Models\ClientFeedback::approved()->latest()->get();
+        return view($this->activeTemplate . 'client_feedback', compact('pageTitle', 'approvedFeedback'));
     }
 
     public function listingBooking($slug, $id)

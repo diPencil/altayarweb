@@ -418,6 +418,12 @@
                     </a>
                 </li>
                 <li class="sidebar__menu-header">@lang('Content Management')</li>
+                <li class="sidebar-menu-item {{ menuActive('admin.client-feedback.*') }}">
+                    <a href="{{ route('admin.client-feedback.index') }}" class="nav-link">
+                        <i class="menu-icon las la-comments"></i>
+                        <span class="menu-title">Client Feedback</span>
+                    </a>
+                </li>
 
                 <li class="sidebar-menu-item {{ menuActive('admin.frontend.manage.*') }}">
                     <a href="{{ route('admin.frontend.manage.pages') }}" class="nav-link ">

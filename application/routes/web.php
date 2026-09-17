@@ -9,6 +9,8 @@ Route::permanentRedirect('vouchers', '/offers/vouchers');
 Route::permanentRedirect('weekend', '/offers/weekend');
 Route::permanentRedirect('video-gallery', '/reels');
 Route::permanentRedirect('customer-reviews', '/client-feedback');
+Route::post('client-feedback', 'ClientFeedbackController@store')
+    ->middleware('throttle:3,10')->name('public.client.feedback.store');
 Route::permanentRedirect('arm_member_profile', '/user/login');
 Route::permanentRedirect('membership-register', '/user/register');
 Route::permanentRedirect('register', '/user/register');
@@ -133,4 +135,3 @@ Route::controller('SiteController')->group(function () {
     Route::get('/{slug}', 'pages')->name('pages');
     Route::get('/', 'index')->name('home');
 });
-
