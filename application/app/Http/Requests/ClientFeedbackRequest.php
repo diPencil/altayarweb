@@ -33,6 +33,7 @@ class ClientFeedbackRequest extends FormRequest
 
     public function attributes(): array
     {
-        return ['name' => 'الاسم', 'profession' => 'المهنة', 'city' => 'المدينة', 'comment' => 'التعليق', 'rating' => 'التقييم'];
+        return collect(['name', 'profession', 'city', 'comment', 'rating'])
+            ->mapWithKeys(fn ($field) => [$field => __('client_feedback.' . $field)])->all();
     }
 }

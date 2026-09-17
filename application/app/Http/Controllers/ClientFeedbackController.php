@@ -12,6 +12,6 @@ class ClientFeedbackController extends Controller
         ClientFeedback::create($request->validated());
 
         return redirect()->route('public.client.feedback')
-            ->with('feedback_success', 'تم إرسال تعليقك بنجاح، وسيظهر بعد موافقة الإدارة.');
+            ->with('feedback_success', __('client_feedback.success'));
     }
 }

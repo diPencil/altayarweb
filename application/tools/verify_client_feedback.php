@@ -98,8 +98,20 @@ check($item->fresh()->name === 'Edited Client' && App\Models\ClientFeedback::app
 
 $app['view']->share('activeTemplate', 'presets.default.');
 $app['view']->share('errors', new Illuminate\Support\ViewErrorBag());
+$app->setLocale('en');
 $html = view('presets.default.components.client_feedback_form', ['professions' => collect(['Engineer']), 'cities' => collect(['Riyadh'])])->render();
 check(str_contains($html, 'name="profession"') && str_contains($html, 'name="city"') && str_contains($html, 'name="_token"'), 'Public form renders profession, city and CSRF fields');
+check(str_contains($html, 'Write your review') && str_contains($html, 'dir="ltr"') && !str_contains($html, 'اكتب تعليقك'), 'English form uses English labels and LTR direction');
+check((new App\Http\Requests\ClientFeedbackRequest())->attributes()['name'] === 'Name', 'English validation field names are localized');
+$app->setLocale('ar');
+$arabicHtml = view('presets.default.components.client_feedback_form', ['professions' => collect(['Engineer']), 'cities' => collect(['Riyadh'])])->render();
+check(str_contains($arabicHtml, 'اكتب تعليقك') && str_contains($arabicHtml, 'dir="rtl"'), 'Arabic form keeps Arabic labels and RTL direction');
+check((new App\Http\Requests\ClientFeedbackRequest())->attributes()['name'] === 'الاسم', 'Arabic validation field names are localized');
+$app->setLocale('en');
+$sidebar = file_get_contents(resource_path('views/admin/components/sidenav.blade.php'));
+check(substr_count($sidebar, "route('admin.client-feedback.index')") === 1
+    && strpos($sidebar, "@lang('Membership')") < strpos($sidebar, "route('admin.client-feedback.index')")
+    && strpos($sidebar, "route('admin.client-feedback.index')") < strpos($sidebar, "@lang('Booking Management')"), 'Client Feedback appears once below Membership in Users Management');
 $site = new App\Http\Controllers\SiteController();
 $pendingHtml = $site->clientFeedback()->render();
 check(!str_contains($pendingHtml, 'Edited Client') && !str_contains($pendingHtml, 'value="New Profession"'), 'Pending feedback and its profession are hidden from public output');
