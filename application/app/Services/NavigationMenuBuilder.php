@@ -58,7 +58,7 @@ class NavigationMenuBuilder
             'target' => $item->target_blank ? '_blank' : null,
             'rel' => $item->target_blank ? 'noopener noreferrer' : null,
             'active' => $active,
-            'expanded' => $active && !empty($children),
+            'expanded' => false,
             'children' => $children,
         ];
     }
