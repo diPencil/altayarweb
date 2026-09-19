@@ -5,22 +5,16 @@
     $ui = trans('offers_ui');
     $docLang = is_rtl() ? 'ar' : 'en';
     $docDir = is_rtl() ? 'rtl' : 'ltr';
-    $navCategories = [
-        ['slug' => 'limited', 'label' => 'all_short'],
-        ['slug' => 'yearly', 'label' => 'yearly'],
-        ['slug' => 'weekend', 'label' => 'weekend'],
-        ['slug' => 'spa-beauty', 'label' => 'spa'],
-        ['slug' => 'coupons', 'label' => 'coupons'],
-        ['slug' => 'vouchers', 'label' => 'vouchers'],
-    ];
     $customPills = '<div class="offers-hub__filters offers-hub__filters--pillnav d-flex justify-content-center gap-2 mb-0 pb-1 px-1 px-md-2 flex-wrap" role="navigation">';
-    foreach ($navCategories as $cat) {
-        $isActive = $categorySlug === ($cat['slug'] === 'spa-beauty' ? 'spa' : $cat['slug']);
-        $customPills .= '<a href="'.route('public.offers.index', ['category' => $cat['slug']]).'" class="offers-hub__chip btn rounded-pill btn-md '.($isActive ? 'btn--base' : 'btn-outline-dark bg-white').'">'.__('offers_nav.' . $cat['label']).'</a>';
+    $allTypesActive = empty($filterValues['listing_type_id']);
+    $customPills .= '<a href="'.route('public.offers.index', ['category' => 'limited']).'" class="offers-hub__chip btn rounded-pill btn-md '.($allTypesActive ? 'btn--base' : 'btn-outline-dark bg-white').'">'.__('offers_nav.all_short').'</a>';
+    foreach ($listingTypesFilter as $listingType) {
+        $isActive = (string) $filterValues['listing_type_id'] === (string) $listingType->id;
+        $customPills .= '<a href="'.route('public.offers.type', $listingType->id).'" class="offers-hub__chip btn rounded-pill btn-md '.($isActive ? 'btn--base' : 'btn-outline-dark bg-white').'">'.e($listingType->name).'</a>';
     }
     $customPills .= '</div>';
     $heroImage = $heroBannerListing && $heroBannerListing->image
-        ? getImage(getFilePath('listingImage') . '/' . $heroBannerListing->image)
+        ? $heroBannerListing->imageUrl
         : null;
     $ratingFor = static function ($id): string {
         return number_format(4.4 + ($id % 6) * 0.1, 1);
@@ -86,12 +80,7 @@
 
                                     @if ($heroSpotlight)
                                         @php
-                                            $spotImg =
-                                                $heroSpotlight->image
-                                                    ? getImage(
-                                                        getFilePath('listingImage') . '/' . $heroSpotlight->image,
-                                                    )
-                                                    : null;
+                                            $spotImg = $heroSpotlight->image ? $heroSpotlight->imageUrl : null;
                                         @endphp
                                         <div class="offers-hub__hero-spotlight offers-hub__hero-spotlight--on-card">
                                             <a href="{{ route('listing.details', [slug($heroSpotlight->title), $heroSpotlight->id]) }}"
@@ -127,12 +116,7 @@
                                         <div class="offers-hub__hero-thumbs offers-hub__hero-thumbs--strip d-none">
                                             @foreach ($heroThumbOffers as $thumbOffer)
                                                 @php
-                                                    $tImg =
-                                                        $thumbOffer->image
-                                                            ? getImage(
-                                                                getFilePath('listingImage') . '/' . $thumbOffer->image,
-                                                            )
-                                                            : null;
+                                                    $tImg = $thumbOffer->image ? $thumbOffer->imageUrl : null;
                                                 @endphp
                                                 <a href="{{ route('listing.details', [slug($thumbOffer->title), $thumbOffer->id]) }}"
                                                     class="offers-hub__hero-thumb rounded-3 overflow-hidden text-decoration-none"
@@ -162,7 +146,7 @@
                                 @php
                                     $spotImg =
                                         $heroSpotlight->image
-                                            ? getImage(getFilePath('listingImage') . '/' . $heroSpotlight->image)
+                                            ? $heroSpotlight->imageUrl
                                             : null;
                                 @endphp
                                 <div class="offers-hub__hero-spotlight offers-hub__hero-spotlight--only">
@@ -314,7 +298,7 @@
                     <div class="row g-3 g-md-4 justify-content-center offers-hub__strip">
                         @foreach ($offerHighlights->take(6) as $h)
                             @php
-                                $hImg = $h->image ? getImage(getFilePath('listingImage') . '/' . $h->image) : null;
+                                $hImg = $h->image ? $h->imageUrl : null;
                             @endphp
                             <div class="col-6 col-md-4 col-lg-2">
                                 <a href="{{ route('listing.details', [slug($h->title), $h->id]) }}"

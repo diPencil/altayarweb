@@ -49,7 +49,7 @@ class ListingController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'title_ar' => 'nullable|string|max:255',
-            'listing_type_id' => 'required|exists:listing_types,id',
+            'listing_type_id' => 'required|exists:listing_types,id,status,1',
             'summary' => 'nullable|string|max:255',
             'summary_ar' => 'nullable|string|max:255',
             'description' => 'nullable|string',
@@ -82,7 +82,7 @@ class ListingController extends Controller
         $listing->title_ar = $request->title_ar;
         $listing->slug = Str::slug($request->title) . '-' . Str::lower(Str::random(6));
         $listing->listing_type_id = $listingType->id;
-        $listing->type = $listingType->name;
+        $listing->type = $listingType->getRawOriginal('name');
         $listing->summary = $request->summary;
         $listing->summary_ar = $request->summary_ar;
         $listing->description = $request->description;
@@ -139,7 +139,7 @@ class ListingController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'title_ar' => 'nullable|string|max:255',
-            'listing_type_id' => 'required|exists:listing_types,id',
+            'listing_type_id' => 'required|exists:listing_types,id,status,1',
             'summary' => 'nullable|string|max:255',
             'summary_ar' => 'nullable|string|max:255',
             'description' => 'nullable|string',
@@ -172,7 +172,7 @@ class ListingController extends Controller
         $listing->title_ar = $request->title_ar;
         $listing->slug = Str::slug($request->title) . '-' . Str::lower(Str::random(6));
         $listing->listing_type_id = $listingType->id;
-        $listing->type = $listingType->name;
+        $listing->type = $listingType->getRawOriginal('name');
         $listing->summary = $request->summary;
         $listing->summary_ar = $request->summary_ar;
         $listing->description = $request->description;
@@ -198,24 +198,27 @@ class ListingController extends Controller
         // Keep status as it is or set to pending if edited? 
         // Usually, if edited, it might need re-approval. But let's keep it for now.
 
+        $oldImage = $listing->image;
+        $imageChanged = false;
+
         if ($request->hasFile('image')) {
             try {
-                if ($listing->image && !filter_var($listing->image, FILTER_VALIDATE_URL)) {
-                    fileManager()->removeFile(getFilePath('listingImage') . '/' . $listing->image);
-                }
                 $listing->image = fileUploader($request->image, getFilePath('listingImage'));
+                $imageChanged = true;
             } catch (\Exception $exp) {
                 $notify[] = ['error', __('Couldn\'t upload your image')];
                 return back()->withNotify($notify);
             }
         } elseif ($request->image_url) {
-            if ($listing->image && !filter_var($listing->image, FILTER_VALIDATE_URL)) {
-                fileManager()->removeFile(getFilePath('listingImage') . '/' . $listing->image);
-            }
             $listing->image = $request->image_url;
+            $imageChanged = $oldImage !== $listing->image;
         }
 
         $listing->save();
+
+        if ($imageChanged && $oldImage && $oldImage !== $listing->image) {
+            $listing->deleteStoredImage($oldImage);
+        }
 
         $notify[] = ['success', __('Listing updated successfully')];
         return to_route('employee.listing.index')->withNotify($notify);
@@ -261,9 +264,7 @@ class ListingController extends Controller
     {
         $listing = Listing::where('user_id', auth('employee')->id())->where('user_type', 'employee')->findOrFail($id);
 
-        if ($listing->image) {
-            fileManager()->removeFile(getFilePath('listingImage') . '/' . $listing->image);
-        }
+        $listing->deleteStoredImage();
 
         $listing->delete();
 

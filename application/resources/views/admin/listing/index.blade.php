@@ -53,7 +53,7 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>
                                             @if($listing->image)
-                                                <img src="{{ getImage(getFilePath('listingImage') . '/' . $listing->image) }}" alt="{{ $listing->title }}" class="rounded img-thumb" style="width: 60px; height: 60px; object-fit: cover;">
+                                                <img src="{{ $listing->imageUrl }}" alt="{{ $listing->title }}" class="rounded img-thumb" style="width: 60px; height: 60px; object-fit: cover;">
                                             @else
                                                 <span class="text-muted">@lang('No image')</span>
                                             @endif

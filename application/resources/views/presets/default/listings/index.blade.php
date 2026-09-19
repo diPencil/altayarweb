@@ -32,7 +32,7 @@
 
                                     <a href="{{ route('listing.details', [slug($listing->title), $listing->id]) }}" class="listing-card__thumb d-block">
                                         @if($listing->image)
-                                            <img class="w-100 h-100" src="{{ getImage(getFilePath('listingImage') . '/' . $listing->image) }}" alt="{{ $listing->title }}">
+                                            <img class="w-100 h-100" src="{{ $listing->imageUrl }}" alt="{{ $listing->title }}">
                                         @else
                                             <div class="listing-card__placeholder d-flex align-items-center justify-content-center w-100 h-100 text-muted">
                                                 @lang('No image')

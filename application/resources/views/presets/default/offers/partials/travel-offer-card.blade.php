@@ -12,7 +12,7 @@
     <a href="{{ $detailsUrl }}" class="travel-offer-card__surface text-decoration-none text-body d-flex flex-column flex-grow-1">
         <div class="travel-offer-card__media">
             @if ($offer->image)
-                <img src="{{ getImage(getFilePath('listingImage') . '/' . $offer->image) }}" alt=""
+                <img src="{{ $offer->imageUrl }}" alt=""
                     class="travel-offer-card__img w-100" loading="lazy" width="480" height="360">
             @else
                 <div class="travel-offer-card__placeholder d-flex align-items-center justify-content-center">

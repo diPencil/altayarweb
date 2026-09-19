@@ -244,9 +244,11 @@ class SiteController extends Controller
         $explicitListingTypeId = null;
         $listingTypeIdRaw = $request->query('listing_type_id');
         if ($listingTypeIdRaw !== null && $listingTypeIdRaw !== '') {
-            $explicitListingTypeId = ctype_digit((string) $listingTypeIdRaw)
-                ? (int) $listingTypeIdRaw
-                : null;
+            $requestedListingTypeId = ctype_digit((string) $listingTypeIdRaw) ? (int) $listingTypeIdRaw : null;
+            $explicitListingTypeId = $requestedListingTypeId
+                && $listingTypesFilter->contains('id', $requestedListingTypeId)
+                    ? $requestedListingTypeId
+                    : null;
         }
 
         $buildOffersBase = static function () use (
@@ -264,7 +266,7 @@ class SiteController extends Controller
                     ->orWhereDate('end_date', '>=', now()->toDateString());
             });
 
-            if ($categorySlug !== 'limited' && $explicitListingTypeId !== null && $explicitListingTypeId > 0) {
+            if ($explicitListingTypeId !== null && $explicitListingTypeId > 0) {
                 $offersQuery->where('listing_type_id', $explicitListingTypeId);
             } elseif ($categorySlug !== 'limited') {
                 if ($matchedListingType) {
@@ -333,7 +335,7 @@ class SiteController extends Controller
         $offerHighlights = (clone $offersBase)->limit(8)->get();
 
         $featuredOffers = (clone $offersBase)->limit(3)->get();
-        if ($categorySlug === 'limited' && $featuredOffers->isEmpty()) {
+        if ($categorySlug === 'limited' && $explicitListingTypeId === null && $featuredOffers->isEmpty()) {
             $featuredOffers = Listing::with('listingType')
                 ->active()
                 ->where(function ($query) {
@@ -348,18 +350,19 @@ class SiteController extends Controller
         $heroBannerListing = $featuredOffers->isNotEmpty() ? $featuredOffers->first() : null;
         $offers = $offersBase->paginate(request()->rows ?? 8)->appends(request()->all());
 
+        $selectedListingTypeId = $explicitListingTypeId ?? $matchedListingType?->id;
         $filterValues = [
             'destination' => $destination,
             'search' => $search,
             'price_min' => $request->query('price_min', ''),
             'price_max' => $request->query('price_max', ''),
             'travel_date' => $request->query('travel_date', ''),
-            'listing_type_id' => $request->query('listing_type_id', ''),
+            'listing_type_id' => $selectedListingTypeId ?? '',
         ];
 
         // Prepare hub categories data if we are in 'limited' (overview) mode
         $hubData = [];
-        if ($categorySlug === 'limited' && $search === '' && $destination === '' && $request->query('price_min') === null) {
+        if ($categorySlug === 'limited' && $explicitListingTypeId === null && $search === '' && $destination === '' && $request->query('price_min') === null) {
             $hubCategories = [
                 'yearly' => ['slug' => 'yearly', 'title' => __('offers_nav.yearly')],
                 'weekend' => ['slug' => 'weekend', 'title' => 'Weekend offers'],
@@ -396,6 +399,14 @@ class SiteController extends Controller
             'heroBannerListing',
             'hubData',
         ));
+    }
+
+    public function offersByType(Request $request, ListingType $listingType)
+    {
+        abort_unless($listingType->status, 404);
+        $request->query->set('listing_type_id', (string) $listingType->id);
+
+        return $this->offersCategory($request, 'limited');
     }
 
     private function normalizeOffersCategory(string $category): string

@@ -1,6 +1,21 @@
 @php
     $languages = App\Models\Language::where('code', '!=', 'es')->get();
     $currentLang = $languages->firstWhere('code', session('lang', 'en')) ?? $languages->first();
+    $offerListingTypes = App\Models\ListingType::active()->orderBy('name')->get();
+    $offerTypeMenuItems = $offerListingTypes->map(function ($type) {
+        $routeListingType = request()->route('listingType');
+        $routeListingTypeId = $routeListingType instanceof App\Models\ListingType
+            ? $routeListingType->id
+            : (int) $routeListingType;
+
+        return [
+            'id' => 'listing-type-' . $type->id . '-menu',
+            'label' => $type->name,
+            'translate' => false,
+            'url' => route('public.offers.type', $type->id),
+            'active' => request()->routeIs('public.offers.type') && $routeListingTypeId === $type->id,
+        ];
+    })->all();
 
     $navigationMenu = [
         [
@@ -27,39 +42,8 @@
                             'id' => 'limited-offers-menu',
                             'label' => 'Limited Offers',
                             'url' => route('public.offers.index', ['category' => 'limited']),
-                            'active' => request()->routeIs('public.offers.index') && in_array(request()->route('category'), ['limited', 'all'], true),
-                            'children' => [
-                                [
-                                    'id' => 'ramadan-offers-menu',
-                                    'label' => __('offers_nav.yearly'),
-                                    'url' => route('public.offers.index', ['category' => 'yearly']),
-                                    'active' => request()->routeIs('public.offers.index') && in_array(request()->route('category'), ['yearly'], true),
-                                ],
-                                [
-                                    'id' => 'weekend-offers-menu',
-                                    'label' => 'Weekend Offers',
-                                    'url' => route('public.offers.index', ['category' => 'weekend']),
-                                    'active' => request()->routeIs('public.offers.index') && in_array(request()->route('category'), ['weekend'], true),
-                                ],
-                                [
-                                    'id' => 'spa-beauty-offers-menu',
-                                    'label' => __('offers_nav.spa'),
-                                    'url' => route('public.offers.index', ['category' => 'spa-beauty']),
-                                    'active' => request()->routeIs('public.offers.index') && in_array(request()->route('category'), ['spa', 'spa-beauty'], true),
-                                ],
-                                [
-                                    'id' => 'coupons-menu',
-                                    'label' => 'Coupons',
-                                    'url' => route('public.offers.index', ['category' => 'coupons']),
-                                    'active' => request()->routeIs('public.offers.index') && in_array(request()->route('category'), ['coupons'], true),
-                                ],
-                                [
-                                    'id' => 'vouchers-menu',
-                                    'label' => 'Vouchers',
-                                    'url' => route('public.offers.index', ['category' => 'vouchers']),
-                                    'active' => request()->routeIs('public.offers.index') && in_array(request()->route('category'), ['vouchers'], true),
-                                ],
-                            ],
+                            'active' => request()->routeIs('public.offers.type') || (request()->routeIs('public.offers.index') && in_array(request()->route('category'), ['limited', 'all'], true)),
+                            'children' => $offerTypeMenuItems,
                         ],
                 [
                     'id' => 'more-travel-menu',

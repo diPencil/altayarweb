@@ -94,6 +94,15 @@ class Listing extends Model
         );
     }
 
+    public function deleteStoredImage(?string $image = null): void
+    {
+        $image ??= $this->image;
+
+        if ($image && !filter_var($image, FILTER_VALIDATE_URL)) {
+            fileManager()->removeFile(getFilePath('listingImage') . '/' . $image);
+        }
+    }
+
     public function listingType(): BelongsTo
     {
         return $this->belongsTo(ListingType::class, 'listing_type_id');

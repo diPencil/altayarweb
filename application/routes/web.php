@@ -25,6 +25,9 @@ Route::permanentRedirect('payments', '/e-payment');
 Route::get('offers/{category}', 'App\Http\Controllers\SiteController@offersCategory')
     ->whereIn('category', ['limited', 'all', 'yearly', 'weekend', 'spa', 'spa-beauty', 'coupons', 'vouchers'])
     ->name('public.offers.index');
+Route::get('offers/type/{listingType}', 'App\Http\Controllers\SiteController@offersByType')
+    ->whereNumber('listingType')
+    ->name('public.offers.type');
 Route::permanentRedirect('limited-offers', '/offers/limited');
 Route::get('limited-offers/{legacyType}', static function (\Illuminate\Http\Request $request, string $legacyType) {
     $map = [

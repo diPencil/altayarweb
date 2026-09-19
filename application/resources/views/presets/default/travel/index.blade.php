@@ -34,7 +34,7 @@
 
     $heroImg = null;
     if (in_array($currentSection, ['hotels', 'flights'], true) && $heroSpotlightListing && $heroSpotlightListing->image) {
-        $heroImg = getImage(getFilePath('listingImage') . '/' . $heroSpotlightListing->image);
+        $heroImg = $heroSpotlightListing->imageUrl;
     } elseif ($heroSpotlightPackage && $heroSpotlightPackage->TourPackagePrimaryImage?->image) {
         $heroImg = getImage(getFilePath('tourPackageImage') . '/' . $heroSpotlightPackage->TourPackagePrimaryImage->image);
     }

@@ -7,7 +7,7 @@
                     <div class="col-lg-7">
                         <div class="listing-hero__media h-100">
                             @if($listing->image)
-                                <img class="w-100 h-100" src="{{ getImage(getFilePath('listingImage') . '/' . $listing->image) }}" alt="{{ $listing->title }}">
+                                <img class="w-100 h-100" src="{{ $listing->imageUrl }}" alt="{{ $listing->title }}">
                             @else
                                 <div class="d-flex align-items-center justify-content-center h-100 bg--light text-muted listing-hero__empty">
                                     @lang('No image')
@@ -196,7 +196,7 @@
                                         <a href="{{ route('listing.details', [slug($relatedListing->title), $relatedListing->id]) }}" class="listing-related d-flex align-items-center gap-3 text-decoration-none">
                                             <div class="listing-related__thumb flex-shrink-0 rounded-3 overflow-hidden">
                                                 @if($relatedListing->image)
-                                                    <img class="w-100 h-100" src="{{ getImage(getFilePath('listingImage') . '/' . $relatedListing->image) }}" alt="{{ $relatedListing->title }}">
+                                                    <img class="w-100 h-100" src="{{ $relatedListing->imageUrl }}" alt="{{ $relatedListing->title }}">
                                                 @else
                                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center bg--light text-muted">-</div>
                                                 @endif

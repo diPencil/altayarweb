@@ -94,7 +94,7 @@
                 <div class="col-lg-4">
                     <div class="base--card section--bg__two radius--16 border--none overflow-hidden">
                         @if($listing->image)
-                            <img class="w-100" style="height: 320px; object-fit: cover;" src="{{ getImage(getFilePath('listingImage') . '/' . $listing->image) }}" alt="{{ $listing->title }}">
+                            <img class="w-100" style="height: 320px; object-fit: cover;" src="{{ $listing->imageUrl }}" alt="{{ $listing->title }}">
                         @else
                             <div class="d-flex align-items-center justify-content-center bg--light text-muted" style="height: 320px;">
                                 @lang('No image')
