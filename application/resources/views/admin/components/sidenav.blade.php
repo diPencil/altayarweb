@@ -474,17 +474,23 @@
                         </ul>
                     </div>
                 </li>
-                <li class="sidebar-menu-item sidebar-dropdown {{ menuActive(['admin.setting.*', 'admin.language.*', 'admin.extensions.*', 'admin.seo*', 'admin.gateway.*']) }}">
+                <li class="sidebar-menu-item sidebar-dropdown {{ menuActive(['admin.setting.*', 'admin.navigation.*', 'admin.language.*', 'admin.extensions.*', 'admin.seo*', 'admin.gateway.*']) }}">
                     <a href="javascript:void(0)" class="nav-link">
                         <i class="menu-icon las la-cog"></i>
                         <span class="menu-title">@lang('General Settings')</span>
                     </a>
-                    <div class="sidebar-submenu {{ menuActive(['admin.setting.*', 'admin.language.*', 'admin.extensions.*', 'admin.seo*', 'admin.gateway.*'], 2) }}">
+                    <div class="sidebar-submenu {{ menuActive(['admin.setting.*', 'admin.navigation.*', 'admin.language.*', 'admin.extensions.*', 'admin.seo*', 'admin.gateway.*'], 2) }}">
                         <ul>
                             <li class="sidebar-menu-item {{ menuActive('admin.setting.index') }}">
                                 <a href="{{ route('admin.setting.index') }}" class="nav-link">
                                     <i class="menu-icon las la-caret-right"></i>
                                     <span class="menu-title">@lang('Global Settings')</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-menu-item {{ menuActive('admin.navigation.*') }}">
+                                <a href="{{ route('admin.navigation.index') }}" class="nav-link">
+                                    <i class="menu-icon las la-caret-right"></i>
+                                    <span class="menu-title">@lang('Website Menu')</span>
                                 </a>
                             </li>
                             <li class="sidebar-menu-item {{ menuActive('admin.gateway.*') }}">

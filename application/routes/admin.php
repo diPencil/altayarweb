@@ -464,6 +464,14 @@ Route::middleware('admin')->group(function () {
         Route::post('custom-css', 'customCssSubmit');
     });
 
+    Route::controller('NavigationItemController')->prefix('navigation')->name('navigation.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::post('{navigationItem}/update', 'update')->name('update');
+        Route::post('{navigationItem}/status', 'status')->name('status');
+        Route::post('{navigationItem}/delete', 'destroy')->name('delete');
+    });
+
     //Notification Setting
     Route::name('setting.notification.')->controller('NotificationController')->prefix('notifications')->group(function () {
         //Template Setting

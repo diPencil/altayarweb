@@ -1,23 +1,28 @@
 @php
     $languages = App\Models\Language::where('code', '!=', 'es')->get();
     $currentLang = $languages->firstWhere('code', session('lang', 'en')) ?? $languages->first();
-    $offerListingTypes = App\Models\ListingType::active()->orderBy('name')->get();
-    $offerTypeMenuItems = $offerListingTypes->map(function ($type) {
-        $routeListingType = request()->route('listingType');
-        $routeListingTypeId = $routeListingType instanceof App\Models\ListingType
-            ? $routeListingType->id
-            : (int) $routeListingType;
+    $hasManagedNavigation = Illuminate\Support\Facades\Schema::hasTable('navigation_items');
 
-        return [
-            'id' => 'listing-type-' . $type->id . '-menu',
-            'label' => $type->name,
-            'translate' => false,
-            'url' => route('public.offers.type', $type->id),
-            'active' => request()->routeIs('public.offers.type') && $routeListingTypeId === $type->id,
-        ];
-    })->all();
+    if ($hasManagedNavigation) {
+        $navigationMenu = app(App\Services\NavigationMenuBuilder::class)->build();
+    } else {
+        $offerListingTypes = App\Models\ListingType::active()->orderBy('name')->get();
+        $offerTypeMenuItems = $offerListingTypes->map(function ($type) {
+            $routeListingType = request()->route('listingType');
+            $routeListingTypeId = $routeListingType instanceof App\Models\ListingType
+                ? $routeListingType->id
+                : (int) $routeListingType;
 
-    $navigationMenu = [
+            return [
+                'id' => 'listing-type-' . $type->id . '-menu',
+                'label' => $type->name,
+                'translate' => false,
+                'url' => route('public.offers.type', $type->id),
+                'active' => request()->routeIs('public.offers.type') && $routeListingTypeId === $type->id,
+            ];
+        })->all();
+
+        $navigationMenu = [
         [
             'id' => 'home-menu',
             'label' => 'Home',
@@ -160,6 +165,8 @@
             ],
         ],
     ];
+
+    }
 
 @endphp
 
