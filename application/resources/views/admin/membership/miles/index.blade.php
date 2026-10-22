@@ -232,7 +232,7 @@
 
     {{-- Modal 1: Grant Miles Modal --}}
     @if(adminCanMiles('grant'))
-    <div id="grantMilesModal" class="modal fade" tabindex="-1" role="dialog">
+    <div id="grantMilesModal" class="modal fade" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -284,7 +284,7 @@
 
     {{-- Modal 2: Deduct Miles Modal --}}
     @if(adminCanMiles('deduct'))
-    <div id="deductMilesModal" class="modal fade" tabindex="-1" role="dialog">
+    <div id="deductMilesModal" class="modal fade" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -482,6 +482,14 @@
             if (!$('.datepicker-here').val()) {
                 $('.datepicker-here').datepicker();
             }
+
+            // Initialize Select2 with modal dropdownParent to fix search input typing/focus
+            $('#grantMilesModal .select2-basic').select2({
+                dropdownParent: $('#grantMilesModal')
+            });
+            $('#deductMilesModal .select2-basic').select2({
+                dropdownParent: $('#deductMilesModal')
+            });
 
             // Handle Reversal Modal Trigger
             $('.reverseBtn').on('click', function () {
