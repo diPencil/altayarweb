@@ -32,6 +32,8 @@ Route::namespace('Auth')->group(function () {
 Route::middleware('admin')->group(function () {
     Route::controller('ClientFeedbackController')->prefix('client-feedback')->name('client-feedback.')->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::post('bulk-delete', 'bulkDelete')->name('bulk-delete');
+        Route::post('bulk-approve', 'bulkApprove')->name('bulk-approve');
         Route::get('{id}/edit', 'edit')->name('edit');
         Route::post('{id}/update', 'update')->name('update');
         Route::post('{id}/approve', 'approve')->name('approve');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ClientFeedbackRequest;
 use App\Models\ClientFeedback;
+use Illuminate\Http\Request;
 
 class ClientFeedbackController extends Controller
 {
@@ -50,5 +51,29 @@ class ClientFeedbackController extends Controller
         ClientFeedback::findOrFail($id)->delete();
 
         return back()->withNotify([['success', 'Feedback deleted successfully']]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:client_feedback,id',
+        ]);
+
+        $count = ClientFeedback::whereIn('id', $request->ids)->delete();
+
+        return back()->withNotify([['success', "{$count} feedback item(s) deleted successfully"]]);
+    }
+
+    public function bulkApprove(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:client_feedback,id',
+        ]);
+
+        $count = ClientFeedback::whereIn('id', $request->ids)->update(['is_approved' => true]);
+
+        return back()->withNotify([['success', "{$count} feedback item(s) approved successfully"]]);
     }
 }
