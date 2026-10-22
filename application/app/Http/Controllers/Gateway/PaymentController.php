@@ -214,6 +214,11 @@ class PaymentController extends Controller
         }
         $gatewayCurrency = $deposit->gatewayCurrency();
         $gatewayName = $gatewayCurrency?->name ?? 'Payment';
+        $isOnlinePayment = (strcasecmp($gatewayName, 'Fawaterk') === 0 
+            || strcasecmp($deposit->gateway?->alias ?? '', 'Fawaterk') === 0 
+            || strcasecmp($gatewayName, 'Online Payment') === 0 
+            || strcasecmp($gatewayName, 'Pay Online') === 0);
+        $displayGatewayName = $isOnlinePayment ? 'Online Payment' : $gatewayName;
         $tourBooking = null;
 
         // deposit status update
@@ -272,7 +277,9 @@ class PaymentController extends Controller
             $transaction->post_balance = $user->balance;
             $transaction->charge = $deposit->charge;
             $transaction->trx_type = '+';
-            $transaction->details = ($tourBooking ? 'Payment' : 'E-Payment') . ' Via ' . $gatewayName;
+            $transaction->details = $isOnlinePayment 
+                ? (($tourBooking ? 'Payment' : 'E-Payment') . ' Online') 
+                : (($tourBooking ? 'Payment' : 'E-Payment') . ' Via ' . $gatewayName);
             $transaction->trx = $deposit->trx;
             $transaction->remark = $tourBooking ? 'Payment' : ($deposit->membership_plan_id ? 'Membership Payment' : 'E-Payment');
             $transaction->save();
@@ -343,7 +350,7 @@ class PaymentController extends Controller
                     $adminNotification->title = 'New membership subscription: ' . $plan->name . ' by ' . $user->username;
                     $adminNotification->click_url = urlPath('admin.users.detail', $user->id); // Or a specific membership route if exists
                 } else {
-                    $adminNotification->title = 'Deposit successful via ' . $gatewayName;
+                    $adminNotification->title = 'Deposit successful via ' . $displayGatewayName;
                     $adminNotification->click_url = urlPath('admin.deposit.successful');
                 }
                 
@@ -351,7 +358,7 @@ class PaymentController extends Controller
             }
 
             notify($user, $isManual ? 'DEPOSIT_APPROVE' : 'DEPOSIT_COMPLETE', [
-                'method_name' => $gatewayName,
+                'method_name' => $displayGatewayName,
                 'method_currency' => $deposit->method_currency,
                 'method_amount' => showAmount($deposit->final_amo),
                 'amount' => showAmount($deposit->amount),

@@ -11,9 +11,9 @@
                         </h2>
                         <p class="lead text-muted mx-auto" style="max-width: 700px; font-size: 1.1rem; line-height: 1.6;">
                             @if(session('lang') == 'ar' || is_rtl())
-                                يمكنك إتمام الدفع بأمان من خلال فواتيرك. إذا لم تظهر صفحة الدفع، برجاء استخدام الزر بالأسفل لفتحها مباشرة.
+                                يمكنك إتمام الدفع الإلكتروني بأمان عبر الإنترنت. إذا لم تظهر صفحة الدفع، برجاء استخدام الزر بالأسفل لفتحها مباشرة.
                             @else
-                                You can complete your payment securely through Fawaterk. If the payment page does not load, please use the button below to open it directly.
+                                You can complete your payment securely online. If the payment page does not load, please use the button below to open it directly.
                             @endif
                         </p>
                         
@@ -31,7 +31,7 @@
 
                     <div class="iframe-container position-relative mb-4" style="border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 0, 0, 0.12); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);">
                         <iframe src="https://app.fawaterk.com/ec/altayarvip-e-payment" 
-                                title="AltayarVIP Fawaterk Payment Page"
+                                title="AltayarVIP Secure Online Payment Page"
                                 style="width: 100%; min-height: 750px; border: none; display: block;" 
                                 allowfullscreen>
                         </iframe>

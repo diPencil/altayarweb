@@ -1,4 +1,9 @@
 {
+    "E-Payment Via Fawaterk": "E-Payment Online",
+    "Payment Via Fawaterk": "Payment Online",
+    "Fawaterk": "Online Payment",
+    "E-Payment Online": "E-Payment Online",
+    "Payment Online": "Payment Online",
     "Your payment has not been confirmed yet. If your card was charged, the status will update automatically once the gateway confirms it. If no amount was deducted, please try again or use another card.": "Your payment has not been confirmed yet. If your card was charged, the status will update automatically once the gateway confirms it. If no amount was deducted, please try again or use another card.",
     "Check payment status": "Check payment status",
     "403": "403",
