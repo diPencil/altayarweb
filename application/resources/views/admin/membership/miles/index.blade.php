@@ -450,7 +450,7 @@
 @endsection
 
 @push('breadcrumb-plugins')
-    <div class="d-flex flex-wrap gap-2">
+    <div class="d-flex flex-wrap gap-2 justify-content-end">
         @if(adminCanMiles('grant'))
             <button type="button" class="btn btn--success" data-bs-toggle="modal" data-bs-target="#grantMilesModal">
                 <i class="las la-plus-circle"></i> @lang('Grant Miles')
