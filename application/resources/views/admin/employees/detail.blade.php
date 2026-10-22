@@ -348,6 +348,27 @@
                                 </div>
                             </div>
 
+                            <div class="card mt-4 border">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">@lang('Employee Miles Permissions')</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-muted mb-3 small">
+                                        @lang('Controls staff access to Miles Management, balance mutations, and transaction reversals. Requires explicit assignment.')
+                                    </div>
+                                    <div class="row g-3">
+                                        @foreach (employeeMilesPermissions() as $key => $label)
+                                            <div class="col-md-6 col-xl-3">
+                                                <label class="form-check d-flex align-items-center gap-2 mb-0">
+                                                    <input class="form-check-input" type="checkbox" name="user_permissions[]" value="{{ $key }}" @checked(!empty($user->user_permissions) && in_array($key, $user->user_permissions, true))>
+                                                    <span class="form-check-label">{{ __($label) }}</span>
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row mt-4">
                                 <div class="col-md-12">
                                     <div class="form-group  text-end mb-0">

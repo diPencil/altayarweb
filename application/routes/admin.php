@@ -76,6 +76,7 @@ Route::middleware('admin')->group(function () {
         Route::post('add/sub/balance/{id}', 'addSubBalance')->name('add.sub.balance');
         Route::post('add/sub/points/{id}', 'addSubPoints')->name('add.sub.points');
         Route::post('add/sub/cashback/{id}', 'addSubCashback')->name('add.sub.cashback');
+        Route::post('add/sub/miles/{id}', 'addSubMiles')->name('add.sub.miles');
         Route::post('assign-employee/{id}', 'assignEmployee')->name('assign.employee');
         Route::post('assign-membership/{id}', 'assignMembership')->name('membership.assign');
         Route::post('update-member-code/{id}', 'updateMemberCode')->name('membership.code.update');
@@ -240,6 +241,12 @@ Route::middleware('admin')->group(function () {
         Route::get('cashback', 'cashback')->name('cashback');
         Route::post('cashback/store', 'storeCashback')->name('cashback.store');
         Route::get('reports', 'reports')->name('reports');
+    });
+
+    Route::controller('ManageMilesController')->name('membership.miles.')->prefix('membership/miles')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('operate', 'operate')->name('operate');
+        Route::post('reverse/{id}', 'reverse')->name('reverse');
     });
 
     Route::controller('MembershipBenefitController')->name('membership.benefits.')->prefix('membership/benefits')->group(function () {

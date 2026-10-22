@@ -160,6 +160,25 @@
                             </div>
                         </a>
                     </div>
+                    @if(adminCanMiles('view'))
+                    <div class="col-sm-6 col-xl-12">
+                        <a href="{{ route('admin.membership.miles.index') }}?search={{ $user->username }}">
+                            <div class="card prod-p-card background-pattern">
+                                <div class="card-body">
+                                    <div class="row align-items-center m-b-0">
+                                        <div class="col">
+                                            <h6 class="m-b-5">@lang('Miles Balance')</h6>
+                                            <h3 class="m-b-0">{{ number_format($user->miles_balance) }}</h3>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="dashboard-widget__icon las la-plane"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    @endif
                 </div>
             </div>
             <div class="col-xl-8">
@@ -228,6 +247,13 @@
                                     <i class="las la-wallet"></i> @lang('Cashback')
                                 </a>
                             </li>
+                            @if(adminCanMiles('grant') || adminCanMiles('deduct'))
+                            <li class="flex-grow-1 flex-shrink-0">
+                                <a class="d-block btn bg--primary" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#milesModal">
+                                    <i class="las la-plane"></i> @lang('Miles')
+                                </a>
+                            </li>
+                            @endif
                             <li class="flex-grow-1 flex-shrink-0">
                                 <a class="d-block btn bg--primary" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#assignEmployeeModal">
                                     <i class="las la-user-check"></i> @lang('Assign Employee')
@@ -376,11 +402,12 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
+                                    <input type="hidden" name="has_dashboard_permissions" value="1">
                                     <div class="row g-3">
                                         @foreach (userDashboardWidgets() as $key => $label)
                                             <div class="col-md-6 col-xl-4">
                                                 <label class="form-check d-flex align-items-center gap-2 mb-0">
-                                                    <input class="form-check-input dashboard-checkbox" type="checkbox" name="dashboard_permissions[]" value="{{ $key }}" @checked(!is_array($user->dashboard_permissions) || in_array($key, $user->dashboard_permissions, true))>
+                                                    <input class="form-check-input dashboard-checkbox" type="checkbox" name="dashboard_permissions[]" value="{{ $key }}" @checked(is_null($user->dashboard_permissions) || (is_array($user->dashboard_permissions) && in_array($key, $user->dashboard_permissions, true)))>
                                                     <span class="form-check-label">{{ __($label) }}</span>
                                                 </label>
                                             </div>
@@ -453,6 +480,64 @@
                         </form>
                     </div>
                 </div>
+
+                @if(adminCanMiles('view'))
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">@lang('Recent Miles Transactions')</h5>
+                        <a href="{{ route('admin.membership.miles.index') }}?search={{ $user->username }}" class="btn btn-sm btn-outline--primary">
+                            <i class="las la-external-link-alt"></i> @lang('View All in Miles Management')
+                        </a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive--md table-responsive admin-table-responsive">
+                            <table class="table table--light style--two mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>@lang('TRX')</th>
+                                        <th>@lang('Type')</th>
+                                        <th>@lang('Miles')</th>
+                                        <th>@lang('Balance After')</th>
+                                        <th>@lang('Remark')</th>
+                                        <th>@lang('Date')</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($user->milesTransactions()->take(5)->get() as $mtrx)
+                                        <tr>
+                                            <td>
+                                                <span class="fw-bold">{{ $mtrx->trx }}</span>
+                                                @if($mtrx->is_reversed)
+                                                    <span class="badge badge--warning">@lang('Reversed')</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($mtrx->is_reversal)
+                                                    <span class="badge badge--warning">@lang('Reversal')</span>
+                                                @elseif($mtrx->type === 'credit')
+                                                    <span class="badge badge--success">@lang('Credit (+)')</span>
+                                                @else
+                                                    <span class="badge badge--danger">@lang('Debit (-)')</span>
+                                                @endif
+                                            </td>
+                                            <td class="{{ $mtrx->direction === 1 ? 'text--success' : 'text--danger' }} fw-bold">
+                                                {{ $mtrx->direction === 1 ? '+' : '-' }}{{ number_format($mtrx->miles) }}
+                                            </td>
+                                            <td>{{ number_format($mtrx->balance_after) }}</td>
+                                            <td>{{ $mtrx->remark }}</td>
+                                            <td>{{ showDateTime($mtrx->created_at) }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="100%" class="text-center text-muted py-3">@lang('No miles transactions recorded for this user.')</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
 
@@ -566,6 +651,48 @@
         </div>
     </div>
 </div>
+
+@if(adminCanMiles('grant') || adminCanMiles('deduct'))
+<div id="milesModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><span class="type"></span> <span>@lang('Miles')</span></h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="las la-times"></i>
+                </button>
+            </div>
+            <form action="{{ route('admin.users.add.sub.miles', $user->id) }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label>@lang('Action')</label>
+                        <select name="act" class="form-control miles-act">
+                            @if(adminCanMiles('grant'))
+                                <option value="add">@lang('Grant (Add)')</option>
+                            @endif
+                            @if(adminCanMiles('deduct'))
+                                <option value="sub">@lang('Deduct (Subtract)')</option>
+                            @endif
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>@lang('Miles')</label>
+                        <input type="number" step="1" min="1" name="amount" class="form-control" placeholder="@lang('Please provide positive miles amount')" required>
+                    </div>
+                    <div class="form-group">
+                        <label>@lang('Remark')</label>
+                        <textarea class="form-control" placeholder="@lang('Remark / Reason')" name="remark" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn--primary btn-global">@lang('Save')</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 <div id="assignEmployeeModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -701,6 +828,10 @@
             var act = $(this).val();
             $('#cashbackModal').find('input[name=act]').val(act);
             $('#cashbackModal').find('.type').text(act == 'add' ? 'Add' : 'Subtract');
+        }).trigger('change');
+        $('.miles-act').on('change', function () {
+            var act = $(this).val();
+            $('#milesModal').find('.type').text(act == 'add' ? 'Grant' : 'Deduct');
         }).trigger('change');
         let mobileElement = $('.mobile-code');
         $('select[name=country]').on('change',function () {

@@ -662,14 +662,86 @@ function userDashboardWidgets(): array
         'wallet_balance' => 'Wallet Balance',
         'loyalty_points' => 'Loyalty Points',
         'cashback' => 'Cashback Balance',
+        'miles' => 'Miles',
         'charts' => 'Charts',
         'recent_bookings' => 'Recent Bookings Table',
         'sidebar_membership' => 'Sidebar Membership Card',
     ];
 }
 
+function userCanMiles($user = null): bool
+{
+    $user = $user ?: auth()->user();
+
+    if (!$user) {
+        return false;
+    }
+
+    $permissions = $user->dashboard_permissions;
+
+    // State 1: strictly NULL -> legacy/unrestricted user default -> ENABLED
+    if (is_null($permissions)) {
+        return true;
+    }
+
+    if ($permissions instanceof \Illuminate\Support\Collection) {
+        $permissions = $permissions->all();
+    } elseif (is_object($permissions)) {
+        $permissions = (array) $permissions;
+    }
+
+    // Malformed data MUST fail-closed -> DISABLED
+    if (!is_array($permissions)) {
+        return false;
+    }
+
+    // State 2: empty array [] -> explicitly disabled; does NOT fall back to unrestricted
+    if (count($permissions) === 0) {
+        return false;
+    }
+
+    // State 3 & 4: explicit enable/disable based on presence in custom array
+    return in_array('miles', $permissions, true);
+}
+
+function adminCanMiles(string $action, $admin = null): bool
+{
+    // 1. Root Admin guard check
+    $adminUser = $admin ?: auth('admin')->user();
+    if ($adminUser instanceof \App\Models\Admin) {
+        return match ($action) {
+            'view', 'grant', 'deduct', 'reverse' => true,
+            default => false,
+        };
+    }
+
+    // 2. Staff / Employee guard check
+    $employeeUser = $admin ?: employee();
+    if ($employeeUser instanceof \App\Models\Employee) {
+        // Enforce strict independent protection:
+        // An employee MUST have the explicit key present in their permissions.
+        // Empty array or null NEVER grants access to miles mutations!
+        $pagePerms = is_array($employeeUser->page_permissions) ? $employeeUser->page_permissions : [];
+        $userPerms = is_array($employeeUser->user_permissions) ? $employeeUser->user_permissions : [];
+
+        return match ($action) {
+            'view' => in_array('miles', $pagePerms, true) || in_array('miles_view', $userPerms, true),
+            'grant' => in_array('miles_grant', $userPerms, true),
+            'deduct' => in_array('miles_deduct', $userPerms, true),
+            'reverse' => in_array('miles_reverse', $userPerms, true),
+            default => false,
+        };
+    }
+
+    return false;
+}
+
 function userDashboardCan(string $key, $user = null): bool
 {
+    if ($key === 'miles') {
+        return userCanMiles($user);
+    }
+
     $user = $user ?: auth()->user();
 
     if (!$user) {
@@ -795,6 +867,16 @@ function employeeUserPermissions(): array
         'bookings' => 'Booking Customer Lists',
         'booking_details' => 'Booking Details with Customer Data',
         'popup_ads_customers' => 'Popup Ads Customer Selection',
+    ];
+}
+
+function employeeMilesPermissions(): array
+{
+    return [
+        'miles_view' => 'View Miles History & Stats',
+        'miles_grant' => 'Grant Miles to Users',
+        'miles_deduct' => 'Deduct Miles from Users',
+        'miles_reverse' => 'Reverse Miles Transactions',
     ];
 }
 

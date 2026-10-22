@@ -87,6 +87,11 @@
                     <li class="sidebar-submenu-list__item">
                         <a href="{{ route('user.membership.benefits') }}" class="sidebar-submenu-list__link {{ Route::is('user.membership.benefits') ? 'active' : '' }}">@lang('Membership Benefits')</a>
                     </li>
+                    @if (userCanMiles())
+                    <li class="sidebar-submenu-list__item">
+                        <a href="{{ route('user.membership.miles') }}" class="sidebar-submenu-list__link {{ Route::is('user.membership.miles') ? 'active' : '' }}">@lang('Miles')</a>
+                    </li>
+                    @endif
                     <li class="sidebar-submenu-list__item">
                         <a href="{{ route('user.membership.summary') }}" class="sidebar-submenu-list__link {{ Route::is('user.membership.summary') ? 'active' : '' }}">@lang('Plan Summary')</a>
                     </li>

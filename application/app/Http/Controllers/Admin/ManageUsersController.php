@@ -405,7 +405,11 @@ class ManageUsersController extends Controller
             $user->kv = 1;
         }
 
-        $user->dashboard_permissions = $request->dashboard_permissions ? array_values($request->dashboard_permissions) : null;
+        if ($request->has('has_dashboard_permissions')) {
+            $user->dashboard_permissions = $request->dashboard_permissions ? array_values($request->dashboard_permissions) : [];
+        } else {
+            $user->dashboard_permissions = $request->dashboard_permissions ? array_values($request->dashboard_permissions) : null;
+        }
         $user->menu_permissions = $request->menu_permissions ? array_values($request->menu_permissions) : null;
 
         $user->save();
@@ -541,6 +545,75 @@ class ManageUsersController extends Controller
         ]);
 
         $notify[] = ['success', $request->act === 'add' ? __('Cashback added successfully') : __('Cashback deducted successfully')];
+        return back()->withNotify($notify);
+    }
+
+    public function addSubMiles(Request $request, $id)
+    {
+        $request->validate([
+            'amount' => 'required|integer|min:1|max:10000000',
+            'act' => 'required|in:add,sub',
+            'remark' => 'required|string|max:255',
+        ]);
+
+        $action = $request->act === 'add' ? 'grant' : 'deduct';
+        if (!adminCanMiles($action)) {
+            $notify[] = ['error', __('Unauthorized access. You do not have permission to :action miles.', ['action' => $action])];
+            return back()->withNotify($notify);
+        }
+
+        $user = User::findOrFail($id);
+        $adminId = null;
+        $agentId = null;
+        if (auth('admin')->check()) {
+            $adminId = auth('admin')->id();
+        } elseif (auth('employee')->check()) {
+            $agentId = auth('employee')->id();
+        } elseif (function_exists('employee') && employee()) {
+            $agentId = employee()->id;
+        }
+
+        $milesService = app(\App\Services\MilesService::class);
+
+        try {
+            if ($request->act === 'add') {
+                $milesService->grantMiles(
+                    user: $user,
+                    amount: (int) $request->amount,
+                    source: 'admin_user_detail',
+                    remark: $request->remark,
+                    referenceId: null,
+                    referenceType: null,
+                    adminId: $adminId,
+                    idempotencyKey: null,
+                    meta: [],
+                    agentId: $agentId
+                );
+                $notify[] = ['success', __('Miles granted successfully')];
+            } else {
+                $milesService->deductMiles(
+                    user: $user,
+                    amount: (int) $request->amount,
+                    source: 'admin_user_detail',
+                    remark: $request->remark,
+                    referenceId: null,
+                    referenceType: null,
+                    adminId: $adminId,
+                    idempotencyKey: null,
+                    meta: [],
+                    agentId: $agentId
+                );
+                $notify[] = ['success', __('Miles deducted successfully')];
+            }
+        } catch (\InvalidArgumentException $e) {
+            $notify[] = ['error', $e->getMessage()];
+            return back()->withNotify($notify);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Miles operation failed: ' . $e->getMessage());
+            $notify[] = ['error', __('An unexpected error occurred while processing miles.')];
+            return back()->withNotify($notify);
+        }
+
         return back()->withNotify($notify);
     }
 

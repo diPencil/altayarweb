@@ -164,19 +164,19 @@
             </div>
             @endif
 
-            @if (userDashboardCan('open_tickets'))
+            @if (userDashboardCan('miles'))
             <div class="col-xxl-3 col-xl-4 col-lg-6 col-sm-6" draggable="true" id="wizard8">
-                <a class="d-block" href="{{ route('ticket.open') }}">
+                <a class="d-block" href="{{ route('user.membership.miles') }}">
                     <div class="wizard-card d-flex flex-row justify-content-between align-items-start gap--12">
                         <div class="wizard-card__text d-flex flex-column align-items-start flex-grow-1 min-w-0 gap-2">
-                            <h6 class="title fw--400 fs--16 mb-0 align-self-stretch text-start">@lang('Open Ticket')</h6>
+                            <h6 class="title fw--400 fs--16 mb-0 align-self-stretch text-start">@lang('Total Miles')</h6>
                             <div class="amount-wrap align-self-stretch">
-                                <h6 class="amount mb-0 fs--24 text-start">{{ $widget['total_open_support_ticker'] }}</h6>
+                                <h6 class="amount mb-0 fs--24 text-start">{{ number_format(auth()->user()->miles_balance) }}</h6>
                             </div>
                         </div>
                         <div
                             class="icon-wrap d-flex justify-content-center align-items-center position-relative overflow-hidden z--1 flex-shrink-0">
-                            <i class="fa-solid fa-ticket"></i>
+                            <i class="fa-solid fa-plane-departure"></i>
                         </div>
                     </div>
                 </a>

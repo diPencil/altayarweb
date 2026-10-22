@@ -66,6 +66,41 @@ class MembershipController extends Controller
         return view($this->activeTemplate . 'user.membership.benefits', compact('pageTitle', 'user', 'currentMembership', 'benefits'));
     }
 
+    public function miles()
+    {
+        $user = auth()->user();
+
+        if (!userCanMiles($user)) {
+            $notify[] = ['error', __('Unauthorized access. Miles management is not enabled for your account.')];
+            return to_route('user.home')->withNotify($notify);
+        }
+
+        $pageTitle = __('Miles Balance & History');
+        $currentMembership = $user->currentMembership()->with('plan')->first();
+
+        $milesService = app(\App\Services\MilesService::class);
+        $metrics = $milesService->getUserMetrics($user->id);
+
+        $availableMiles = $metrics['available_miles'];
+        $totalEarned = $metrics['total_earned'];
+        $totalDeducted = $metrics['total_deducted'];
+
+        $transactions = \App\Models\UserMilesTransaction::where('user_id', $user->id)
+            ->with('reversalOf')
+            ->orderByDesc('id')
+            ->paginate(getPaginate());
+
+        return view($this->activeTemplate . 'user.membership.miles', compact(
+            'pageTitle',
+            'user',
+            'currentMembership',
+            'availableMiles',
+            'totalEarned',
+            'totalDeducted',
+            'transactions'
+        ));
+    }
+
     public function plans()
     {
         $pageTitle = __('Membership Plans');

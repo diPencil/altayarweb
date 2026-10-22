@@ -123,6 +123,7 @@ Route::middleware('auth')->name('user.')->group(function () {
                 Route::get('summary', 'summary')->name('summary');
                 Route::get('member-card', 'card')->name('card');
                 Route::get('benefits', 'benefits')->name('benefits');
+                Route::get('miles', 'miles')->name('miles');
                 Route::get('plans', 'plans')->name('plans');
                 Route::post('subscribe', 'subscribe')->name('subscribe');
                 Route::get('view/{id}', 'viewPdf')->name('view');

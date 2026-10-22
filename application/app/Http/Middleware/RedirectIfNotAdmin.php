@@ -15,10 +15,28 @@ class RedirectIfNotAdmin
      */
     public function handle($request, Closure $next, $guard = 'admin')
     {
-        if (!Auth::guard($guard)->check()) {
-            return to_route('admin.login');
+        if (Auth::guard($guard)->check()) {
+            return $next($request);
         }
 
-        return $next($request);
+        // Support authenticated employees accessing allowed staff routes
+        if (Auth::guard('employee')->check()) {
+            $allowedStaffRoutes = [
+                'admin.membership.miles.index',
+                'admin.membership.miles.operate',
+                'admin.membership.miles.reverse',
+                'admin.users.add.sub.miles',
+                'admin.users.detail',
+            ];
+
+            $routeName = $request->route()?->getName();
+            if ($routeName && in_array($routeName, $allowedStaffRoutes, true)) {
+                return $next($request);
+            }
+
+            abort(403, __('Unauthorized staff access.'));
+        }
+
+        return to_route('admin.login');
     }
 }

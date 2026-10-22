@@ -64,6 +64,14 @@
                                     <span class="menu-title">@lang('Cashback')</span>
                                 </a>
                             </li>
+                            @if(adminCanMiles('view'))
+                            <li class="sidebar-menu-item {{ menuActive('admin.membership.miles.*') }}">
+                                <a href="{{ route('admin.membership.miles.index') }}" class="nav-link">
+                                    <i class="menu-icon las la-caret-right"></i>
+                                    <span class="menu-title">@lang('Miles')</span>
+                                </a>
+                            </li>
+                            @endif
                             <li class="sidebar-menu-item {{ menuActive('admin.privilege.cards.*') }}">
                                 <a href="{{ route('admin.privilege.cards.index') }}" class="nav-link">
                                     <i class="menu-icon las la-caret-right"></i>

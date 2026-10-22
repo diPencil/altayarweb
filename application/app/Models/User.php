@@ -124,6 +124,18 @@ class User extends Authenticatable
         );
     }
 
+    public function milesTransactions(): HasMany
+    {
+        return $this->hasMany(UserMilesTransaction::class)->orderBy('id', 'desc');
+    }
+
+    public function milesBalance(): Attribute
+    {
+        return new Attribute(
+            get: fn () => app(\App\Services\MilesService::class)->calculateAvailableBalance($this->id),
+        );
+    }
+
     public function deposits()
     {
         return $this->hasMany(Deposit::class)->where('status','!=',0);
@@ -218,6 +230,7 @@ class User extends Authenticatable
             || $this->countOrExists('membership_point_transactions_count', 'membershipPointTransactions')
             || $this->countOrExists('membership_cashback_transactions_count', 'membershipCashbackTransactions')
             || $this->countOrExists('user_membership_benefits_count', 'userMembershipBenefits')
+            || $this->countOrExists('user_miles_transactions_count', 'milesTransactions')
             || $this->countOrExists('login_logs_count', 'loginLogs');
 
         if ($hasRelatedRecords) {
