@@ -9,7 +9,28 @@ class Invoice extends Model
 {
     use HasFactory;
 
+    public const CURRENCIES = [
+        'USD' => '$',
+        'SAR' => 'SAR',
+        'EGP' => 'EGP',
+        'EUR' => '€',
+    ];
+
     protected $guarded = ['id'];
+
+    public function getCurrencySymbolAttribute(): string
+    {
+        $currency = strtoupper((string) ($this->currency ?: 'USD'));
+
+        return self::CURRENCIES[$currency] ?? $currency;
+    }
+
+    public function getCurrencyPrefixAttribute(): string
+    {
+        return in_array(strtoupper((string) ($this->currency ?: 'USD')), ['USD', 'EUR'], true)
+            ? $this->currency_symbol
+            : $this->currency_symbol . ' ';
+    }
 
     public function user()
     {

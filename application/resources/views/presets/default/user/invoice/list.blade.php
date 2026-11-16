@@ -34,7 +34,7 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    {{ showAmount($invoice->total_amount) }} {{ __($general->cur_text) }}
+                                    {{ $invoice->currency_prefix }}{{ showAmount($invoice->total_amount) }}
                                 </td>
                                 <td class="text-center">
                                     {{ showDateTime($invoice->created_at, 'd M, Y') }}

@@ -96,6 +96,7 @@ class InvoiceController extends Controller
             'items.*.qty' => 'required|integer|min:1',
             'items.*.guests' => 'nullable|integer|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
+            'currency' => 'required|in:' . implode(',', array_keys(Invoice::CURRENCIES)),
         ]);
 
         $invoice = new Invoice();
@@ -113,6 +114,7 @@ class InvoiceController extends Controller
         $invoice->subtotal = $totalAmount;
         $invoice->total_amount = $totalAmount;
         $invoice->paid_amount = $request->paid_amount ?? 0;
+        $invoice->currency = $request->currency;
         $invoice->status = ($invoice->paid_amount >= $invoice->total_amount) ? 1 : 0;
         $invoice->issue_date = $request->issue_date;
         $invoice->notes = $request->notes;
@@ -156,6 +158,7 @@ class InvoiceController extends Controller
             'items.*.qty' => 'required|integer|min:1',
             'items.*.guests' => 'nullable|integer|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
+            'currency' => 'required|in:' . implode(',', array_keys(Invoice::CURRENCIES)),
         ]);
 
         $invoice = Invoice::findOrFail($id);
@@ -163,6 +166,7 @@ class InvoiceController extends Controller
         $invoice->issue_date = $request->issue_date;
         $invoice->notes = $request->notes;
         $invoice->paid_amount = $request->paid_amount ?? 0;
+        $invoice->currency = $request->currency;
 
         // Recalculate total
         $totalAmount = 0;

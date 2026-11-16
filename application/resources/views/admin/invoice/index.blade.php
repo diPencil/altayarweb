@@ -48,7 +48,7 @@
                                     <span class="badge badge--primary" style="white-space: normal; text-align: left; display: inline-block; padding: 5px 10px; min-width: 100px;">{{ __($type) }}</span>
                                 </td>
                                 <td>
-                                    <span class="fw-bold">{{ $general->cur_sym }}{{ showAmount($invoice->total_amount) }}</span>
+                                    <span class="fw-bold">{{ $invoice->currency_prefix }}{{ showAmount($invoice->total_amount) }}</span>
                                 </td>
                                 <td>
                                     {{ showDateTime($invoice->issue_date, 'Y-m-d') }}
@@ -75,6 +75,8 @@
                                             data-status="{{ $invoice->status }}"
                                             data-paid="{{ $invoice->paid_amount }}"
                                             data-amount="{{ $invoice->total_amount }}"
+                                            data-currency-symbol="{{ $invoice->currency_symbol }}"
+                                            data-currency-code="{{ strtoupper($invoice->currency ?: 'USD') }}"
                                             title="@lang('Update Status')">
                                             <i class="las la-edit"></i>
                                         </button>
@@ -124,10 +126,10 @@
                         <div class="form-group mt-3">
                             <label>@lang('Paid Amount')</label>
                             <div class="input-group">
-                                <span class="input-group-text">{{ $general->cur_sym }}</span>
+                                <span class="input-group-text modal-currency-symbol">$</span>
                                 <input type="number" step="any" name="paid_amount" class="form-control">
                             </div>
-                            <small class="text-muted">@lang('Total Invoice Amount'): {{ $general->cur_sym }}<span id="total_amt"></span></small>
+                            <small class="text-muted">@lang('Total Invoice Amount'): <span class="modal-currency-symbol">$</span><span id="total_amt"></span></small>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -151,6 +153,10 @@
             modal.find('select[name=status]').val(data.status);
             modal.find('input[name=paid_amount]').val(data.paid);
             modal.find('#total_amt').text(data.amount);
+            var currencyPrefix = ['USD', 'EUR'].includes(data.currencyCode)
+                ? data.currencySymbol
+                : data.currencySymbol + ' ';
+            modal.find('.modal-currency-symbol').text(currencyPrefix);
             modal.modal('show');
         });
     })(jQuery);

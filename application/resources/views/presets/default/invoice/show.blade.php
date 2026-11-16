@@ -37,12 +37,12 @@
                             <div style="flex: 1; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee; display: flex; flex-direction: column; justify-content: center;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                     <span style="color: #888; font-size: 12px;">{{ __('Total Amount') }}</span>
-                                    <span style="font-weight: bold; font-size: 15px;">{{ $general->cur_sym }}{{ showAmount($invoice->total_amount) }}</span>
+                                    <span style="font-weight: bold; font-size: 15px;">{{ $invoice->currency_prefix }}{{ showAmount($invoice->total_amount) }}</span>
                                 </div>
                                 @php $balance = $invoice->total_amount - $invoice->paid_amount; @endphp
                                 <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #ddd;">
                                     <span style="color: #888; font-size: 12px;">{{ __('Amount Due') }}</span>
-                                    <span style="font-weight: bold; color: #d9534f; font-size: 15px;">{{ $general->cur_sym }}{{ showAmount($balance) }}</span>
+                                    <span style="font-weight: bold; color: #d9534f; font-size: 15px;">{{ $invoice->currency_prefix }}{{ showAmount($balance) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -66,8 +66,8 @@
                                             <div style="font-size: 11px; color: #888; margin-top: 3px;">{{ __($item['description']) }}</div>
                                         </td>
                                         <td style="padding: 12px 10px; text-align: center; font-size: 12px;">{{ $item['quantity'] }}</td>
-                                        <td style="padding: 12px 10px; text-align: right; color: #666; font-size: 12px;">{{ $general->cur_sym }}{{ showAmount($item['price']) }}</td>
-                                        <td style="padding: 12px 10px; text-align: right; font-weight: bold; font-size: 12px;">{{ $general->cur_sym }}{{ showAmount($item['total']) }}</td>
+                                        <td style="padding: 12px 10px; text-align: right; color: #666; font-size: 12px;">{{ $invoice->currency_prefix }}{{ showAmount($item['price']) }}</td>
+                                        <td style="padding: 12px 10px; text-align: right; font-weight: bold; font-size: 12px;">{{ $invoice->currency_prefix }}{{ showAmount($item['total']) }}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -77,11 +77,11 @@
                                 <div style="width: 220px; background: #f9f9f9; padding: 12px; border-radius: 8px; border: 1px solid #eee;">
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                         <span style="font-size: 12px;">{{ __('Subtotal') }}</span>
-                                        <span style="font-size: 12px;">{{ $general->cur_sym }}{{ showAmount($invoice->subtotal) }}</span>
+                                        <span style="font-size: 12px;">{{ $invoice->currency_prefix }}{{ showAmount($invoice->subtotal) }}</span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; font-weight: bold; padding-top: 5px; border-top: 1px solid #ddd;">
                                         <span style="font-size: 13px;">{{ __('Grand Total') }}</span>
-                                        <span style="color: #00befa; font-size: 15px;">{{ $general->cur_sym }}{{ showAmount($invoice->total_amount) }}</span>
+                                        <span style="color: #00befa; font-size: 15px;">{{ $invoice->currency_prefix }}{{ showAmount($invoice->total_amount) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -153,11 +153,11 @@
                                     <h6 class="text-uppercase text-muted mb-2 small fw-bold">{{ __('Payment Summary') }}</h6>
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <span class="text-muted small">{{ __('Total Amount') }}</span>
-                                        <span class="h5 mb-0 fw-bold text-dark">{{ $general->cur_sym }}{{ showAmount($invoice->total_amount) }}</span>
+                                        <span class="h5 mb-0 fw-bold text-dark">{{ $invoice->currency_prefix }}{{ showAmount($invoice->total_amount) }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
                                         <span class="text-muted small">{{ __('Balance Due') }}</span>
-                                        <span class="fw-bold @if($balance > 0) text-danger @else text-success @endif">{{ $general->cur_sym }}{{ showAmount($balance) }}</span>
+                                        <span class="fw-bold @if($balance > 0) text-danger @else text-success @endif">{{ $invoice->currency_prefix }}{{ showAmount($balance) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -187,9 +187,9 @@
                                             </div>
                                         </td>
                                         <td class="text-center">{{ $item['quantity'] }}</td>
-                                        <td class="text-end text-muted">{{ $general->cur_sym }}{{ showAmount($item['price']) }}</td>
+                                        <td class="text-end text-muted">{{ $invoice->currency_prefix }}{{ showAmount($item['price']) }}</td>
                                         <td class="text-end pe-4">
-                                            <span class="fw-bold text-dark">{{ $general->cur_sym }}{{ showAmount($item['total']) }}</span>
+                                            <span class="fw-bold text-dark">{{ $invoice->currency_prefix }}{{ showAmount($item['total']) }}</span>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -203,11 +203,11 @@
                                 <div class="p-3 bg-light rounded border">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="text-muted small">{{ __('Subtotal') }}</span>
-                                        <span class="fw-normal text-dark">{{ $general->cur_sym }}{{ showAmount($invoice->subtotal) }}</span>
+                                        <span class="fw-normal text-dark">{{ $invoice->currency_prefix }}{{ showAmount($invoice->subtotal) }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between pt-2 border-top">
                                         <h6 class="fw-bold mb-0">{{ __('Grand Total') }}</h6>
-                                        <h6 class="fw-bold mb-0 h5" style="color: #00befa;">{{ $general->cur_sym }}{{ showAmount($invoice->total_amount) }}</h6>
+                                        <h6 class="fw-bold mb-0 h5" style="color: #00befa;">{{ $invoice->currency_prefix }}{{ showAmount($invoice->total_amount) }}</h6>
                                     </div>
                                 </div>
                             </div>

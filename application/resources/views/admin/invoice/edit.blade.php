@@ -36,7 +36,13 @@
                                 <div class="form-group">
                                     <label>@lang('Paid Amount')</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">{{ $general->cur_sym }}</span>
+                                        <select name="currency" class="form-select invoice-currency-select" style="flex: 0 0 92px; max-width: 92px;" aria-label="@lang('Currency')" required>
+                                            @foreach (App\Models\Invoice::CURRENCIES as $currencyCode => $currencySymbol)
+                                                <option value="{{ $currencyCode }}" data-symbol="{{ $currencySymbol }}" @selected(old('currency', strtoupper($invoice->currency ?? 'USD')) === $currencyCode)>
+                                                    {{ $currencySymbol }} {{ $currencyCode }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                         <input type="number" step="any" name="paid_amount" class="form-control" value="{{ getAmount($invoice->paid_amount) }}" placeholder="0.00">
                                     </div>
                                 </div>
@@ -87,7 +93,7 @@
                                 <hr>
                                 <div class="row mt-3 justify-content-end">
                                     <div class="col-md-4 text-end">
-                                        <h5>@lang('Total Amount'): {{ $general->cur_sym }}<span id="grand-total">{{ getAmount($invoice->total_amount) }}</span></h5>
+                                        <h5>@lang('Total Amount'): <span class="invoice-currency-symbol">{{ $invoice->currency_prefix }}</span><span id="grand-total">{{ getAmount($invoice->total_amount) }}</span></h5>
                                     </div>
                                 </div>
                             </div>
@@ -119,6 +125,15 @@
         let itemIndex = {{ $invoice->items->count() }};
         let bookingsData = [];
 
+        function updateCurrencySymbol() {
+            const option = $('select[name=currency] option:selected');
+            const symbol = option.data('symbol');
+            $('.invoice-currency-symbol').text(['USD', 'EUR'].includes(option.val()) ? symbol : symbol + ' ');
+        }
+
+        $('select[name=currency]').on('change', updateCurrencySymbol);
+        updateCurrencySymbol();
+
         function loadBookings(userId) {
             let bookingSelect = $('#booking_select');
             if (userId) {
@@ -127,7 +142,8 @@
                     bookingsData = data.bookings;
                     let html = '<option value="">@lang("Select a Booking to Add")</option>';
                     bookingsData.forEach((booking, index) => {
-                        html += `<option value="${index}">${booking.reference} - ${booking.title} (${booking.price} {{ $general->cur_text }})</option>`;
+                        const currency = $('select[name=currency]').val();
+                        html += `<option value="${index}">${booking.reference} - ${booking.title} (${booking.price} ${currency})</option>`;
                     });
                     bookingSelect.html(html);
                 });
